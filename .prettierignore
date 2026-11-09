@@ -1,0 +1,8 @@
+node_modules
+dist
+storybook-static
+.expo
+package-lock.json
+supabase/**/*.sql
+cypress/videos
+cypress/screenshots

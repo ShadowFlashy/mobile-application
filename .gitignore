@@ -22,3 +22,6 @@ yarn-error.*
 expo-env.d.ts
 # @end expo-cli
 storybook-static/
+
+# Vercel CLI project link (created by `npm run deploy:web`)
+.vercel

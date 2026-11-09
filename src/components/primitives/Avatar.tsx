@@ -1,4 +1,6 @@
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { createThemedStyles, radii, useTheme } from '../../theme';
 import { Text } from './Text';
 
 interface AvatarProps {
@@ -8,25 +10,49 @@ interface AvatarProps {
 }
 
 export function Avatar({ uri, name, size = 'md' }: AvatarProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useStyles();
   const initials = name
-    ? name.split(' ').map((part) => part[0]).join('').toUpperCase().slice(0, 2)
+    ? name
+        .split(' ')
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
     : '?';
+  const label = name !== undefined ? t('a11y.avatar_of', { name }) : t('a11y.avatar');
 
   if (uri !== undefined) {
-    return <Image source={{ uri }} style={[styles.base, styles[size]]} />;
+    return (
+      <Image
+        source={{ uri }}
+        style={[styles.base, styles[size]]}
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={label}
+      />
+    );
   }
 
   return (
-    <View style={[styles.base, styles[size], styles.fallback]}>
-      <Text size="sm">{initials}</Text>
+    <View
+      style={[styles.base, styles[size], styles.fallback]}
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={label}
+    >
+      <Text size={size === 'lg' ? 'xl' : 'md'} weight="bold" color={colors.accent}>
+        {initials}
+      </Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  base: { borderRadius: 999, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
-  fallback: {},
-  sm: {},
-  md: {},
-  lg: {},
-});
+const useStyles = createThemedStyles(({ colors }) => ({
+  base: { borderRadius: radii.pill, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  fallback: { backgroundColor: colors.primarySoft },
+  sm: { width: 32, height: 32 },
+  md: { width: 48, height: 48 },
+  lg: { width: 72, height: 72 },
+}));

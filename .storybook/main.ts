@@ -1,9 +1,11 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import type { Plugin } from 'esbuild';
 import { mergeConfig } from 'vite';
 import { transformAsync } from '@babel/core';
 import { readFileSync } from 'fs';
 
-const REACT_NATIVE_PACKAGE_REGEX = /node_modules\/(react-native|@react-native|@expo|expo(-[a-z-]+)?)\/.*\.js$/;
+// [\\/]: Vite passes Windows paths with backslashes for pre-bundled dependencies.
+const REACT_NATIVE_PACKAGE_REGEX = /node_modules[\\/](react-native|@react-native|@expo|expo(-[a-z-]+)?)[\\/].*\.js$/;
 
 const babelTransformReactNative = async (code: string, filename: string): Promise<string> => {
   const result = await transformAsync(code, {
@@ -11,10 +13,7 @@ const babelTransformReactNative = async (code: string, filename: string): Promis
     babelrc: false,
     configFile: false,
     sourceType: 'unambiguous',
-    presets: [
-      '@babel/preset-flow',
-      ['@babel/preset-react', { runtime: 'automatic' }],
-    ],
+    presets: ['@babel/preset-flow', ['@babel/preset-react', { runtime: 'automatic' }]],
   });
   return result?.code ?? code;
 };
@@ -29,10 +28,10 @@ const reactNativeVitePlugin = {
   },
 };
 
-const reactNativeEsbuildPlugin = {
+const reactNativeEsbuildPlugin: Plugin = {
   name: 'react-native-flow-strip',
-  setup(build: any) {
-    build.onLoad({ filter: REACT_NATIVE_PACKAGE_REGEX }, async (args: any) => {
+  setup(build) {
+    build.onLoad({ filter: REACT_NATIVE_PACKAGE_REGEX }, async (args) => {
       const code = readFileSync(args.path, 'utf8');
       const transformed = await babelTransformReactNative(code, args.path);
       return { contents: transformed, loader: 'js' };
@@ -41,7 +40,7 @@ const reactNativeEsbuildPlugin = {
 };
 
 const config: StorybookConfig = {
-  stories: ['../src/components/primitives/**/*.stories.tsx'],
+  stories: ['../src/components/**/*.stories.tsx'],
   addons: [],
   framework: {
     name: '@storybook/react-vite',
@@ -53,6 +52,11 @@ const config: StorybookConfig = {
         alias: {
           'react-native': 'react-native-web',
         },
+        extensions: ['.web.tsx', '.web.ts', '.web.jsx', '.web.js', '.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
+      },
+      define: {
+        __DEV__: 'true',
+        'process.env.EXPO_OS': JSON.stringify('web'),
       },
       plugins: [reactNativeVitePlugin],
       esbuild: {

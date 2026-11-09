@@ -1,0 +1,43 @@
+[
+  {
+    "id": "volkswagen-golf-gti",
+    "sticker_number": 1,
+    "make": "Volkswagen",
+    "model": "Golf GTI",
+    "category": "icon",
+    "rarity": "common"
+  },
+  {
+    "id": "porsche-911-gt3",
+    "sticker_number": 7,
+    "make": "Porsche",
+    "model": "911 GT3",
+    "category": "sports",
+    "rarity": "rare"
+  },
+  {
+    "id": "ferrari-296-gtb",
+    "sticker_number": 13,
+    "make": "Ferrari",
+    "model": "296 GTB",
+    "category": "supercar",
+    "rarity": "epic"
+  },
+  {
+    "id": "bugatti-chiron",
+    "sticker_number": 19,
+    "make": "Bugatti",
+    "model": "Chiron",
+    "category": "hypercar",
+    "rarity": "legendary"
+  },
+  { "id": "mazda-mx-5", "sticker_number": 34, "make": "Mazda", "model": "MX-5", "category": "jdm", "rarity": "common" },
+  {
+    "id": "tesla-model-3",
+    "sticker_number": 43,
+    "make": "Tesla",
+    "model": "Model 3",
+    "category": "electric",
+    "rarity": "common"
+  }
+]

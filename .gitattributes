@@ -1,0 +1,6 @@
+# Normalise line endings; shell hooks must keep LF or `sh` fails on Windows clones.
+* text=auto
+.husky/* text eol=lf
+*.sh text eol=lf
+*.png binary
+*.jpg binary

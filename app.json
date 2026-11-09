@@ -1,27 +1,53 @@
 {
   "expo": {
-    "name": "UCLL Mobile Starter",
-    "slug": "ucll-mobile-starter",
+    "name": "Redline",
+    "slug": "redline",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "ucllstarter",
+    "icon": "./assets/icon.png",
+    "scheme": "redline",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F8FAFC"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.shadowflashy.redline"
     },
     "android": {
+      "package": "com.shadowflashy.redline",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#B91C1C"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "Redline",
+      "shortName": "Redline",
+      "themeColor": "#B91C1C",
+      "backgroundColor": "#F8FAFC"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Redline needs access to your photos so you can add a car you spotted.",
+          "cameraPermission": "Redline needs your camera so you can photograph the cars you spot."
+        }
+      ],
+      "expo-asset",
+      "expo-font"
+    ],
     "experiments": {
       "typedRoutes": true
     }
