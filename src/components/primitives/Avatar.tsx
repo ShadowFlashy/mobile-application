@@ -1,6 +1,6 @@
 import { View, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { createThemedStyles, radii, useTheme } from '../../theme';
+import { borders, createThemedStyles, radii, useTheme } from '../../theme';
 import { Text } from './Text';
 
 interface AvatarProps {
@@ -9,10 +9,11 @@ interface AvatarProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+/** A round photo or, without one, the initials on a roundel decal. */
 export function Avatar({ uri, name, size = 'md' }: AvatarProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const styles = useStyles();
+  const { instruments } = useTheme();
   const initials = name
     ? name
         .split(' ')
@@ -42,16 +43,20 @@ export function Avatar({ uri, name, size = 'md' }: AvatarProps) {
       accessibilityRole="image"
       accessibilityLabel={label}
     >
-      <Text size={size === 'lg' ? 'xl' : 'md'} weight="bold" color={colors.accent}>
+      <Text variant={size === 'lg' ? 'display' : 'numberSm'} color={instruments.roundelInk}>
         {initials}
       </Text>
     </View>
   );
 }
 
-const useStyles = createThemedStyles(({ colors }) => ({
+const useStyles = createThemedStyles(({ instruments }) => ({
   base: { borderRadius: radii.pill, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
-  fallback: { backgroundColor: colors.primarySoft },
+  fallback: {
+    backgroundColor: instruments.roundel,
+    borderWidth: borders.stickerEdge,
+    borderColor: instruments.roundelInk,
+  },
   sm: { width: 32, height: 32 },
   md: { width: 48, height: 48 },
   lg: { width: 72, height: 72 },

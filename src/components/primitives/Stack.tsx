@@ -1,16 +1,19 @@
+import type { ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { spacing } from '../../theme';
+import { gapStyles, paddingStyles, type Align, type GapToken, type Justify } from './layout';
 
 interface StackProps {
-  children: React.ReactNode;
-  gap?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  align?: 'flex-start' | 'center' | 'flex-end' | 'stretch';
-  justify?: 'flex-start' | 'center' | 'flex-end' | 'space-between';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  children: ReactNode;
+  gap?: GapToken;
+  align?: Align;
+  justify?: Justify;
+  padding?: GapToken;
   flex?: number;
+  wrap?: boolean;
   testID?: string;
 }
 
+/** Vertical layout with token gaps. */
 export function Stack({
   children,
   gap = 'none',
@@ -18,6 +21,7 @@ export function Stack({
   justify = 'flex-start',
   padding = 'none',
   flex,
+  wrap = false,
   testID,
 }: StackProps) {
   return (
@@ -28,6 +32,7 @@ export function Stack({
         paddingStyles[padding],
         { alignItems: align, justifyContent: justify },
         flex !== undefined && { flex },
+        wrap && styles.wrap,
       ]}
       testID={testID}
     >
@@ -38,20 +43,5 @@ export function Stack({
 
 const styles = StyleSheet.create({
   base: { flexDirection: 'column' },
-});
-
-const gapStyles = StyleSheet.create({
-  none: { gap: spacing.none },
-  xs: { gap: spacing.xs },
-  sm: { gap: spacing.sm },
-  md: { gap: spacing.md },
-  lg: { gap: spacing.lg },
-  xl: { gap: spacing.xl },
-});
-
-const paddingStyles = StyleSheet.create({
-  none: { padding: spacing.none },
-  sm: { padding: spacing.sm },
-  md: { padding: spacing.md },
-  lg: { padding: spacing.lg },
+  wrap: { flexWrap: 'wrap' },
 });

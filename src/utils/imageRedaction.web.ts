@@ -1,18 +1,17 @@
 /**
  * Web (PWA) implementation of on-device plate redaction.
  *
- * The photo is drawn on a canvas, every marked region is pixelated with large blocks and the
+ * The photo is drawn on a canvas, every marked region is pixelated with large averaged blocks and the
  * result is re-encoded as JPEG. Re-encoding also strips EXIF metadata (including GPS position),
  * so neither the licence plates nor the exact location ever leave the device.
  *
  * Platform split: Metro picks this .web.ts file for the PWA and imageRedaction.ts on Android.
  */
+import { UPLOAD_MAX_SIDE } from '../constants/ai';
 import { ServiceError } from '../services/serviceError';
 import type { PickedPhoto, PlateRegion, RedactedPhoto } from '../types/Spot';
-import { fitWithin, pixelBlockSize, toPixelRect, type PixelRect } from './redactionMath';
+import { fitWithin, pixelateRgba, pixelBlockSize, toPixelRect, type PixelRect } from './redactionMath';
 
-/** Longest side of the uploaded photo, in pixels. Keeps uploads small (course ch. 21: images). */
-const MAX_SIDE = 1600;
 const JPEG_QUALITY = 0.85;
 
 function loadImage(uri: string): Promise<HTMLImageElement> {
@@ -33,24 +32,23 @@ function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 }
 
 function pixelate(context: CanvasRenderingContext2D, rect: PixelRect): void {
-  const block = pixelBlockSize(rect);
-  const smallWidth = Math.max(1, Math.ceil(rect.width / block));
-  const smallHeight = Math.max(1, Math.ceil(rect.height / block));
-
-  const buffer = document.createElement('canvas');
-  buffer.width = smallWidth;
-  buffer.height = smallHeight;
-  const bufferContext = getContext(buffer);
-  bufferContext.drawImage(context.canvas, rect.x, rect.y, rect.width, rect.height, 0, 0, smallWidth, smallHeight);
-
-  context.imageSmoothingEnabled = false;
-  context.drawImage(buffer, 0, 0, smallWidth, smallHeight, rect.x, rect.y, rect.width, rect.height);
-  context.imageSmoothingEnabled = true;
+  const pixels = context.getImageData(rect.x, rect.y, rect.width, rect.height);
+  pixelateRgba(pixels.data, rect.width, rect.height, pixelBlockSize(rect));
+  context.putImageData(pixels, rect.x, rect.y);
 }
 
-export async function redactPhoto(photo: PickedPhoto, regions: PlateRegion[]): Promise<RedactedPhoto> {
+/**
+ * Pixelates every region and re-encodes the photo as JPEG (EXIF stripped). The same function makes
+ * the upload (≤1600 px) and the live preview in the plate editor (≤960 px, SPEC P0-04), so the
+ * preview shows exactly the pixels that will be uploaded.
+ */
+export async function redactPhoto(
+  photo: PickedPhoto,
+  regions: PlateRegion[],
+  maxSide: number = UPLOAD_MAX_SIDE,
+): Promise<RedactedPhoto> {
   const image = await loadImage(photo.uri);
-  const size = fitWithin({ width: image.naturalWidth, height: image.naturalHeight }, MAX_SIDE);
+  const size = fitWithin({ width: image.naturalWidth, height: image.naturalHeight }, maxSide);
 
   const canvas = document.createElement('canvas');
   canvas.width = size.width;

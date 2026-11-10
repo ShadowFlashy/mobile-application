@@ -1,58 +1,57 @@
-import { TEST_USER } from '../support/commands';
+// The 5-tab LIVERY shell (P0-09): Album, Pit Wall, the raised SPOT Ignition button, Garage and Me.
+const TABS = [
+  { id: 'tab-index', en: 'Album', nl: 'Album', screen: 'sticker-book-screen' },
+  { id: 'tab-progress', en: 'Pit Wall', nl: 'Pitmuur', screen: 'progress-screen' },
+  { id: 'tab-spot', en: 'SPOT', nl: 'SPOT', screen: 'spot-screen' },
+  { id: 'tab-owners', en: 'Garage', nl: 'Garage', screen: 'owners-screen' },
+  { id: 'tab-profile', en: 'Me', nl: 'Ik', screen: 'profile-screen' },
+] as const;
 
-// Smoke tests (course ch. 12): every main screen (tab) loads and shows its basic information.
 describe('Main tabs', () => {
   beforeEach(() => {
     cy.stubSupabase();
-    cy.loginThroughUi();
+    cy.loginThroughUi({ reduceMotion: true });
   });
 
-  it('shows the sticker book with the catalogue and progress', () => {
-    cy.wait('@carModels');
-    cy.get('[data-testid="collection-progress-count"]').should('contain.text', '0').and('contain.text', '6');
-    cy.get('[data-testid="sticker-porsche-911-gt3"]').should('be.visible');
+  it('shows the five tabs in order, with English labels', () => {
+    cy.get('[data-testid="bottom-tab-bar"] [role="tab"]').should('have.length', TABS.length);
+    cy.get('[data-testid="bottom-tab-bar"] [role="tab"]').each(($tab, index) => {
+      const tab = TABS[index];
+      expect($tab.attr('data-testid')).to.equal(tab?.id);
+      expect($tab.text()).to.contain(tab?.en);
+    });
+    cy.get('[data-testid="tab-index"]').should('have.attr', 'aria-selected', 'true');
   });
 
-  it('filters the sticker book by category', () => {
-    cy.get('[data-testid="filter-jdm"]').click();
-    cy.get('[data-testid="sticker-mazda-mx-5"]').should('be.visible');
-    cy.get('[data-testid="sticker-porsche-911-gt3"]').should('not.exist');
+  it('opens every tab on its own screen', () => {
+    TABS.forEach((tab) => {
+      cy.get(`[data-testid="${tab.id}"]`).click();
+      cy.get(`[data-testid="${tab.screen}"]`).should('be.visible');
+      cy.get(`[data-testid="${tab.id}"]`).should('have.attr', 'aria-selected', 'true');
+    });
   });
 
-  it('opens a locked sticker', () => {
-    cy.get('[data-testid="sticker-bugatti-chiron"]').click();
-    cy.get('[data-testid="sticker-detail-screen"]').should('be.visible');
-    cy.get('[data-testid="sticker-locked"]').should('be.visible');
+  it('raises the SPOT Ignition button above the other tabs', () => {
+    cy.get('[data-testid="tab-index"]').then(($album) => {
+      const albumTop = $album[0]?.getBoundingClientRect().top ?? 0;
+      cy.get('[data-testid="tab-spot"]').should(($spot) => {
+        const rect = $spot[0]?.getBoundingClientRect();
+        expect(rect?.top ?? 0).to.be.lessThan(albumTop);
+        expect(rect?.height ?? 0).to.be.at.least(64);
+      });
+    });
   });
 
-  it('shows the spot screen', () => {
-    cy.get('[data-testid="tab-spot"]').click();
-    cy.get('[data-testid="spot-screen"]').should('be.visible');
-    cy.get('[data-testid="take-photo-button"]').should('be.visible');
-  });
-
-  it('shows the owner portal', () => {
-    cy.get('[data-testid="tab-owners"]').click();
-    cy.get('[data-testid="owners-screen"]').should('be.visible');
-    cy.get('[data-testid="no-pings"]').should('be.visible');
-  });
-
-  it('shows the profile of the signed-in user', () => {
-    cy.get('[data-testid="tab-profile"]').click();
-    cy.get('[data-testid="profile-screen"]').should('be.visible');
-    cy.get('[data-testid="profile-name"]').should('contain.text', TEST_USER.username);
-  });
-
-  it('switches the language to Dutch', () => {
-    cy.get('[data-testid="tab-profile"]').click();
-    cy.get('[data-testid="language-nl"]').click();
-    cy.get('[data-testid="tab-index"]').should('contain.text', 'Stickers');
-    cy.get('html').invoke('attr', 'lang').should('not.be.undefined');
-  });
-
-  it('logs out and returns to the login screen', () => {
-    cy.get('[data-testid="tab-profile"]').click();
-    cy.get('[data-testid="logout-button"]').click();
-    cy.get('[data-testid="login-screen"]').should('be.visible');
+  it('labels the tabs in Dutch and sets the page language', () => {
+    // The language setting the app stores on the device (AsyncStorage → localStorage on the web).
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem('redline-language', 'nl');
+      },
+    });
+    cy.get('html').should('have.attr', 'lang', 'nl');
+    TABS.forEach((tab) => cy.get(`[data-testid="${tab.id}"]`).should('contain.text', tab.nl));
+    cy.get('[data-testid="tab-progress"]').should('not.contain.text', 'Pit Wall');
+    cy.get('[data-testid="tab-profile"]').should('not.contain.text', 'Me');
   });
 });

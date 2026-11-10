@@ -1,226 +1,151 @@
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog } from '../../../src/components/ConfirmDialog';
-import { OwnerCarCard } from '../../../src/components/OwnerCarCard';
-import { PingItem } from '../../../src/components/PingItem';
-import { Card } from '../../../src/components/primitives/Card';
-import { Checkbox } from '../../../src/components/primitives/Checkbox';
+import { GarageCarCard } from '../../../src/components/garage/GarageCarCard';
+import { SightingCard } from '../../../src/components/garage/SightingCard';
 import { EmptyState } from '../../../src/components/primitives/EmptyState';
-import { InputField } from '../../../src/components/primitives/InputField';
-import { Row } from '../../../src/components/primitives/Row';
+import { Section } from '../../../src/components/primitives/Section';
 import { Screen } from '../../../src/components/primitives/Screen';
-import { Spinner } from '../../../src/components/primitives/Spinner';
+import { Skeleton } from '../../../src/components/primitives/Skeleton';
 import { Stack } from '../../../src/components/primitives/Stack';
 import { Text } from '../../../src/components/primitives/Text';
-import { PrivacyNotice } from '../../../src/components/PrivacyNotice';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { StyledButton } from '../../../src/components/StyledButton';
 import { routes } from '../../../src/constants/routes';
-import { useOwnerCarForm } from '../../../src/hooks/useOwnerCarForm';
-import { useOwnerCars } from '../../../src/hooks/useOwnerCars';
-import { useMarkPingsRead, usePings, useUnreadPingCount } from '../../../src/hooks/usePings';
+import { MAX_OWNER_CARS, statsForCar, useOwnerCars, useOwnerCarStats } from '../../../src/hooks/useOwnerCars';
+import { useMarkAllSightingsRead, useSightings, useUnreadPingCount } from '../../../src/hooks/usePings';
 import { getErrorMessage } from '../../../src/services/serviceError';
 import { useToastStore } from '../../../src/state/useToastStore';
-import { useTheme } from '../../../src/theme';
-import type { ValidationKey } from '../../../src/utils/validation';
+import { formatDate } from '../../../src/utils/formatDate';
+import { groupSightingsByDay } from '../../../src/utils/sightings';
 
-export default function OwnerPortalScreen() {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
+/** Garage tab: my cars (status, counters), "Add my car" and the sightings feed. */
+export default function GarageScreen() {
+  const { t, i18n } = useTranslation();
   const showToast = useToastStore((state) => state.show);
   const ownerCars = useOwnerCars();
-  const pingsQuery = usePings();
+  const stats = useOwnerCarStats();
+  const feed = useSightings();
   const unreadCount = useUnreadPingCount();
-  const markPingsRead = useMarkPingsRead();
-  const { form, removeDialog, plateDialog } = useOwnerCarForm();
+  const markAllRead = useMarkAllSightingsRead();
 
   const cars = ownerCars.data ?? [];
-  const pings = pingsQuery.data ?? [];
+  const groups = groupSightingsByDay(feed.sightings);
+  const canAdd = cars.length < MAX_OWNER_CARS;
 
   let loadError: string | undefined;
   if (ownerCars.isError) loadError = getErrorMessage(ownerCars.error, 'load_owner_cars');
-  else if (pingsQuery.isError) loadError = getErrorMessage(pingsQuery.error, 'load_pings');
+  else if (feed.isError) loadError = getErrorMessage(feed.error, 'load_sightings');
 
-  const retry = () => {
+  const refresh = () => {
     void ownerCars.refetch();
-    void pingsQuery.refetch();
+    void stats.refetch();
+    void feed.refetch();
   };
 
-  const markAllRead = () =>
-    markPingsRead.mutate(undefined, {
+  const onMarkAllRead = () =>
+    markAllRead.mutate(undefined, {
       onError: (error) => showToast(getErrorMessage(error, 'update_pings'), 'error'),
     });
 
-  const fieldError = (key?: ValidationKey) => (key === undefined ? undefined : t(`validation.${key}`));
+  const dayLabel = (kind: 'today' | 'yesterday' | 'earlier', dayStart: string) =>
+    kind === 'earlier' ? formatDate(dayStart, i18n.language) : t(`sightings.${kind}`);
 
   return (
-    <Screen testID="owners-screen">
+    <Screen testID="owners-screen" refreshing={feed.isRefetching} onRefresh={refresh}>
       <Stack gap="lg">
-        <ScreenHeader title={t('owners.title')} subtitle={t('owners.subtitle')} />
+        <ScreenHeader eyebrow={t('garage.eyebrow')} title={t('garage.title')} subtitle={t('garage.subtitle')} />
 
         {loadError !== undefined && (
           <Stack gap="sm">
-            <Text color={colors.danger} testID="owners-error">
+            <Text tone="danger" testID="owners-error">
               {loadError}
             </Text>
-            <StyledButton label={t('common.try_again')} icon="refresh" variant="secondary" onPress={retry} />
+            <StyledButton label={t('common.try_again')} icon="refresh" variant="secondary" onPress={refresh} />
           </Stack>
         )}
 
-        <Stack gap="sm">
-          <Row justify="space-between" gap="sm" wrap>
-            <Text size="lg" weight="bold" heading>
-              {unreadCount > 0 ? t('owners.pings_heading_unread', { count: unreadCount }) : t('owners.pings_heading')}
-            </Text>
-            {unreadCount > 0 && (
-              <StyledButton
-                label={t('owners.mark_all_read')}
-                variant="ghost"
-                onPress={markAllRead}
-                testID="mark-read-button"
-              />
-            )}
-          </Row>
-          {pingsQuery.isLoading && <Spinner />}
-          {pingsQuery.data?.length === 0 && (
-            <Card variant="muted">
-              <EmptyState
-                icon="notifications-outline"
-                title={t('owners.no_pings_title')}
-                description={t('owners.no_pings_description')}
-                testID="no-pings"
-              />
-            </Card>
+        <Section title={t('garage.my_cars')} testID="garage-cars">
+          {ownerCars.isLoading && <Skeleton preset="card" />}
+          {ownerCars.isSuccess && cars.length === 0 && (
+            <EmptyState
+              icon="car-sport-outline"
+              title={t('garage.no_cars_title')}
+              description={t('garage.no_cars_description')}
+              testID="garage-empty"
+            />
           )}
-          {pings.map((ping) => (
-            <PingItem key={ping.id} ping={ping} onPress={() => router.push(routes.spotDetail(ping.spotId))} />
-          ))}
-        </Stack>
-
-        <Stack gap="sm">
-          <Text size="lg" weight="bold" heading>
-            {t('owners.my_cars')}
-          </Text>
-          {ownerCars.isLoading && <Spinner />}
           {cars.map((car) => (
-            <OwnerCarCard
+            <GarageCarCard
               key={car.id}
               car={car}
-              spotCount={pings.filter((ping) => ping.ownerCarId === car.id).length}
-              onTogglePlate={() => plateDialog.open(car)}
-              onRemove={() => removeDialog.open(car)}
+              stats={statsForCar(stats.data, car.id)}
+              onPress={() => router.push(routes.garageCar(car.id))}
             />
           ))}
-
-          {form.isOpen ? (
-            <Card>
-              <Stack gap="md" padding="md">
-                <Text size="lg" weight="bold" heading>
-                  {t('owners.register_title')}
-                </Text>
-                <InputField
-                  label={t('owners.make_label')}
-                  value={form.values.make}
-                  onChangeText={(value) => form.updateField('make', value)}
-                  placeholder={t('owners.make_placeholder')}
-                  autoCapitalize="words"
-                  error={fieldError(form.errors.make)}
-                  maxLength={40}
-                  testID="owner-make-input"
-                />
-                <InputField
-                  label={t('owners.model_label')}
-                  value={form.values.model}
-                  onChangeText={(value) => form.updateField('model', value)}
-                  placeholder={t('owners.model_placeholder')}
-                  autoCapitalize="words"
-                  error={fieldError(form.errors.model)}
-                  maxLength={60}
-                  testID="owner-model-input"
-                />
-                <InputField
-                  label={t('owners.nickname_label')}
-                  value={form.values.nickname}
-                  onChangeText={(value) => form.updateField('nickname', value)}
-                  placeholder={t('owners.nickname_placeholder')}
-                  autoCapitalize="words"
-                  error={fieldError(form.errors.nickname)}
-                  maxLength={40}
-                  testID="owner-nickname-input"
-                />
-                <InputField
-                  label={t('owners.plate_label')}
-                  value={form.values.plate}
-                  onChangeText={(value) => form.updateField('plate', value)}
-                  placeholder={t('owners.plate_placeholder')}
-                  autoCapitalize="characters"
-                  error={fieldError(form.errors.plate)}
-                  maxLength={20}
-                  testID="owner-plate-input"
-                />
-                <Checkbox
-                  label={t('owners.show_plate_checkbox')}
-                  checked={form.showPlate}
-                  onChange={form.setShowPlate}
-                  testID="owner-show-plate-checkbox"
-                />
-                <PrivacyNotice title={t('owners.plate_privacy_title')}>{t('owners.plate_privacy_body')}</PrivacyNotice>
-                <StyledButton
-                  label={t('owners.register_submit')}
-                  onPress={form.submit}
-                  isLoading={form.isPending}
-                  testID="register-car-button"
-                />
-                <StyledButton label={t('common.cancel')} variant="ghost" onPress={form.close} />
-              </Stack>
-            </Card>
-          ) : (
+          {canAdd ? (
             <StyledButton
-              label={t('owners.register_open')}
+              label={t('garage.add_car')}
               icon="add-circle-outline"
               variant={cars.length === 0 ? 'primary' : 'secondary'}
-              onPress={form.open}
-              testID="open-register-car"
+              onPress={() => router.push(routes.garageNew)}
+              testID="add-car-button"
+            />
+          ) : (
+            <Text variant="bodySm" tone="muted" testID="garage-max-cars">
+              {t('garage.max_cars')}
+            </Text>
+          )}
+        </Section>
+
+        <Section
+          title={unreadCount > 0 ? t('sightings.heading_unread', { count: unreadCount }) : t('sightings.title')}
+          action={
+            unreadCount > 0 ? (
+              <StyledButton
+                label={t('sightings.mark_all_read')}
+                variant="ghost"
+                onPress={onMarkAllRead}
+                isLoading={markAllRead.isPending}
+                testID="mark-read-button"
+              />
+            ) : undefined
+          }
+          testID="garage-sightings"
+        >
+          {feed.isLoading && <Skeleton preset="row" />}
+          {feed.isSuccess && feed.sightings.length === 0 && (
+            <EmptyState
+              icon="notifications-outline"
+              title={t('sightings.empty_title')}
+              description={t('sightings.empty_description')}
+              testID="no-pings"
             />
           )}
-        </Stack>
+          {groups.map((group) => (
+            <Stack key={group.dayKey} gap="sm">
+              <Text variant="label" tone="subtle" heading>
+                {dayLabel(group.kind, group.dayStart)}
+              </Text>
+              {group.sightings.map((sighting) => (
+                <SightingCard
+                  key={sighting.id}
+                  sighting={sighting}
+                  onPress={() => router.push(routes.sighting(sighting.id))}
+                />
+              ))}
+            </Stack>
+          ))}
+          {feed.hasNextPage && (
+            <StyledButton
+              label={t('sightings.load_more')}
+              variant="secondary"
+              onPress={() => void feed.fetchNextPage()}
+              isLoading={feed.isFetchingNextPage}
+              testID="load-more-sightings"
+            />
+          )}
+        </Section>
       </Stack>
-
-      <ConfirmDialog
-        visible={removeDialog.isOpen}
-        title={t('owners.remove_title')}
-        message={t('owners.remove_message')}
-        confirmLabel={t('owners.remove_confirm')}
-        destructive
-        isLoading={removeDialog.isPending}
-        onConfirm={removeDialog.confirm}
-        onCancel={removeDialog.cancel}
-      />
-
-      <ConfirmDialog
-        visible={plateDialog.isOpen}
-        title={plateDialog.willShow ? t('owners.show_plate_title') : t('owners.hide_plate_title')}
-        message={plateDialog.willShow ? t('owners.show_plate_message') : t('owners.hide_plate_message')}
-        confirmLabel={plateDialog.willShow ? t('owners.show_plate_confirm') : t('owners.hide_plate_confirm')}
-        isLoading={plateDialog.isPending}
-        onConfirm={plateDialog.confirm}
-        onCancel={plateDialog.cancel}
-      >
-        {plateDialog.willShow && (
-          <InputField
-            label={t('owners.confirm_plate_label')}
-            value={plateDialog.plate}
-            onChangeText={plateDialog.changePlate}
-            autoCapitalize="characters"
-            maxLength={20}
-            error={plateDialog.error}
-            testID="toggle-plate-input"
-          />
-        )}
-        {!plateDialog.willShow && plateDialog.error !== undefined && (
-          <Text color={colors.danger}>{plateDialog.error}</Text>
-        )}
-      </ConfirmDialog>
     </Screen>
   );
 }

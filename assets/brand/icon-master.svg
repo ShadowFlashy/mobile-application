@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Redline brand master (SPEC P0-23, D-16). Source of every app icon, the splash, the favicon and
+    the PWA icons: scripts/generate-icons.mjs reads the three marked parts below and renders them
+    with @resvg/resvg-js. Edit this file, then run `node scripts/generate-icons.mjs`.
+
+    The sticker uses the geometry of src/components/brand/BrandMark.tsx (BRAND_MARK_GEOMETRY) on
+    its 64 x 64 grid: die-cut sticker 2,2,60,60 rx 14, dial r 22, major ticks at 225/180/135/90/45
+    degrees from r 13 to r 18, the red zone from 15 to -45 degrees at r 17 (stroke 5) and the needle
+    at -12 degrees, length 17. Colours: Night Session asphalt #0D0E11, roundel white, pit-board
+    black #121316, pit-board text #F5F5F0 and Redline red #E10600.
+  -->
+  <!-- defs:start -->
+  <defs>
+    <radialGradient id="rl-asphalt-light" cx="0.5" cy="0.42" r="0.72">
+      <stop offset="0" stop-color="#262A32"/>
+      <stop offset="0.55" stop-color="#15171C"/>
+      <stop offset="1" stop-color="#08090B"/>
+    </radialGradient>
+    <radialGradient id="rl-redline-glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#E10600" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#E10600" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rl-stripe" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1C1F25"/>
+      <stop offset="0.5" stop-color="#262A31"/>
+      <stop offset="1" stop-color="#1C1F25"/>
+    </linearGradient>
+    <filter id="rl-grain" x="0" y="0" width="1" height="1">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="noise"/>
+      <feColorMatrix in="noise" type="matrix"
+        values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 -0.32"/>
+    </filter>
+    <linearGradient id="rl-sticker-face" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.6" stop-color="#F7F5F0"/>
+      <stop offset="1" stop-color="#E4E0D7"/>
+    </linearGradient>
+    <linearGradient id="rl-bezel" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#FDFDFB"/>
+      <stop offset="0.35" stop-color="#9BA0A9"/>
+      <stop offset="0.55" stop-color="#E9EAEC"/>
+      <stop offset="0.8" stop-color="#6E737C"/>
+      <stop offset="1" stop-color="#C9CCD1"/>
+    </linearGradient>
+    <radialGradient id="rl-dial" cx="0.42" cy="0.32" r="0.78">
+      <stop offset="0" stop-color="#2B2F37"/>
+      <stop offset="0.6" stop-color="#121316"/>
+      <stop offset="1" stop-color="#060708"/>
+    </radialGradient>
+    <linearGradient id="rl-glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="rl-hub" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#FF4A3D"/>
+      <stop offset="0.6" stop-color="#E10600"/>
+      <stop offset="1" stop-color="#9E0400"/>
+    </radialGradient>
+    <linearGradient id="rl-needle" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C9CCD1"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <filter id="rl-sticker-shadow" x="-0.2" y="-0.2" width="1.4" height="1.45">
+      <feDropShadow dx="0" dy="1.4" stdDeviation="1.6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="rl-zone-glow" x="-0.6" y="-0.6" width="2.2" height="2.2">
+      <feGaussianBlur stdDeviation="1.3"/>
+    </filter>
+  </defs>
+  <!-- defs:end -->
+
+  <!-- asphalt:start (1024 x 1024 backdrop: Night Session asphalt with Le Mans twin stripes) -->
+  <g id="asphalt">
+    <rect width="1024" height="1024" fill="#0D0E11"/>
+    <rect width="1024" height="1024" fill="url(#rl-asphalt-light)"/>
+    <g transform="rotate(-38 512 512)">
+      <rect x="352" y="-300" width="128" height="1624" fill="url(#rl-stripe)"/>
+      <rect x="544" y="-300" width="128" height="1624" fill="url(#rl-stripe)"/>
+      <rect x="342" y="-300" width="6" height="1624" fill="#E10600" opacity="0.85"/>
+      <rect x="676" y="-300" width="6" height="1624" fill="#E10600" opacity="0.85"/>
+    </g>
+    <rect width="1024" height="1024" filter="url(#rl-grain)" opacity="0.35"/>
+    <circle cx="640" cy="560" r="420" fill="url(#rl-redline-glow)"/>
+  </g>
+  <!-- asphalt:end -->
+
+  <!-- sticker:start (the BrandMark on its 64 x 64 grid; the generator replaces this transform) -->
+  <g id="sticker" transform="translate(512 506) rotate(-6) scale(10) translate(-32 -32)">
+    <!-- Die-cut sticker: white vinyl with a printed cut line. -->
+    <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#rl-sticker-face)" filter="url(#rl-sticker-shadow)"/>
+    <rect x="3.3" y="3.3" width="57.4" height="57.4" rx="12.8" fill="none" stroke="#D3CEC3" stroke-width="0.45"/>
+    <!-- Chrome bezel and the dial. -->
+    <circle cx="32" cy="32" r="23.6" fill="url(#rl-bezel)"/>
+    <circle cx="32" cy="32" r="22" fill="url(#rl-dial)"/>
+    <!-- Minor ticks (dropped by the generator below 64 px). -->
+    <g id="minor-ticks" stroke="#8D919B" stroke-width="1" stroke-linecap="round">
+      <line x1="47.5" y1="32" x2="50" y2="32" transform="rotate(-202.5 32 32)"/>
+      <line x1="47.5" y1="32" x2="50" y2="32" transform="rotate(-157.5 32 32)"/>
+      <line x1="47.5" y1="32" x2="50" y2="32" transform="rotate(-112.5 32 32)"/>
+      <line x1="47.5" y1="32" x2="50" y2="32" transform="rotate(-67.5 32 32)"/>
+      <line x1="47.5" y1="32" x2="50" y2="32" transform="rotate(-22.5 32 32)"/>
+    </g>
+    <!-- Major ticks at 225, 180, 135, 90 and 45 degrees (r 13 to 18). -->
+    <g stroke="#F5F5F0" stroke-width="2.5" stroke-linecap="round">
+      <line x1="45" y1="32" x2="50" y2="32" transform="rotate(-225 32 32)"/>
+      <line x1="45" y1="32" x2="50" y2="32" transform="rotate(-180 32 32)"/>
+      <line x1="45" y1="32" x2="50" y2="32" transform="rotate(-135 32 32)"/>
+      <line x1="45" y1="32" x2="50" y2="32" transform="rotate(-90 32 32)"/>
+      <line x1="45" y1="32" x2="50" y2="32" transform="rotate(-45 32 32)"/>
+    </g>
+    <!-- The red zone, 15 to -45 degrees at r 17, with its glow. -->
+    <path d="M 48.4207 27.6001 A 17 17 0 0 1 44.0208 44.0208" fill="none" stroke="#FF2A1F" stroke-width="5.5" stroke-linecap="round" filter="url(#rl-zone-glow)" opacity="0.9"/>
+    <path d="M 48.4207 27.6001 A 17 17 0 0 1 44.0208 44.0208" fill="none" stroke="#E10600" stroke-width="5" stroke-linecap="round"/>
+    <!-- Dial glass. -->
+    <path d="M 12.4 30 A 19.8 19.8 0 0 1 51.6 30 Q 32 21.5 12.4 30 Z" fill="url(#rl-glass)"/>
+    <!-- The needle at -12 degrees (17 long), deep in the red zone, with a short counterweight. -->
+    <path d="M 26.2 32 L 28.4 30.35 L 48.7 31.45 Q 49.35 32 48.7 32.55 L 28.4 33.65 Z" fill="url(#rl-needle)" transform="rotate(12 32 32)"/>
+    <!-- Hub. -->
+    <circle cx="32" cy="32" r="4.2" fill="url(#rl-hub)"/>
+    <circle cx="32" cy="32" r="1.4" fill="#0D0E11"/>
+  </g>
+  <!-- sticker:end -->
+</svg>

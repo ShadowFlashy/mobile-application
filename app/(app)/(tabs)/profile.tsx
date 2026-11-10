@@ -1,40 +1,51 @@
 import Constants from 'expo-constants';
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
-import { ConfirmDialog } from '../../../src/components/ConfirmDialog';
-import { Avatar } from '../../../src/components/primitives/Avatar';
-import { Card } from '../../../src/components/primitives/Card';
-import { Row } from '../../../src/components/primitives/Row';
-import { Screen } from '../../../src/components/primitives/Screen';
-import { Stack } from '../../../src/components/primitives/Stack';
-import { Tag } from '../../../src/components/primitives/Tag';
-import { Text } from '../../../src/components/primitives/Text';
 import { PrivacyNotice } from '../../../src/components/PrivacyNotice';
+import { Screen } from '../../../src/components/primitives/Screen';
+import { Section } from '../../../src/components/primitives/Section';
+import { SegmentedControl } from '../../../src/components/primitives/SegmentedControl';
+import { Stack } from '../../../src/components/primitives/Stack';
+import { Row } from '../../../src/components/primitives/Row';
+import { Switch } from '../../../src/components/primitives/Switch';
+import { Text } from '../../../src/components/primitives/Text';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { StatTile } from '../../../src/components/StatTile';
 import { StyledButton } from '../../../src/components/StyledButton';
+import { DeleteAccountButton } from '../../../src/components/trust/DeleteAccountButton';
+import { DriverCard } from '../../../src/components/trust/DriverCard';
+import { SettingRow } from '../../../src/components/trust/SettingRow';
+import { routes } from '../../../src/constants/routes';
+import { useAlbum } from '../../../src/hooks/useAlbum';
 import { useLanguage } from '../../../src/hooks/useLanguage';
 import { useOwnerCars } from '../../../src/hooks/useOwnerCars';
+import { useProgress } from '../../../src/hooks/useProgress';
+import { useSettings } from '../../../src/hooks/useSettings';
 import { useDeleteAccount, useSignOut } from '../../../src/hooks/useSignOut';
-import { useStickerBook } from '../../../src/hooks/useStickerBook';
-import { SUPPORTED_LANGUAGES } from '../../../src/i18n';
+import { useTrustLedger } from '../../../src/hooks/useTrustLedger';
+import { isSupportedLanguage, SUPPORTED_LANGUAGES, type Language } from '../../../src/i18n';
 import { getErrorMessage } from '../../../src/services/serviceError';
 import { useAuthStore } from '../../../src/state/useAuthStore';
 import { useToastStore } from '../../../src/state/useToastStore';
-import { useTheme } from '../../../src/theme';
 
+/** The "Me" tab (SPEC P0-18): driver card, season stats, settings, privacy links and the account. */
 export default function ProfileScreen() {
-  const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const isOfflineSession = useAuthStore((state) => state.isOfflineSession);
   const showToast = useToastStore((state) => state.show);
-  const { overallProgress, totalSpots } = useStickerBook();
+  const { snapshot } = useProgress();
+  const { cover } = useAlbum();
   const { data: ownerCars } = useOwnerCars();
+  const ledger = useTrustLedger();
+  const { settings, update } = useSettings();
   const { language, changeLanguage } = useLanguage();
   const signOut = useSignOut();
   const deleteAccount = useDeleteAccount();
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const level = snapshot?.level;
+  const languageOptions = SUPPORTED_LANGUAGES.map((code) => ({ value: code, label: t(`profile.language_${code}`) }));
 
   // No navigation needed: the (app) layout redirects to the login screen once the user is signed out.
   const onLogout = async () => {
@@ -45,140 +56,151 @@ export default function ProfileScreen() {
     }
   };
 
-  // GDPR right to erasure: the account and all its data are deleted, then the user is signed out.
+  // GDPR right to erasure. The shared demo account gets a friendly "cannot be deleted" toast.
   const onDeleteAccount = async () => {
     try {
       await deleteAccount.mutateAsync();
       showToast(t('profile.account_deleted_toast'), 'success');
     } catch (error) {
       showToast(getErrorMessage(error, 'delete_account'), 'error');
-    } finally {
-      // Closed in both cases: a toast is not visible on top of an open dialog.
-      setIsDeleteOpen(false);
     }
   };
-
-  const completion = new Intl.NumberFormat(i18n.language, { style: 'percent' }).format(overallProgress.ratio);
 
   return (
     <Screen testID="profile-screen">
       <Stack gap="lg">
-        <ScreenHeader title={t('profile.title')} />
-        <Card>
-          <Stack padding="md">
-            <Row gap="md">
-              <Avatar name={user?.name} size="lg" />
-              <Stack gap="xs" flex={1}>
-                <Text size="xl" weight="bold" testID="profile-name">
-                  {user?.name ?? ''}
-                </Text>
-                <Text color={colors.textMuted} numberOfLines={1}>
-                  {user?.email ?? ''}
-                </Text>
+        <ScreenHeader eyebrow={t('profile.eyebrow')} title={t('profile.title')} />
+
+        <DriverCard
+          name={user?.name ?? ''}
+          email={user?.email}
+          level={
+            level === undefined
+              ? undefined
+              : {
+                  level: level.level,
+                  title: t(`levels.${level.titleKey}`),
+                  xp: level.xp,
+                  nextLevelXp: level.nextLevelXp,
+                  ratio: level.ratio,
+                }
+          }
+          isOffline={isOfflineSession}
+          testID="driver-card"
+        />
+
+        {isOfflineSession && (
+          <PrivacyNotice title={t('profile.offline_title')} testID="offline-session-notice">
+            {t('profile.offline_body')}
+          </PrivacyNotice>
+        )}
+
+        <Section title={t('profile.stats_title')}>
+          <Stack gap="smd">
+            <Row gap="smd">
+              <Stack flex={1}>
+                <StatTile
+                  label={t('profile.stat_stickers')}
+                  value={`${cover.collected}/${cover.total}`}
+                  icon="albums-outline"
+                  testID="stat-stickers"
+                />
+              </Stack>
+              <Stack flex={1}>
+                <StatTile
+                  label={t('profile.stat_spots')}
+                  value={String(ledger.photos)}
+                  icon="camera-outline"
+                  testID="stat-spots"
+                />
+              </Stack>
+            </Row>
+            <Row gap="smd">
+              <Stack flex={1}>
+                <StatTile
+                  label={t('profile.stat_cities')}
+                  value={String(ledger.cities)}
+                  icon="business-outline"
+                  testID="stat-cities"
+                />
+              </Stack>
+              <Stack flex={1}>
+                <StatTile
+                  label={t('profile.stat_owned')}
+                  value={String(ownerCars?.length ?? 0)}
+                  icon="key-outline"
+                  testID="stat-owned"
+                />
               </Stack>
             </Row>
           </Stack>
-        </Card>
+        </Section>
 
-        <Row gap="md">
-          <View style={styles.tile}>
-            <StatTile
-              label={t('profile.stat_stickers')}
-              value={`${overallProgress.collected}/${overallProgress.total}`}
-              icon="albums-outline"
-              testID="stat-stickers"
+        <Section title={t('profile.settings_title')}>
+          <Stack gap="sm">
+            <Text variant="label" tone="muted">
+              {t('profile.language_title')}
+            </Text>
+            <SegmentedControl<Language>
+              options={languageOptions}
+              value={language}
+              onChange={(next) => {
+                if (isSupportedLanguage(next)) changeLanguage(next);
+              }}
+              testID="language"
             />
-          </View>
-          <View style={styles.tile}>
-            <StatTile
-              label={t('profile.stat_spots')}
-              value={String(totalSpots)}
-              icon="camera-outline"
-              testID="stat-spots"
+            <Switch
+              label={t('profile.haptics_label')}
+              description={t('profile.haptics_description')}
+              value={settings.haptics}
+              onChange={(haptics) => update({ haptics })}
+              testID="haptics-switch"
             />
-          </View>
-        </Row>
-        <Row gap="md">
-          <View style={styles.tile}>
-            <StatTile
-              label={t('profile.stat_completion')}
-              value={completion}
-              icon="trophy-outline"
-              testID="stat-completion"
-            />
-          </View>
-          <View style={styles.tile}>
-            <StatTile
-              label={t('profile.stat_owned')}
-              value={String(ownerCars?.length ?? 0)}
-              icon="key-outline"
-              testID="stat-owned"
-            />
-          </View>
-        </Row>
+          </Stack>
+        </Section>
 
-        <Stack gap="sm">
-          <Text size="lg" weight="bold" heading>
-            {t('profile.language_title')}
-          </Text>
-          <Row gap="sm" wrap>
-            {SUPPORTED_LANGUAGES.map((code) => (
-              <Tag
-                key={code}
-                label={t(`profile.language_${code}`)}
-                selected={language === code}
-                onPress={() => changeLanguage(code)}
-                testID={`language-${code}`}
-              />
-            ))}
-          </Row>
-        </Stack>
+        <Section title={t('profile.privacy_title')}>
+          <Stack gap="xs">
+            <SettingRow
+              icon="shield-checkmark-outline"
+              label={t('profile.trust_link')}
+              description={t('profile.trust_link_description')}
+              onPress={() => router.push(routes.trust)}
+              testID="trust-link"
+            />
+            <SettingRow
+              icon="document-text-outline"
+              label={t('profile.privacy_link')}
+              description={t('profile.privacy_link_description')}
+              onPress={() => router.push(routes.privacy)}
+              testID="privacy-link"
+            />
+          </Stack>
+        </Section>
 
-        <Stack gap="sm">
-          <Text size="lg" weight="bold" heading>
-            {t('profile.privacy_title')}
-          </Text>
-          <PrivacyNotice title={t('profile.privacy_blur_title')}>{t('profile.privacy_blur_body')}</PrivacyNotice>
-          <PrivacyNotice title={t('profile.privacy_typed_title')}>{t('profile.privacy_typed_body')}</PrivacyNotice>
-          <PrivacyNotice title={t('profile.privacy_choice_title')}>{t('profile.privacy_choice_body')}</PrivacyNotice>
-        </Stack>
+        <Section title={t('profile.account_title')}>
+          <Stack gap="sm">
+            <StyledButton
+              label={t('profile.logout')}
+              icon="log-out-outline"
+              variant="secondary"
+              onPress={() => void onLogout()}
+              isLoading={signOut.isPending}
+              testID="logout-button"
+            />
+            <DeleteAccountButton
+              onConfirm={onDeleteAccount}
+              isDeleting={deleteAccount.isPending}
+              disabled={signOut.isPending}
+              testID="delete-account-button"
+            />
+          </Stack>
+        </Section>
 
-        <StyledButton
-          label={t('profile.logout')}
-          icon="log-out-outline"
-          variant="secondary"
-          onPress={() => void onLogout()}
-          isLoading={signOut.isPending}
-          testID="logout-button"
-        />
-        <StyledButton
-          label={t('profile.delete_account')}
-          icon="trash-outline"
-          variant="ghost"
-          onPress={() => setIsDeleteOpen(true)}
-          disabled={signOut.isPending}
-          accessibilityHint={t('profile.delete_account_hint')}
-          testID="delete-account-button"
-        />
-        <Text size="sm" align="center" color={colors.textSubtle}>
-          {t('profile.version', { version: Constants.expoConfig?.version ?? '1.0.0' })}
+        <Text variant="caption" align="center" tone="subtle">
+          {t('profile.version', { version: Constants.expoConfig?.version ?? '2.0.0' })}
         </Text>
       </Stack>
-
-      <ConfirmDialog
-        visible={isDeleteOpen}
-        title={t('profile.delete_title')}
-        message={t('profile.delete_message')}
-        confirmLabel={t('profile.delete_account')}
-        destructive
-        isLoading={deleteAccount.isPending}
-        onConfirm={() => void onDeleteAccount()}
-        onCancel={() => setIsDeleteOpen(false)}
-      />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  tile: { flex: 1 },
-});

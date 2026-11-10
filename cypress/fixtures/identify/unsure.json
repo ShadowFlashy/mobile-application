@@ -1,0 +1,20 @@
+{
+  "status": "identified",
+  "provider": "cloudflare",
+  "remainingToday": 12,
+  "car": {
+    "make": "Porsche",
+    "model": "911",
+    "generation": "",
+    "bodyStyle": "coupe",
+    "color": "silver",
+    "confidence": 0.55,
+    "alternatives": [
+      { "make": "Porsche", "model": "911 GT3", "confidence": 0.3 },
+      { "make": "Mazda", "model": "MX-5", "confidence": 0.1 }
+    ],
+    "plates": [{ "x": 0.4, "y": 0.66, "width": 0.15, "height": 0.06 }],
+    "plateText": "",
+    "funFact": ""
+  }
+}

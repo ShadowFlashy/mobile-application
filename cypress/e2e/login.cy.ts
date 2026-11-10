@@ -12,6 +12,54 @@ describe('Login screen', () => {
     cy.get('[data-testid="login-button"]').should('exist');
   });
 
+  it('shows the REDLINE brand and no lecturer hint', () => {
+    cy.visit('/login');
+    cy.get('[data-testid="brand-wordmark"]').should('contain.text', 'Redline');
+    cy.get('[data-testid="brand-mark"]').should('exist');
+    cy.get('[data-testid="login-screen"]').should('not.contain.text', 'Lecturer');
+    cy.get('[data-testid="demo-hint"]').should('not.exist');
+  });
+
+  it('hydrates a hard load in Dutch without React errors and stays usable', () => {
+    // React reports hydration mismatches (#418/#422/#425) as uncaught errors, which fail this test.
+    const errors: string[] = [];
+    cy.on('window:before:load', (win) => {
+      win.addEventListener('error', (event) => errors.push(event.message));
+      const original = win.console.error.bind(win.console);
+      cy.stub(win.console, 'error').callsFake((...args: unknown[]) => {
+        errors.push(args.map(String).join(' '));
+        original(...args);
+      });
+    });
+    cy.visit('/login', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem('redline-language', 'nl');
+      },
+    });
+    cy.get('[data-testid="login-screen"]').should('contain.text', 'Welkom terug');
+    cy.get('[data-testid="email-input"]').should('not.be.disabled').type('lars@redline.test');
+    cy.get('[data-testid="email-input"]').should('have.value', 'lars@redline.test');
+    cy.wrap(errors).should((list) => {
+      expect(list.filter((message) => /Minified React error|hydrat/i.test(message))).to.deep.equal([]);
+    });
+  });
+
+  it('links to the privacy page', () => {
+    cy.visit('/login');
+    cy.get('[data-testid="go-to-privacy"]').click();
+    cy.location('pathname').should('eq', '/privacy');
+  });
+
+  it('loads the LIVERY fonts', () => {
+    cy.visit('/login');
+    cy.get('[data-testid="login-screen"]').should('be.visible');
+    cy.document().then((doc) =>
+      doc.fonts.load('16px BarlowCondensed_800ExtraBold_Italic').then(() => {
+        expect(doc.fonts.check('16px BarlowCondensed_800ExtraBold_Italic')).to.equal(true);
+      }),
+    );
+  });
+
   it('sends visitors who are not signed in to the login screen', () => {
     cy.visit('/');
     cy.location('pathname').should('eq', '/login');

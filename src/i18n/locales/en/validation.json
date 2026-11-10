@@ -1,0 +1,18 @@
+{
+  "email_invalid": "Enter a valid email address.",
+  "password_required": "Enter your password.",
+  "password_too_short": "Use at least {{min}} characters.",
+  "passwords_mismatch": "Passwords do not match.",
+  "username_invalid": "Use 3–24 letters, numbers, dots, dashes or underscores.",
+  "make_required": "Which brand is it?",
+  "make_too_long": "Keep the brand under 40 characters.",
+  "model_required": "Which model is it?",
+  "model_too_long": "Keep the model under 60 characters.",
+  "location_too_long": "Keep the location under 80 characters.",
+  "notes_too_long": "Keep your notes under 500 characters.",
+  "plate_invalid": "A plate has 2 to 12 letters or digits.",
+  "owner_make_required": "Which brand is your car?",
+  "owner_model_required": "Which model is your car?",
+  "nickname_too_long": "Keep the nickname under 40 characters.",
+  "owner_plate_invalid": "Enter your licence plate (2 to 12 letters or digits)."
+}

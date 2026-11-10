@@ -61,6 +61,8 @@ module.exports = {
   plugins: [reactNativeVitePlugin],
   esbuild: { jsx: 'automatic', jsxImportSource: 'react' },
   optimizeDeps: {
+    // Pre-bundled up front, so Vite does not re-optimise (and reload) in the middle of the first run.
+    include: ['react-native-svg', 'expo-linear-gradient'],
     esbuildOptions: {
       plugins: [reactNativeEsbuildPlugin],
       jsx: 'automatic',

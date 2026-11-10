@@ -1,0 +1,20 @@
+{
+  "status": "identified",
+  "provider": "cloudflare",
+  "remainingToday": 12,
+  "car": {
+    "make": "Porsche",
+    "model": "911 GT3",
+    "generation": "992",
+    "yearFrom": 2021,
+    "bodyStyle": "coupe",
+    "color": "blue",
+    "confidence": 0.94,
+    "catalogueId": "porsche-911-gt3",
+    "alternatives": [{ "make": "Porsche", "model": "911 GT3 RS", "confidence": 0.04 }],
+    "vehicleBox": { "x": 0.08, "y": 0.22, "width": 0.84, "height": 0.6 },
+    "plates": [{ "x": 0.42, "y": 0.62, "width": 0.16, "height": 0.07 }],
+    "plateText": "1ABC234",
+    "funFact": "The 992 GT3 revs to 9,000 rpm and still has a manual gearbox option."
+  }
+}

@@ -1,18 +1,17 @@
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { AuthLayout } from '../src/components/brand/AuthLayout';
+import { FormError } from '../src/components/brand/FormError';
 import { BrandHeader } from '../src/components/BrandHeader';
 import { EmptyState } from '../src/components/primitives/EmptyState';
 import { InputField } from '../src/components/primitives/InputField';
 import { Screen } from '../src/components/primitives/Screen';
-import { Stack } from '../src/components/primitives/Stack';
 import { Text } from '../src/components/primitives/Text';
 import { StyledButton } from '../src/components/StyledButton';
 import { routes } from '../src/constants/routes';
 import { getErrorMessage } from '../src/services/serviceError';
 import { useAuthStore } from '../src/state/useAuthStore';
-import { useTheme } from '../src/theme';
 import {
   hasErrors,
   PASSWORD_MIN_LENGTH,
@@ -26,7 +25,6 @@ const EMPTY_FORM: RegisterInput = { username: '', email: '', password: '', confi
 
 export default function RegisterScreen() {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const [form, setForm] = useState<RegisterInput>(EMPTY_FORM);
   const [errors, setErrors] = useState<FormErrors<keyof RegisterInput>>({});
   const [formError, setFormError] = useState<string>();
@@ -75,78 +73,82 @@ export default function RegisterScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen padding="lg" testID="register-screen">
-        <Stack gap="lg">
-          <BrandHeader subtitle={t('auth.register_tagline')} />
-          <InputField
-            label={t('auth.username_label')}
-            value={form.username}
-            onChangeText={(value) => updateField('username', value)}
-            placeholder={t('auth.username_placeholder')}
-            autoComplete="username"
-            textContentType="username"
-            hint={t('auth.username_hint')}
-            error={fieldError(errors.username)}
-            maxLength={24}
-            testID="username-input"
-          />
-          <InputField
-            label={t('auth.email_label')}
-            value={form.email}
-            onChangeText={(value) => updateField('email', value)}
-            placeholder={t('auth.email_placeholder')}
-            keyboardType="email-address"
-            autoComplete="email"
-            textContentType="emailAddress"
-            error={fieldError(errors.email)}
-            testID="register-email-input"
-          />
-          <InputField
-            label={t('auth.password_label')}
-            value={form.password}
-            onChangeText={(value) => updateField('password', value)}
-            secureTextEntry
-            autoComplete="new-password"
-            textContentType="newPassword"
-            hint={t('auth.password_hint', { min: PASSWORD_MIN_LENGTH })}
-            error={fieldError(errors.password)}
-            testID="register-password-input"
-          />
-          <InputField
-            label={t('auth.confirm_password_label')}
-            value={form.confirmPassword}
-            onChangeText={(value) => updateField('confirmPassword', value)}
-            secureTextEntry
-            autoComplete="new-password"
-            textContentType="newPassword"
-            error={fieldError(errors.confirmPassword)}
-            onSubmitEditing={() => void handleRegister()}
-            testID="register-confirm-input"
-          />
-          {formError !== undefined && (
-            <Text color={colors.danger} testID="register-error">
-              {formError}
-            </Text>
-          )}
-          <StyledButton
-            label={t('auth.register_button')}
-            onPress={() => void handleRegister()}
-            isLoading={isLoading}
-            testID="register-button"
-          />
+    <AuthLayout
+      testID="register-screen"
+      footer={
+        <>
           <StyledButton
             label={t('auth.go_to_login')}
             variant="ghost"
             onPress={() => router.replace(routes.login)}
             testID="go-to-login"
           />
-        </Stack>
-      </Screen>
-    </KeyboardAvoidingView>
+          <StyledButton
+            label={t('auth.privacy_link')}
+            variant="ghost"
+            icon="shield-checkmark-outline"
+            onPress={() => router.push(routes.privacy)}
+            testID="go-to-privacy"
+          />
+        </>
+      }
+    >
+      <BrandHeader subtitle={t('auth.register_tagline')} size="md" />
+      <Text variant="title" heading>
+        {t('auth.register_title')}
+      </Text>
+      <InputField
+        label={t('auth.username_label')}
+        value={form.username}
+        onChangeText={(value) => updateField('username', value)}
+        placeholder={t('auth.username_placeholder')}
+        autoComplete="username"
+        textContentType="username"
+        hint={t('auth.username_hint')}
+        error={fieldError(errors.username)}
+        maxLength={24}
+        testID="username-input"
+      />
+      <InputField
+        label={t('auth.email_label')}
+        value={form.email}
+        onChangeText={(value) => updateField('email', value)}
+        placeholder={t('auth.email_placeholder')}
+        keyboardType="email-address"
+        autoComplete="email"
+        textContentType="emailAddress"
+        error={fieldError(errors.email)}
+        testID="register-email-input"
+      />
+      <InputField
+        label={t('auth.password_label')}
+        value={form.password}
+        onChangeText={(value) => updateField('password', value)}
+        secureTextEntry
+        autoComplete="new-password"
+        textContentType="newPassword"
+        hint={t('auth.password_hint', { min: PASSWORD_MIN_LENGTH })}
+        error={fieldError(errors.password)}
+        testID="register-password-input"
+      />
+      <InputField
+        label={t('auth.confirm_password_label')}
+        value={form.confirmPassword}
+        onChangeText={(value) => updateField('confirmPassword', value)}
+        secureTextEntry
+        autoComplete="new-password"
+        textContentType="newPassword"
+        error={fieldError(errors.confirmPassword)}
+        onSubmitEditing={() => void handleRegister()}
+        testID="register-confirm-input"
+      />
+      <FormError message={formError} testID="register-error" />
+      <StyledButton
+        label={t('auth.register_button')}
+        onPress={() => void handleRegister()}
+        isLoading={isLoading}
+        testID="register-button"
+      />
+    </AuthLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-});

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, View } from 'react-native';
-import { createThemedStyles, radii, spacing, useTheme } from '../theme';
+import { createThemedStyles, spacing } from '../theme';
 import { Stack } from './primitives/Stack';
 import { Text } from './primitives/Text';
 import { StyledButton } from './StyledButton';
@@ -19,8 +19,8 @@ interface ConfirmDialogProps {
 }
 
 /**
- * Confirmation for critical actions such as deleting (course ch. 3: error prevention).
- * Replaces the browser-only alert()/confirm(), so it works the same on web and Android.
+ * Confirmation for critical actions such as deleting (error prevention). Replaces the browser-only
+ * alert()/confirm(), so it works the same on web and Android.
  */
 export function ConfirmDialog({
   visible,
@@ -34,17 +34,17 @@ export function ConfirmDialog({
   children,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const styles = useStyles();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
-        <View style={styles.dialog} accessibilityRole="alert" testID="confirm-dialog">
-          <Stack gap="md">
-            <Text size="xl" weight="bold" heading>
+        <View style={styles.dialog} accessibilityRole="alert" accessibilityViewIsModal testID="confirm-dialog">
+          <View style={[styles.stripe, destructive && styles.stripeDanger]} />
+          <Stack gap="md" padding="lg">
+            <Text variant="title" heading>
               {title}
             </Text>
-            <Text color={colors.textMuted}>{message}</Text>
+            <Text tone="muted">{message}</Text>
             {children}
             <StyledButton
               label={confirmLabel}
@@ -56,7 +56,7 @@ export function ConfirmDialog({
             <StyledButton
               label={t('common.cancel')}
               onPress={onCancel}
-              variant="ghost"
+              variant="secondary"
               testID="confirm-dialog-cancel"
             />
           </Stack>
@@ -66,7 +66,7 @@ export function ConfirmDialog({
   );
 }
 
-const useStyles = createThemedStyles(({ colors }) => ({
+const useStyles = createThemedStyles(({ colors, elevation, radii }) => ({
   backdrop: {
     flex: 1,
     backgroundColor: colors.overlay,
@@ -79,6 +79,9 @@ const useStyles = createThemedStyles(({ colors }) => ({
     maxWidth: 420,
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
-    padding: spacing.lg,
+    overflow: 'hidden',
+    ...elevation.floating,
   },
+  stripe: { height: 6, backgroundColor: colors.inverseSurface },
+  stripeDanger: { backgroundColor: colors.dangerFill },
 }));

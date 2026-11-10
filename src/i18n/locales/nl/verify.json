@@ -1,0 +1,12 @@
+{
+  "beta_title": "Geverifieerd door het Redline-team",
+  "beta_description": "Tijdens de bèta verifieert het Redline-team de eigenaars met de hand, na een controle buiten de app. Tot dan blijft je auto in behandeling en krijgt hij geen pings, geen statistieken en geen showcase. Automatische verificatie met een eenmalige code komt binnenkort.",
+  "verified_title": "Je bent een geverifieerde eigenaar",
+  "verified_description": "De Co-Driver van spotters herkent je auto nu, en je krijgt een ping telkens hij verzameld wordt.",
+  "back_to_car": "Terug naar mijn auto",
+  "code_label": "Je eenmalige code",
+  "code_a11y": "Verificatiecode {{code}}",
+  "expires_in": "Verloopt over {{time}}",
+  "expired": "Deze code is verlopen. Vraag een nieuwe aan.",
+  "code_instructions": "Schrijf deze code op papier of toon hem op een ander scherm, leg hem achter de voorruit en fotografeer de auto zodat de nummerplaat en de code allebei leesbaar zijn."
+}

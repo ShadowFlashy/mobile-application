@@ -1,11 +1,12 @@
 import { View, StyleSheet } from 'react-native';
-import { createThemedStyles, spacing } from '../../theme';
+import { borders, createThemedStyles, spacing } from '../../theme';
 
 interface DividerProps {
   orientation?: 'horizontal' | 'vertical';
   spacing?: 'none' | 'sm' | 'md' | 'lg';
 }
 
+/** A hairline between blocks of content. */
 export function Divider({ orientation = 'horizontal', spacing: space = 'none' }: DividerProps) {
   const styles = useStyles();
   const isHorizontal = orientation === 'horizontal';
@@ -22,8 +23,8 @@ export function Divider({ orientation = 'horizontal', spacing: space = 'none' }:
 
 const useStyles = createThemedStyles(({ colors }) => ({
   base: { backgroundColor: colors.border },
-  horizontal: { height: 1, width: '100%' },
-  vertical: { width: 1, height: '100%' },
+  horizontal: { height: borders.hairline, width: '100%' },
+  vertical: { width: borders.hairline, height: '100%' },
 }));
 
 const verticalMargins = StyleSheet.create({

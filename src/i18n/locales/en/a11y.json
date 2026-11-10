@@ -1,0 +1,10 @@
+{
+  "loading": "Loading",
+  "close_menu": "Close menu",
+  "avatar": "Avatar",
+  "avatar_of": "Avatar of {{name}}",
+  "nav_badge_one": "{{label}}, {{count}} new notification",
+  "nav_badge_other": "{{label}}, {{count}} new notifications",
+  "remove_tag": "Remove {{label}}",
+  "unread": "Unread"
+}

@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react';
-import { useTheme } from '../theme';
-import { Card } from './primitives/Card';
 import { Icon } from './primitives/Icon';
 import { Row } from './primitives/Row';
 import { Stack } from './primitives/Stack';
+import { Surface } from './primitives/Surface';
 import { Text } from './primitives/Text';
 
 interface PrivacyNoticeProps {
@@ -14,22 +13,19 @@ interface PrivacyNoticeProps {
   testID?: string;
 }
 
-/** Explains a privacy rule right where it matters (GDPR transparency, course ch. 23). */
+/** Explains a privacy rule right where it matters (GDPR transparency). */
 export function PrivacyNotice({ title, children, testID }: PrivacyNoticeProps) {
-  const { colors } = useTheme();
   return (
-    <Card variant="muted" testID={testID}>
-      <Stack padding="md">
-        <Row gap="md" align="flex-start">
-          <Icon name="shield-checkmark-outline" size={22} color={colors.success} />
-          <Stack gap="xs" flex={1}>
-            <Text weight="bold">{title}</Text>
-            <Text size="sm" color={colors.textMuted}>
-              {children}
-            </Text>
-          </Stack>
-        </Row>
-      </Stack>
-    </Card>
+    <Surface variant="sunken" padding="md" testID={testID}>
+      <Row gap="smd" align="flex-start">
+        <Icon name="shield-checkmark" size={22} tone="success" />
+        <Stack gap="xxs" flex={1}>
+          <Text variant="bodyStrong">{title}</Text>
+          <Text variant="bodySm" tone="muted">
+            {children}
+          </Text>
+        </Stack>
+      </Row>
+    </Surface>
   );
 }

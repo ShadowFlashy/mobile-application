@@ -1,5 +1,5 @@
 import { Pressable, View } from 'react-native';
-import { createThemedStyles, radii, spacing, touchTarget, useTheme } from '../../theme';
+import { borders, createThemedStyles, spacing, touchTarget, useTheme } from '../../theme';
 import { Icon } from './Icon';
 import { Text } from './Text';
 
@@ -28,30 +28,31 @@ export function Checkbox({ label, checked, onChange, disabled = false, testID }:
         {checked && <Icon name="checkmark" size={16} color={colors.onPrimary} />}
       </View>
       <View style={styles.label}>
-        <Text size="md">{label}</Text>
+        <Text variant="body">{label}</Text>
       </View>
     </Pressable>
   );
 }
 
-const useStyles = createThemedStyles(({ colors }) => ({
+const useStyles = createThemedStyles(({ colors, radii }) => ({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.smd,
     minHeight: touchTarget,
   },
   box: {
-    width: 22,
-    height: 22,
+    width: 24,
+    height: 24,
     borderRadius: radii.sm,
-    borderWidth: 2,
+    borderWidth: borders.strong,
     borderColor: colors.borderStrong,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  boxChecked: { backgroundColor: colors.primary, borderColor: colors.primary },
+  // A ticked box is green with a check mark: "done", and not a second red next to the main action.
+  boxChecked: { backgroundColor: colors.successFill, borderColor: colors.successFill },
   label: { flex: 1 },
   disabled: { opacity: 0.5 },
 }));

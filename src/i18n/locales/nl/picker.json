@@ -1,0 +1,12 @@
+{
+  "label": "Welke auto is het?",
+  "placeholder": "Zoek, bv. vw golf, lambo, eend",
+  "hint": "Zoek in het album. Bijnamen werken ook.",
+  "hint_other": "Niet in het album? Vul hieronder het merk en model in.",
+  "sticker_number": "Sticker nr. {{number}}",
+  "change": "Wijzigen",
+  "choose": "{{car}} kiezen",
+  "no_results": "Geen sticker gevonden voor “{{query}}”.",
+  "not_in_album": "Niet in het album",
+  "not_in_album_hint": "Bewaart de auto als wildcard"
+}

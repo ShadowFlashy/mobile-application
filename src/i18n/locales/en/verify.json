@@ -1,0 +1,12 @@
+{
+  "beta_title": "Verified by the Redline team",
+  "beta_description": "During the beta the Redline team verifies owners by hand, after a check outside the app. Until then your car stays Pending verification and gets no pings, no stats and no showcase. Automatic verification with a one-time code is coming soon.",
+  "verified_title": "You are a verified owner",
+  "verified_description": "Spotters' Co-Driver can now recognise your car, and you get a ping every time it is collected.",
+  "back_to_car": "Back to my car",
+  "code_label": "Your one-time code",
+  "code_a11y": "Verification code {{code}}",
+  "expires_in": "Expires in {{time}}",
+  "expired": "This code has expired. Request a new one.",
+  "code_instructions": "Write this code on paper or show it on another screen, put it behind the windscreen and photograph the car so the plate and the code are both readable."
+}

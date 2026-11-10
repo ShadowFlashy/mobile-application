@@ -1,0 +1,26 @@
+{
+  "not_found": "Sticker not found",
+  "not_found_description": "This sticker is not in the album.",
+  "title_line": "#{{number}} · {{car}}",
+  "sticker_number": "Sticker #{{number}}",
+  "spotted_status_one": "Spotted once · first on {{date}}",
+  "spotted_status_other": "Spotted ×{{count}} · first on {{date}}",
+  "years_range": "{{from}}–{{to}}",
+  "years_since": "Since {{from}}",
+  "worth": "Worth +{{xp}} XP",
+  "locked_title": "Still hunting",
+  "locked_description": "Spot the {{car}} in real life to stick it in your album.",
+  "spot_it": "Spot it",
+  "your_spots": "Your spots",
+  "first_spot": "First",
+  "spot_photo_label": "Your spot of {{date}}",
+  "in_sets": "In these collections",
+  "fun_fact_title": "Did you know?",
+  "rarity_title": "How rare is {{rarity}}?",
+  "rarity_explainer": {
+    "common": "Common cars are on every high street. A good first sticker for any page.",
+    "rare": "Rare cars take a sharp eye: think enthusiast car parks and the odd Sunday drive.",
+    "epic": "Epic cars mean a lucky day. Check car meets, dealerships and city centres on a sunny weekend.",
+    "legendary": "Legendary cars are the chase stickers. A handful exist in the whole country, so keep your camera ready."
+  }
+}

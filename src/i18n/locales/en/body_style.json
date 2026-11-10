@@ -1,0 +1,12 @@
+{
+  "hatchback": "Hatchback",
+  "sedan": "Sedan",
+  "wagon": "Estate",
+  "coupe": "Coupé",
+  "convertible": "Convertible",
+  "suv": "SUV",
+  "pickup": "Pick-up",
+  "van": "Van",
+  "supercar": "Supercar",
+  "other": "Other"
+}

@@ -1,0 +1,16 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { Sheet } from './Sheet';
+import { Text } from './Text';
+
+const meta: Meta<typeof Sheet> = { title: 'Primitives/Sheet', component: Sheet };
+export default meta;
+type Story = StoryObj<typeof Sheet>;
+
+export const Open: Story = {
+  args: {
+    visible: true,
+    title: 'Co-Driver',
+    onClose: () => undefined,
+    children: <Text>Co-Driver sends a blurred, downscaled photo to the AI. Nothing is stored there.</Text>,
+  },
+};

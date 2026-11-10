@@ -1,0 +1,5 @@
+{
+  "sticker_number": "#{{number}}",
+  "step_progress": "Stap {{current}} van {{total}}: {{step}}",
+  "close_sheet": "{{title}} sluiten"
+}

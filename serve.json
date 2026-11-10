@@ -3,21 +3,113 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/garage/new",
+      "destination": "/garage/new.html"
+    },
+    {
+      "source": "/garage/:carId/verify",
+      "destination": "/garage/[carId]/verify.html"
+    },
+    {
+      "source": "/garage/:carId([^/.]+)",
+      "destination": "/garage/[carId].html"
+    },
+    {
+      "source": "/reveal/:spotId",
+      "destination": "/reveal/[spotId].html"
+    },
+    {
+      "source": "/sighting/:id",
+      "destination": "/sighting/[id].html"
+    },
+    {
       "source": "/details/:id",
       "destination": "/details/[id].html"
     },
     {
       "source": "/sticker/:id",
       "destination": "/sticker/[id].html"
+    },
+    {
+      "source": "/share/:spotId",
+      "destination": "/share/[spotId].html"
+    },
+    {
+      "source": "/album/collection/:id",
+      "destination": "/album/collection/[id].html"
+    },
+    {
+      "source": "/album/:page",
+      "destination": "/album/[page].html"
     }
   ],
   "headers": [
     {
-      "source": "/sw.js",
+      "source": "sw.js",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "no-cache"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    },
+    {
+      "source": "manifest.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "assets/**",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "_expo/static/**",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "**",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), geolocation=(self), microphone=()"
         }
       ]
     }

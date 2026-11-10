@@ -2,8 +2,7 @@ import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { Platform } from 'react-native';
-import en from './locales/en.json';
-import nl from './locales/nl.json';
+import { en, nl } from './resources';
 
 /**
  * Internationalisation (course ch. 20): no user-facing text is hardcoded in JSX, every string

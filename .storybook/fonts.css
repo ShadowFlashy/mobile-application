@@ -1,0 +1,28 @@
+/* LIVERY fonts for Storybook (SPEC §7.12). The family names equal the names expo-font registers in the
+   app, so the same textVariants resolve here without importing the .ttf modules. */
+@font-face {
+  font-family: 'BarlowCondensed_700Bold';
+  src: url('../node_modules/@expo-google-fonts/barlow-condensed/700Bold/BarlowCondensed_700Bold.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BarlowCondensed_800ExtraBold_Italic';
+  src: url('../node_modules/@expo-google-fonts/barlow-condensed/800ExtraBold_Italic/BarlowCondensed_800ExtraBold_Italic.ttf')
+    format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow_400Regular';
+  src: url('../node_modules/@expo-google-fonts/barlow/400Regular/Barlow_400Regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow_500Medium';
+  src: url('../node_modules/@expo-google-fonts/barlow/500Medium/Barlow_500Medium.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow_700Bold';
+  src: url('../node_modules/@expo-google-fonts/barlow/700Bold/Barlow_700Bold.ttf') format('truetype');
+  font-display: swap;
+}

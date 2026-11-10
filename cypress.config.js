@@ -11,6 +11,10 @@ module.exports = defineConfig({
     viewportHeight: 844,
     video: false,
     defaultCommandTimeout: 10000,
+    // Keep the build's real Content-Security-Policy (dist/serve.json) in force, so the photo upload,
+    // the EXIF read and every Supabase call are tested under connect-src / img-src. With `true`
+    // Cypress still strips the directives it cannot run under (script-src, default-src, frame-src…).
+    experimentalCspAllowList: true,
     setupNodeEvents() {},
   },
   // Unit tests (pure functions) and component tests, both with Cypress as the course recommends.

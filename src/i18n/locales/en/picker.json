@@ -1,0 +1,12 @@
+{
+  "label": "Which car is it?",
+  "placeholder": "Search, e.g. vw golf, lambo, eend",
+  "hint": "Search the album. Nicknames work too.",
+  "hint_other": "Not in the album? Fill in the brand and model below.",
+  "sticker_number": "Sticker #{{number}}",
+  "change": "Change",
+  "choose": "Choose {{car}}",
+  "no_results": "No sticker matches “{{query}}”.",
+  "not_in_album": "Not in the album",
+  "not_in_album_hint": "Saves the car as a wildcard"
+}

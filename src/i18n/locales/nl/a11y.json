@@ -1,0 +1,10 @@
+{
+  "loading": "Bezig met laden",
+  "close_menu": "Menu sluiten",
+  "avatar": "Avatar",
+  "avatar_of": "Avatar van {{name}}",
+  "nav_badge_one": "{{label}}, {{count}} nieuwe melding",
+  "nav_badge_other": "{{label}}, {{count}} nieuwe meldingen",
+  "remove_tag": "{{label}} verwijderen",
+  "unread": "Ongelezen"
+}

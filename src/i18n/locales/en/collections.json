@@ -1,0 +1,37 @@
+{
+  "jdm-legends": {
+    "title": "Japanese JDM Legends",
+    "description": "Rotaries, twin-turbo straight-sixes and rally weapons: from the AE86 drifting down a mountain pass to the Supra that launched a thousand posters."
+  },
+  "american-muscle": {
+    "title": "American Muscle & Classics",
+    "description": "Big-block V8s, long bonnets and burnouts at the lights. From the Model T that put America on wheels to the Viper that tried to bite back."
+  },
+  "autobahn-heroes": {
+    "title": "German Autobahn Heroes",
+    "description": "Built for the derestricted stretch where the white sign with the black stripes means flat out. Quattro grip, M power and Stuttgart flat-sixes."
+  },
+  "italian-exotics": {
+    "title": "Italian Exotics",
+    "description": "Prancing horses, raging bulls and a trident: pure drama on wheels. Find the 308 GTSi a certain private investigator drove around Hawaii."
+  },
+  "british-icons": {
+    "title": "British Icons",
+    "description": "From the Mini to the DB5: tweed, torque and a stiff upper lip. Expect hand-built engines, green paint and a little bit of drizzle."
+  },
+  "hot-hatch-heroes": {
+    "title": "Hot Hatch Heroes",
+    "description": "Small cars, big grins. The pocket rockets that rule every B-road, from the 205 GTI to a Yaris that was built to win rallies."
+  },
+  "electric-era": {
+    "title": "Electric Era",
+    "description": "Silent, instant and seriously quick. The cars that pulled the plug on petrol, from the little i3 to a Croatian hypercar with four motors."
+  },
+  "hypercar-hall-of-fame": {
+    "title": "Hypercar Hall of Fame",
+    "description": "The fastest, rarest and wildest machines ever to wear a number plate. Spot one and the whole car park turns its head."
+  },
+  "fun_facts": {
+    "ferrari-308-gtsi": "The fuel-injected targa that Thomas Magnum drove in Magnum, P.I.: the \"i\" in GTSi stands for injection."
+  }
+}

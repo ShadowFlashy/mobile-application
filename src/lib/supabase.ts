@@ -19,9 +19,16 @@ if (supabaseUrl.length === 0 || supabaseAnonKey.length === 0) {
   );
 }
 
+/**
+ * Key under which the session is persisted (Supabase's own default, made explicit so the offline
+ * session fallback in authService can read the stored session JSON): `sb-<project-ref>-auth-token`.
+ */
+export const AUTH_STORAGE_KEY = `sb-${new URL(supabaseUrl).hostname.split('.')[0] ?? 'redline'}-auth-token`;
+
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: authStorage,
+    storageKey: AUTH_STORAGE_KEY,
     autoRefreshToken: true,
     persistSession: true,
     // Email confirmation links open the web app with the session in the URL.

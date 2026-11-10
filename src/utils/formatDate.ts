@@ -1,9 +1,8 @@
+import { DAY, HOUR, MINUTE } from '../constants/time';
+
 /**
  * Date formatting with the Intl API in the user's language (course ch. 20: never format dates by hand).
  */
-const MINUTE = 60 * 1000;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
 
 function toDate(iso: string): Date | undefined {
   const date = new Date(iso);

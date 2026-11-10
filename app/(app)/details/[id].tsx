@@ -1,37 +1,37 @@
-import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { AlbumSkeleton } from '../../../src/components/album/AlbumSkeleton';
+import { PaintSwatch } from '../../../src/components/capture/PaintSwatch';
+import { ProvenanceTag } from '../../../src/components/capture/ProvenanceTag';
 import { ConfirmDialog } from '../../../src/components/ConfirmDialog';
-import { Badge } from '../../../src/components/primitives/Badge';
+import { OwnerShowcase } from '../../../src/components/garage/OwnerShowcase';
 import { EmptyState } from '../../../src/components/primitives/EmptyState';
-import { Icon } from '../../../src/components/primitives/Icon';
+import { PhotoFrame } from '../../../src/components/primitives/PhotoFrame';
 import { Row } from '../../../src/components/primitives/Row';
 import { Screen } from '../../../src/components/primitives/Screen';
-import { Skeleton } from '../../../src/components/primitives/Skeleton';
+import { Section } from '../../../src/components/primitives/Section';
 import { Stack } from '../../../src/components/primitives/Stack';
+import { Tag } from '../../../src/components/primitives/Tag';
 import { Text } from '../../../src/components/primitives/Text';
 import { RarityBadge } from '../../../src/components/RarityBadge';
 import { StyledButton } from '../../../src/components/StyledButton';
-import { VanityPlate } from '../../../src/components/VanityPlate';
 import { routes } from '../../../src/constants/routes';
 import { useCarModels } from '../../../src/hooks/useCarModels';
 import { useNetworkStatus } from '../../../src/hooks/useNetworkStatus';
-import { useDeleteSpot, useSpot } from '../../../src/hooks/useSpots';
+import { useDeleteSpot, useSpot, useSpotShowcase } from '../../../src/hooks/useSpots';
 import { getErrorMessage } from '../../../src/services/serviceError';
 import { useAuthStore } from '../../../src/state/useAuthStore';
 import { useToastStore } from '../../../src/state/useToastStore';
-import { createThemedStyles, radii, useTheme } from '../../../src/theme';
 import { formatDate, formatRelativeDate } from '../../../src/utils/formatDate';
 
+/** One spot: the redacted photo, identity, provenance, city and date, notes, owner showcase, delete. */
 export default function SpotDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
-  const styles = useStyles();
   const spotQuery = useSpot(id);
   const { data: carModels } = useCarModels();
+  const showcase = useSpotShowcase(id).data;
   const { isOnline } = useNetworkStatus();
   const userId = useAuthStore((state) => state.user?.id);
   const deleteSpot = useDeleteSpot();
@@ -41,17 +41,13 @@ export default function SpotDetailScreen() {
   if (spotQuery.isPending) {
     return (
       <Screen testID="spot-detail-loading">
-        <Stack gap="md">
-          <Skeleton height={240} borderRadius={radii.md} />
-          <Skeleton width="60%" height={24} />
-          <Skeleton width="40%" height={16} />
-        </Stack>
+        <AlbumSkeleton variant="page" />
       </Screen>
     );
   }
 
   const spot = spotQuery.data;
-  // Offline, a failed refresh keeps showing the cached spot (course ch. 22: read-only offline).
+  // Offline, a failed refresh keeps showing the cached spot (read-only offline).
   if (spot === undefined || (spotQuery.isError && isOnline)) {
     return (
       <Screen>
@@ -63,32 +59,45 @@ export default function SpotDetailScreen() {
               ? getErrorMessage(spotQuery.error, 'spot_not_found')
               : t('spot_detail.not_found_description')
           }
-          action={<StyledButton label={t('common.back_to_sticker_book')} onPress={() => router.replace(routes.home)} />}
+          action={<StyledButton label={t('album.back_to_album')} onPress={() => router.replace(routes.home)} />}
           testID="spot-not-found"
         />
       </Screen>
     );
   }
 
-  const carName = `${spot.make} ${spot.model}`;
+  const car = `${spot.make} ${spot.model}`;
   const carModel = carModels?.find((model) => model.id === spot.carModelId);
   const isOwnSpot = spot.userId === userId;
   const relative = formatRelativeDate(spot.spottedAt, i18n.language);
   const date = formatDate(spot.spottedAt, i18n.language);
   // After a week the relative date is the date itself: then it is shown only once.
-  const spottedText =
+  const spotted =
     relative === date ? t('spot_detail.spotted_on', { date }) : t('spot_detail.spotted_ago', { relative, date });
+  const years =
+    spot.yearFrom === undefined
+      ? undefined
+      : spot.yearTo !== undefined
+        ? t('spot_detail.years_range', { from: spot.yearFrom, to: spot.yearTo })
+        : t('spot_detail.years_since', { from: spot.yearFrom });
+  const provenance =
+    spot.identifiedBy === 'ai'
+      ? spot.aiConfidence !== undefined
+        ? t('spot_detail.provenance_ai', { percent: Math.round(spot.aiConfidence * 100) })
+        : t('spot_detail.provenance_ai_plain')
+      : spot.identifiedBy === 'ai_edited'
+        ? t('spot_detail.provenance_edited')
+        : t('spot_detail.provenance_manual');
 
-  // Optimistic delete: the spot leaves the sticker book at once, so the screen goes back right away
-  // (once deleted, this spot can no longer be loaded here). If deleting fails, the spot comes back
-  // and the toast explains why.
+  // Optimistic delete: the spot leaves the album at once, so the screen goes back right away. If
+  // deleting fails, the spot comes back and the toast explains why.
   const onDelete = async () => {
     setIsConfirmOpen(false);
     if (router.canGoBack()) router.back();
     else router.replace(routes.home);
     try {
       await deleteSpot.mutateAsync(spot);
-      showToast(t('spot_detail.deleted_toast'));
+      showToast(t('spot_detail.deleted_toast'), 'success');
     } catch (error) {
       showToast(getErrorMessage(error, 'delete_spot'), 'error');
     }
@@ -97,57 +106,68 @@ export default function SpotDetailScreen() {
   return (
     <Screen testID="spot-detail-screen">
       <Stack gap="lg">
-        <View style={styles.photoFrame}>
-          {spot.photoUrl !== undefined ? (
-            <Image
-              source={{ uri: spot.photoUrl, cacheKey: spot.photoPath }}
-              contentFit="contain"
-              style={styles.photo}
-              accessibilityLabel={t('spot_detail.photo_label', { car: carName })}
-              testID="spot-photo"
-            />
-          ) : (
-            <Icon name="image-outline" size={48} color={colors.textSubtle} />
-          )}
-        </View>
+        <PhotoFrame
+          uri={spot.photoUrl}
+          cacheKey={spot.photoPath}
+          fit="contain"
+          accessibilityLabel={t('spot_detail.photo_label', { car })}
+          testID="spot-photo"
+        />
 
         <Stack gap="sm">
-          {carModel !== undefined && (
-            <Row gap="sm">
-              <Badge label={t('spot_detail.sticker_number', { number: carModel.stickerNumber })} variant="primary" />
-              <RarityBadge rarity={carModel.rarity} />
-            </Row>
-          )}
-          <Text size="xxl" weight="bold" heading testID="spot-title">
-            {carName}
+          <Row gap="sm" wrap>
+            {carModel !== undefined ? (
+              <>
+                <Tag
+                  label={t('spot_detail.sticker_number', { number: carModel.stickerNumber })}
+                  icon="albums-outline"
+                  onPress={() => router.push(routes.sticker(carModel.id))}
+                  testID="spot-sticker-link"
+                />
+                <RarityBadge rarity={carModel.rarity} />
+              </>
+            ) : (
+              <Tag label={t('spot_detail.wildcard')} icon="help-circle-outline" tone="accent" />
+            )}
+          </Row>
+          <Text variant="display" heading testID="spot-title">
+            {car}
           </Text>
-          <Text color={colors.textMuted} testID="spot-meta">
-            {spottedText}
-          </Text>
-          {spot.locationLabel !== undefined && (
-            <Row gap="xs">
-              <Icon name="location-outline" size={16} color={colors.textMuted} />
-              <Text color={colors.textMuted} testID="spot-location">
-                {spot.locationLabel}
-              </Text>
-            </Row>
-          )}
+          <Row gap="sm" wrap testID="spot-chips">
+            {spot.generation !== undefined && <Tag label={spot.generation} />}
+            {years !== undefined && <Tag label={years} icon="calendar-outline" />}
+            <PaintSwatch paint={spot.paint} size="sm" />
+            <Tag label={t(`body_style.${spot.bodyStyle}`)} icon="car-sport-outline" />
+          </Row>
         </Stack>
 
-        {spot.ownerCarId !== undefined && (
-          <Stack gap="sm">
-            <Badge label={t('spot_detail.owner_badge')} variant="success" />
-            {spot.vanityPlate !== undefined && <VanityPlate plate={spot.vanityPlate} />}
-          </Stack>
+        <Stack gap="xs">
+          <Row gap="sm">
+            <ProvenanceTag provenance={spot.identifiedBy === 'ai' ? 'ai' : 'user'} />
+            <Text variant="bodySm" tone="muted" testID="spot-provenance">
+              {provenance}
+            </Text>
+          </Row>
+          <Text tone="muted" testID="spot-meta">
+            {spot.city !== undefined ? `${spot.city} · ${spotted}` : spotted}
+          </Text>
+          <Text variant="caption" tone="subtle" testID="spot-plates">
+            {spot.platesHidden > 0
+              ? t('spot_detail.plates_hidden', { count: spot.platesHidden })
+              : t('spot_detail.plates_none')}
+          </Text>
+        </Stack>
+
+        {showcase !== undefined && (
+          <Section title={t('spot_detail.showcase_title')} testID="spot-owner-showcase">
+            <OwnerShowcase showcase={showcase} />
+          </Section>
         )}
 
-        {spot.notes !== undefined && (
-          <Stack gap="xs">
-            <Text weight="bold" heading>
-              {t('spot_detail.notes')}
-            </Text>
+        {isOwnSpot && spot.notes !== undefined && (
+          <Section title={t('spot_detail.notes')} testID="spot-notes">
             <Text>{spot.notes}</Text>
-          </Stack>
+          </Section>
         )}
 
         {isOwnSpot && (
@@ -174,16 +194,3 @@ export default function SpotDetailScreen() {
     </Screen>
   );
 }
-
-const useStyles = createThemedStyles(({ colors }) => ({
-  photoFrame: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: radii.md,
-    overflow: 'hidden',
-    backgroundColor: colors.photoBackdrop,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  photo: { width: '100%', height: '100%' },
-}));

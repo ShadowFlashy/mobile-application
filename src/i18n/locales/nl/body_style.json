@@ -1,0 +1,12 @@
+{
+  "hatchback": "Hatchback",
+  "sedan": "Sedan",
+  "wagon": "Break",
+  "coupe": "Coupé",
+  "convertible": "Cabrio",
+  "suv": "SUV",
+  "pickup": "Pick-up",
+  "van": "Bestelwagen",
+  "supercar": "Supercar",
+  "other": "Anders"
+}

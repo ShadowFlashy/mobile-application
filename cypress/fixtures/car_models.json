@@ -5,7 +5,12 @@
     "make": "Volkswagen",
     "model": "Golf GTI",
     "category": "icon",
-    "rarity": "common"
+    "rarity": "common",
+    "body_style": "hatchback",
+    "country": "DE",
+    "season": 1,
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "porsche-911-gt3",
@@ -13,7 +18,12 @@
     "make": "Porsche",
     "model": "911 GT3",
     "category": "sports",
-    "rarity": "rare"
+    "rarity": "rare",
+    "body_style": "coupe",
+    "country": "DE",
+    "season": 1,
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "ferrari-296-gtb",
@@ -21,7 +31,12 @@
     "make": "Ferrari",
     "model": "296 GTB",
     "category": "supercar",
-    "rarity": "epic"
+    "rarity": "epic",
+    "body_style": "supercar",
+    "country": "IT",
+    "season": 1,
+    "year_from": null,
+    "year_to": null
   },
   {
     "id": "bugatti-chiron",
@@ -29,15 +44,37 @@
     "make": "Bugatti",
     "model": "Chiron",
     "category": "hypercar",
-    "rarity": "legendary"
+    "rarity": "legendary",
+    "body_style": "supercar",
+    "country": "FR",
+    "season": 1,
+    "year_from": null,
+    "year_to": null
   },
-  { "id": "mazda-mx-5", "sticker_number": 34, "make": "Mazda", "model": "MX-5", "category": "jdm", "rarity": "common" },
+  {
+    "id": "mazda-mx-5",
+    "sticker_number": 34,
+    "make": "Mazda",
+    "model": "MX-5",
+    "category": "jdm",
+    "rarity": "common",
+    "body_style": "convertible",
+    "country": "JP",
+    "season": 1,
+    "year_from": null,
+    "year_to": null
+  },
   {
     "id": "tesla-model-3",
     "sticker_number": 43,
     "make": "Tesla",
     "model": "Model 3",
     "category": "electric",
-    "rarity": "common"
+    "rarity": "common",
+    "body_style": "sedan",
+    "country": "US",
+    "season": 1,
+    "year_from": null,
+    "year_to": null
   }
 ]

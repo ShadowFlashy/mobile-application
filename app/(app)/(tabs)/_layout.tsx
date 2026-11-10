@@ -2,23 +2,24 @@ import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { BottomTabBar } from '../../../src/components/BottomTabBar';
 import { useUnreadPingCount } from '../../../src/hooks/usePings';
-import { useTheme } from '../../../src/theme';
+import { useNavigatorTheme } from '../../../src/theme';
 
-/** The four main sections, with the custom tab bar in the thumb zone (course ch. 3). */
+/**
+ * The five main sections: Album, Pit Wall, the raised SPOT Ignition button, Garage (with the unread
+ * sightings badge) and Me. The tab bar lives in the thumb zone; its styling comes from tokens.
+ */
 export default function TabsLayout() {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { tabs } = useNavigatorTheme();
   const unreadCount = useUnreadPingCount();
 
   return (
-    <Tabs
-      screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.background } }}
-      tabBar={(props) => <BottomTabBar {...props} badges={{ owners: unreadCount }} />}
-    >
-      <Tabs.Screen name="index" options={{ title: t('shell.tab_sticker_book') }} />
+    <Tabs screenOptions={tabs} tabBar={(props) => <BottomTabBar {...props} badges={{ owners: unreadCount }} />}>
+      <Tabs.Screen name="index" options={{ title: t('shell.tab_album') }} />
+      <Tabs.Screen name="progress" options={{ title: t('shell.tab_pit_wall') }} />
       <Tabs.Screen name="spot" options={{ title: t('shell.tab_spot') }} />
-      <Tabs.Screen name="owners" options={{ title: t('shell.tab_owners') }} />
-      <Tabs.Screen name="profile" options={{ title: t('shell.tab_profile') }} />
+      <Tabs.Screen name="owners" options={{ title: t('shell.tab_garage') }} />
+      <Tabs.Screen name="profile" options={{ title: t('shell.tab_me') }} />
     </Tabs>
   );
 }

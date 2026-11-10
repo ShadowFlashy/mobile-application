@@ -8,6 +8,10 @@
 import { ServiceError } from '../services/serviceError';
 import type { PickedPhoto, PlateRegion, RedactedPhoto } from '../types/Spot';
 
-export async function redactPhoto(_photo: PickedPhoto, _regions: PlateRegion[]): Promise<RedactedPhoto> {
+export async function redactPhoto(
+  _photo: PickedPhoto,
+  _regions: PlateRegion[],
+  _maxSide?: number,
+): Promise<RedactedPhoto> {
   throw new ServiceError('native_redaction_unavailable');
 }

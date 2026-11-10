@@ -1,0 +1,61 @@
+import { Image } from 'expo-image';
+import type { ReactNode } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { aspect, createThemedStyles, durations } from '../../theme';
+
+interface PhotoFrameProps {
+  uri?: string;
+  /** Stable cache key (e.g. the storage path), so a re-signed URL is not downloaded again. */
+  cacheKey?: string;
+  /** Default 4/3. Fixed ratios keep the layout from shifting while photos load. */
+  aspectRatio?: number;
+  /** Default `cover`. */
+  fit?: 'cover' | 'contain';
+  overlay?: ReactNode;
+  /** Default `md`. `stickerInner` sits concentric inside a sticker. */
+  radius?: 'none' | 'md' | 'lg' | 'stickerInner';
+  accessibilityLabel: string;
+  testID?: string;
+}
+
+/** A photo on a black backdrop with a fixed aspect ratio and a 200 ms fade-in (expo-image). */
+export function PhotoFrame({
+  uri,
+  cacheKey,
+  aspectRatio = aspect.photo,
+  fit = 'cover',
+  overlay,
+  radius = 'md',
+  accessibilityLabel,
+  testID,
+}: PhotoFrameProps) {
+  const styles = useStyles();
+  return (
+    <View
+      style={[styles.frame, styles[radius], { aspectRatio }]}
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+    >
+      {uri !== undefined && (
+        <Image
+          source={cacheKey !== undefined ? { uri, cacheKey } : { uri }}
+          style={StyleSheet.absoluteFill}
+          contentFit={fit}
+          transition={durations.base}
+          accessible={false}
+        />
+      )}
+      {overlay !== undefined && <View style={StyleSheet.absoluteFill}>{overlay}</View>}
+    </View>
+  );
+}
+
+const useStyles = createThemedStyles(({ colors, radii }) => ({
+  frame: { width: '100%', overflow: 'hidden', backgroundColor: colors.photoBackdrop },
+  none: { borderRadius: 0 },
+  md: { borderRadius: radii.md },
+  lg: { borderRadius: radii.lg },
+  stickerInner: { borderRadius: radii.stickerInner },
+}));

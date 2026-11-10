@@ -1,8 +1,8 @@
-import type en from '../i18n/locales/en.json';
+import type { Resources } from '../i18n/resources';
 import { isValidPlate } from './plate';
 
 /** Key of a validation message in the translation files (validation.*). */
-export type ValidationKey = keyof (typeof en)['validation'];
+export type ValidationKey = keyof Resources['validation'];
 
 /** Field name -> validation message key. An empty object means the form is valid. */
 export type FormErrors<Field extends string> = Partial<Record<Field, ValidationKey>>;

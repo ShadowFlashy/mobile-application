@@ -1,43 +1,28 @@
-import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
-import { createThemedStyles, radii, useTheme } from '../theme';
-import { Icon } from './primitives/Icon';
+import { BrandMark } from './brand/BrandMark';
+import { Wordmark } from './brand/Wordmark';
 import { Row } from './primitives/Row';
 import { Stack } from './primitives/Stack';
 import { Text } from './primitives/Text';
 
 interface BrandHeaderProps {
-  /** Already translated tagline under the app name. */
+  /** Already translated tagline under the wordmark. */
   subtitle: string;
+  /** `md` for compact headers. Default `lg`. */
+  size?: 'md' | 'lg';
+  testID?: string;
 }
 
-/** App name and logo mark, used on the login and register screens. */
-export function BrandHeader({ subtitle }: BrandHeaderProps) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-  const styles = useStyles();
+/** The BrandMark sticker next to the REDLINE wordmark, with a tagline (login and register). */
+export function BrandHeader({ subtitle, size = 'lg', testID }: BrandHeaderProps) {
   return (
-    <Stack gap="sm">
-      <Row gap="sm">
-        <View style={styles.logo}>
-          <Icon name="speedometer" size={26} color={colors.onPrimary} />
-        </View>
-        <Text size="xxl" weight="bold" heading>
-          {t('common.app_name')}
-        </Text>
+    <Stack gap="smd" testID={testID}>
+      <Row gap="smd" align="center">
+        <BrandMark size={size === 'lg' ? 56 : 44} testID="brand-mark" />
+        <Wordmark size={size} testID="brand-wordmark" />
       </Row>
-      <Text color={colors.textMuted}>{subtitle}</Text>
+      <Text variant="bodyStrong" tone="muted">
+        {subtitle}
+      </Text>
     </Stack>
   );
 }
-
-const useStyles = createThemedStyles(({ colors }) => ({
-  logo: {
-    width: 44,
-    height: 44,
-    borderRadius: radii.md,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-}));

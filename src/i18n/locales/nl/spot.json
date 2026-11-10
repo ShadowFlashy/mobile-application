@@ -1,0 +1,19 @@
+{
+  "eyebrow": "Pitstop",
+  "title": "Spot een auto",
+  "subtitle": "Klik. Wij blurren. Jij verzamelt.",
+  "shutter_label": "Neem een foto",
+  "shutter_hint": "Opent de camera om een auto te fotograferen",
+  "gallery": "Uit je galerij",
+  "gallery_hint": "Kies een foto van een auto uit je galerij",
+  "status_label": "Status van Co-Driver",
+  "chip_ai_on": "Co-Driver aan",
+  "chip_ai_off": "Co-Driver uit",
+  "chip_city_on": "Auto-stad aan",
+  "chip_city_off": "Auto-stad uit",
+  "chip_scans_one": "Nog {{count}} scan vandaag",
+  "chip_scans_other": "Nog {{count}} scans vandaag",
+  "chip_offline": "Offline",
+  "privacy_title": "Nummerplaten blijven privé",
+  "privacy_body": "Co-Driver stelt voor waar de nummerplaten staan. Jij controleert de kaders en de nummerplaten worden op je toestel vervaagd voordat er iets geüpload wordt. Je gps-positie verlaat je toestel nooit: enkel de stad wordt bewaard."
+}

@@ -1,0 +1,18 @@
+{
+  "email_invalid": "Vul een geldig e-mailadres in.",
+  "password_required": "Vul je wachtwoord in.",
+  "password_too_short": "Gebruik minstens {{min}} tekens.",
+  "passwords_mismatch": "De wachtwoorden zijn niet gelijk.",
+  "username_invalid": "Gebruik 3–24 letters, cijfers, punten, streepjes of underscores.",
+  "make_required": "Welk merk is het?",
+  "make_too_long": "Houd het merk korter dan 40 tekens.",
+  "model_required": "Welk model is het?",
+  "model_too_long": "Houd het model korter dan 60 tekens.",
+  "location_too_long": "Houd de locatie korter dan 80 tekens.",
+  "notes_too_long": "Houd je notities korter dan 500 tekens.",
+  "plate_invalid": "Een nummerplaat heeft 2 tot 12 letters of cijfers.",
+  "owner_make_required": "Welk merk is je auto?",
+  "owner_model_required": "Welk model is je auto?",
+  "nickname_too_long": "Houd de bijnaam korter dan 40 tekens.",
+  "owner_plate_invalid": "Vul je nummerplaat in (2 tot 12 letters of cijfers)."
+}
