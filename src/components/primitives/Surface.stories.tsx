@@ -6,17 +6,19 @@ const meta: Meta<typeof Surface> = { title: 'Primitives/Surface', component: Sur
 export default meta;
 type Story = StoryObj<typeof Surface>;
 
-export const Flat: Story = { args: { padding: 'md', children: <Text>Flat: grouping only, no fill</Text> } };
-export const Raise: Story = {
-  args: { variant: 'raise', padding: 'md', children: <Text>Raise: the one filled block</Text> },
+export const Raised: Story = { args: { padding: 'md', children: <Text>Raised card</Text> } };
+export const Flat: Story = { args: { variant: 'flat', padding: 'md', children: <Text>Flat card</Text> } };
+export const Sunken: Story = { args: { variant: 'sunken', padding: 'md', children: <Text>Album slot well</Text> } };
+export const Inverse: Story = {
+  args: { variant: 'inverse', padding: 'md', children: <Text tone="inverse">Inverse surface</Text> },
 };
 export const Stage: Story = {
-  args: { variant: 'stage', padding: 'lg', children: <Text tone="onStage">Always-dark photo stage</Text> },
+  args: { variant: 'stage', radius: 'lg', padding: 'lg', children: <Text tone="onStage">Always-dark stage</Text> },
 };
 export const Pressable: Story = {
   args: {
-    variant: 'raise',
     padding: 'md',
+    radius: 'sticker',
     onPress: () => undefined,
     accessibilityLabel: 'Open',
     children: <Text>Tap me</Text>,

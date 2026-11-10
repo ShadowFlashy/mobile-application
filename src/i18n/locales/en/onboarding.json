@@ -1,15 +1,1 @@
-{
-  "step_spot": "Spot",
-  "step_blur": "Blur",
-  "step_collect": "Collect",
-  "spot_title": "Photograph a car",
-  "spot_body": "Open Spot and take a photo of a car you see, or choose one from your photos. Auto-fill can fill in the car, the city and the paint for you.",
-  "blur_title": "Plates stay private",
-  "blur_body": "Redline blurs licence plates on your phone before anything is uploaded. You check every plate yourself, and plate text is never stored.",
-  "collect_title": "Fill your album",
-  "collect_body": "Every new car becomes a sticker on its album page. Complete pages and sets, and earn XP with the weekly challenges.",
-  "next": "Next",
-  "back": "Back",
-  "skip": "Skip",
-  "done": "Open album"
-}
+{}

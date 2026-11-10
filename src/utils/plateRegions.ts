@@ -2,7 +2,7 @@ import { PLATE_PAD_X, PLATE_PAD_Y } from '../constants/ai';
 import type { PlateRegion } from '../types/Spot';
 
 /**
- * Plate boxes from Auto-fill → blur regions (SPEC §4 P0-04, §9.4). The model's boxes are imprecise,
+ * Plate boxes from Co-Driver → blur regions (SPEC §4 P0-04, §9.4). The model's boxes are imprecise,
  * so they are padded generously (+40 % width, +80 % height, centred), merged when they overlap and
  * clamped to the photo. The results are only *suggestions*: W4 shows them dashed until the user
  * accepts them. All coordinates are normalised (0..1, top-left origin).
@@ -74,7 +74,7 @@ export function mergeRegions(boxes: PlateRegion[]): PlateRegion[] {
   return merged;
 }
 
-/** Auto-fill's plate boxes → padded, clamped, merged suggestions. Degenerate boxes are dropped. */
+/** Co-Driver's plate boxes → padded, clamped, merged suggestions. Degenerate boxes are dropped. */
 export function regionsFromDetections(plates: PlateRegion[]): PlateRegion[] {
   const padded = plates
     .map(clampRegion)

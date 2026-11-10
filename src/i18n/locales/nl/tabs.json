@@ -1,7 +1,7 @@
 {
   "album": "Album",
-  "spot": "Spot",
+  "pit_wall": "Pitmuur",
+  "spot": "SPOT",
   "garage": "Garage",
-  "stats": "Statistieken",
-  "profile": "Profiel"
+  "me": "Ik"
 }

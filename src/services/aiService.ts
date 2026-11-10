@@ -6,7 +6,7 @@ import { IDENTIFY_UNAVAILABLE_ERROR, outcomeForHttpError, parseIdentifyResponse 
 import { toServiceError } from './serviceError';
 
 /**
- * Auto-fill client of the deployed, frozen `identify-car` Edge Function (SPEC §9).
+ * Co-Driver client of the deployed, frozen `identify-car` Edge Function (SPEC §9).
  *
  * - Sends only the EXIF-free ≤768 px JPEG from `prepareAiImage`, with the user's JWT (no custom headers).
  * - Never throws: every answer, HTTP error, network failure, unparseable body and the 35 s hard stop
@@ -52,7 +52,7 @@ async function callIdentify(image: AiImage, signal: AbortSignal): Promise<Identi
 }
 
 /**
- * Asks Auto-fill to identify the car. Offline there is no call at all. After AI_HARD_TIMEOUT_MS
+ * Asks Co-Driver to identify the car. Offline there is no call at all. After AI_HARD_TIMEOUT_MS
  * (35 s; the provider gives up at 30 s) the request is aborted and the outcome is `timeout`,
  * even if the network layer ignores the abort.
  */
@@ -73,7 +73,7 @@ export async function identifyCar(image: AiImage): Promise<IdentifyOutcome> {
   }
 }
 
-/** Auto-fill identifications left today (15/day per user), from the read-only `identify_quota_status` RPC. */
+/** Co-Driver identifications left today (15/day per user), from the read-only `identify_quota_status` RPC. */
 export async function getIdentifyQuota(): Promise<IdentifyQuota> {
   const { data, error } = await supabase.rpc('identify_quota_status');
   if (error !== null) throw toServiceError(error, 'generic');

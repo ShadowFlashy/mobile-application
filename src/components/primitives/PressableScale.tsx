@@ -5,8 +5,7 @@ import { springs, useMotion } from '../../theme';
 import type { HapticPattern } from '../../types/Settings';
 
 export interface PressableScaleProps {
-  /** Content, or a function of the pressed state (e.g. a red button that darkens while pressed). */
-  children: ReactNode | ((state: { pressed: boolean }) => ReactNode);
+  children: ReactNode;
   onPress: () => void;
   /** How far the content shrinks while pressed. Default 0.97. */
   scaleTo?: 0.94 | 0.97;
@@ -22,8 +21,6 @@ export interface PressableScaleProps {
   /** Busy state, e.g. a button that is saving. */
   busy?: boolean;
   disabled?: boolean;
-  /** Dims the content to 50 % while disabled. Default true; false when the child draws its own disabled state. */
-  dim?: boolean;
   /** Stretches to fill its parent (flex: 1). */
   fill?: boolean;
   testID?: string;
@@ -42,7 +39,6 @@ export function PressableScale({
   checked,
   busy,
   disabled = false,
-  dim = true,
   fill = false,
   testID,
 }: PressableScaleProps) {
@@ -75,14 +71,10 @@ export function PressableScale({
       aria-selected={selected}
       aria-checked={checked}
       aria-busy={busy}
-      style={[fill && styles.fill, disabled && dim && styles.disabled]}
+      style={[fill && styles.fill, disabled && styles.disabled]}
       testID={testID}
     >
-      {({ pressed }) => (
-        <Animated.View style={[fill && styles.fill, { transform: [{ scale }] }]}>
-          {typeof children === 'function' ? children({ pressed }) : children}
-        </Animated.View>
-      )}
+      <Animated.View style={[fill && styles.fill, { transform: [{ scale }] }]}>{children}</Animated.View>
     </Pressable>
   );
 }

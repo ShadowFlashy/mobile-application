@@ -21,7 +21,7 @@ export async function setLanguagePreference(language: Language): Promise<void> {
 
 const SETTINGS_KEY = 'redline-settings';
 
-/** Defaults of every device setting (SPEC §10.3): Auto-fill and auto-city on, name sharing off. */
+/** Defaults of every device setting (SPEC §10.3): Co-Driver and auto-city on, name sharing off. */
 export const DEFAULT_SETTINGS: AppSettings = {
   aiEnabled: true,
   autoLocation: true,

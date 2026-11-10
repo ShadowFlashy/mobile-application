@@ -67,7 +67,7 @@ const stats = [
 ];
 
 describe('Garage', () => {
-  it('registers a car as Waiting for verification: plate sent once and normalised, no pings', () => {
+  it('registers a car as Pending verification: plate sent once and normalised, no pings', () => {
     const pending = ownerCarRow();
     cy.stubSupabase();
     cy.intercept('POST', '**/rest/v1/owner_cars*', { statusCode: 201, body: pending }).as('registerCar');
@@ -101,7 +101,7 @@ describe('Garage', () => {
       expect(request.body).not.to.have.any.keys('verified_at', 'owner_id', 'plate_hash', 'show_plate');
     });
     cy.get('[data-testid="owners-screen"]').should('be.visible');
-    cy.get(`[data-testid="garage-car-status-${pending.id}"]`).should('contain.text', 'Waiting for verification');
+    cy.get(`[data-testid="garage-car-status-${pending.id}"]`).should('contain.text', 'Pending verification');
     cy.get(`[data-testid="garage-car-pending-${pending.id}"]`)
       .should(
         'contain.text',
@@ -118,7 +118,7 @@ describe('Garage', () => {
     cy.get('[data-testid="tab-owners"]').should('contain.text', '1');
     cy.get('[data-testid="tab-owners"]').click();
 
-    cy.get(`[data-testid="garage-car-status-${verifiedCar.id}"]`).should('contain.text', 'Verified');
+    cy.get(`[data-testid="garage-car-status-${verifiedCar.id}"]`).should('contain.text', 'Verified owner');
     cy.get(`[data-testid="garage-car-sightings-${verifiedCar.id}"]`).should('contain.text', 'Spotted once');
     // Snapshot columns only: no join into the spotter's spot row, no spotter pseudonym; paged by 20.
     cy.wait('@pings').then(({ request }) => {
@@ -130,8 +130,7 @@ describe('Garage', () => {
     });
 
     cy.get(`[data-testid="sighting-${sighting.id}"]`).should('contain.text', 'Antwerpen').and('contain.text', ':00–');
-    // Unread: a text-colour dot, announced as "New".
-    cy.get(`[data-testid="sighting-unread-${sighting.id}"]`).should('be.visible').and('have.attr', 'aria-label', 'New');
+    cy.get(`[data-testid="sighting-unread-${sighting.id}"]`).should('be.visible');
     cy.get(`[data-testid="sighting-${sighting.id}"]`).click();
 
     cy.get('[data-testid="sighting-screen"]').should('be.visible');
@@ -143,9 +142,7 @@ describe('Garage', () => {
     cy.get('[data-testid="sighting-hour"]')
       .invoke('text')
       .should('match', /\d{2}:00–\d{2}:00$/);
-    // An anonymous spotter: no "Seen by" row and no name anywhere.
-    cy.get('[data-testid="sighting-spotter"]').should('not.exist');
-    cy.get('[data-testid="sighting-detail"]').should('not.contain.text', '@');
+    cy.get('[data-testid="sighting-spotter"]').should('have.text', 'Anonymous spotter');
   });
 
   it('marks all sightings read', () => {
@@ -170,7 +167,7 @@ describe('Garage', () => {
     cy.get(`[data-testid="garage-car-${verifiedCar.id}"]`).click();
 
     cy.get('[data-testid="garage-car-screen"]').should('be.visible');
-    cy.get('[data-testid="garage-car-header-status"]').should('contain.text', 'Verified');
+    cy.get('[data-testid="garage-car-header-status"]').should('contain.text', 'Verified owner');
     cy.get('[data-testid="pause-pings-switch"]').should('have.attr', 'aria-checked', 'false').click();
     cy.wait('@updateOwnerCar').then(({ request }) => {
       expect(request.url).to.include(`id=eq.${verifiedCar.id}`);

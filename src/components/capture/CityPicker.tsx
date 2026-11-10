@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { PLACES } from '../../constants/places';
 import type { Place } from '../../types/Location';
 import { foldText } from '../../utils/carSearch';
 import { placeLabel } from '../../utils/geo';
-import { Icon } from '../primitives/Icon';
 import { InputField } from '../primitives/InputField';
-import { ListRow } from '../primitives/ListRow';
 import { Sheet } from '../primitives/Sheet';
 import { Stack } from '../primitives/Stack';
+import { Surface } from '../primitives/Surface';
+import { Text } from '../primitives/Text';
+import { Row } from '../primitives/Row';
+import { Icon } from '../primitives/Icon';
 
 export interface CityPickerProps {
   visible: boolean;
@@ -64,7 +65,7 @@ export function CityPicker({
 
   return (
     <Sheet visible={visible} onClose={onClose} title={t('capture.city_sheet_title')} testID={testID}>
-      <Stack gap="md">
+      <Stack gap="sm">
         <InputField
           label={t('capture.city_search')}
           value={query}
@@ -75,32 +76,39 @@ export function CityPicker({
           maxLength={MAX_CITY}
           testID="city-search"
         />
-        <View>
-          {results.map((place) => {
-            const label = placeLabel(place, i18n.language);
-            return (
-              <ListRow
-                key={place.id}
-                title={label}
-                value={place.country}
-                onPress={() => choose(label)}
-                accessibilityLabel={`${label} (${place.country})`}
-                testID={`city-option-${place.id}`}
-              />
-            );
-          })}
-          {typed.length > 0 && !exactMatch && (
-            <ListRow
-              title={t('capture.city_use_typed', { city: typed })}
-              leading={<Icon name="plus" size={20} />}
-              onPress={() => choose(typed)}
-              testID="city-use-typed"
-            />
-          )}
-          {value.length > 0 && (
-            <ListRow title={t('capture.city_clear')} muted onPress={() => choose('')} testID="city-clear" />
-          )}
-        </View>
+        {results.map((place) => {
+          const label = placeLabel(place, i18n.language);
+          return (
+            <Surface
+              key={place.id}
+              variant="flat"
+              padding="smd"
+              onPress={() => choose(label)}
+              accessibilityLabel={`${label} (${place.country})`}
+              testID={`city-option-${place.id}`}
+            >
+              <Row gap="sm" align="center">
+                <Icon name="location-outline" tone="muted" size={18} />
+                <Text variant="bodyStrong">{label}</Text>
+                <Text variant="caption" tone="muted">
+                  {place.country}
+                </Text>
+              </Row>
+            </Surface>
+          );
+        })}
+        {typed.length > 0 && !exactMatch && (
+          <Surface variant="sunken" padding="smd" onPress={() => choose(typed)} testID="city-use-typed">
+            <Text variant="bodyStrong">{t('capture.city_use_typed', { city: typed })}</Text>
+          </Surface>
+        )}
+        {value.length > 0 && (
+          <Surface variant="sunken" padding="smd" onPress={() => choose('')} testID="city-clear">
+            <Text variant="bodySm" tone="muted">
+              {t('capture.city_clear')}
+            </Text>
+          </Surface>
+        )}
       </Stack>
     </Sheet>
   );

@@ -1,24 +1,21 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
-import { createThemedStyles, lines, spacing } from '../../theme';
+import { createThemedStyles, spacing } from '../../theme';
 
 interface NavProps {
   children: ReactNode;
   /** Extra bottom padding, e.g. the safe-area inset on phones with a gesture bar. */
   bottomInset?: number;
-  /** Spoken name of the tab list. */
-  accessibilityLabel?: string;
   testID?: string;
 }
 
-/** A's bottom tab bar in the thumb zone: the background colour with a hairline on top. No shadow. */
-export function Nav({ children, bottomInset = 0, accessibilityLabel, testID }: NavProps) {
+/** Bottom navigation bar in the thumb zone. Items may rise above it (the Ignition button). */
+export function Nav({ children, bottomInset = 0, testID }: NavProps) {
   const styles = useStyles();
   return (
     <View
       style={[styles.base, { paddingBottom: spacing.xs + bottomInset }]}
       accessibilityRole="tablist"
-      accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
       {children}
@@ -26,14 +23,15 @@ export function Nav({ children, bottomInset = 0, accessibilityLabel, testID }: N
   );
 }
 
-const useStyles = createThemedStyles(({ colors }) => ({
+const useStyles = createThemedStyles(({ colors, elevation }) => ({
   base: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: colors.bg,
-    borderTopWidth: lines.hairline,
-    borderTopColor: colors.line,
-    paddingTop: spacing.xs + 3,
-    paddingHorizontal: spacing.sm,
+    alignItems: 'flex-end',
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: spacing.xs,
+    paddingHorizontal: spacing.xs,
+    ...elevation.lifted,
   },
 }));

@@ -36,7 +36,7 @@ export default function SightingScreen() {
     return (
       <Screen testID="sighting-screen">
         <EmptyState
-          icon="eye-off"
+          icon="eye-off-outline"
           title={isError ? getErrorMessage(error, 'load_sightings') : t('sightings.not_found_title')}
           description={isError ? undefined : t('sightings.not_found_description')}
           action={

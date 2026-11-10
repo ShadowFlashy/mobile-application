@@ -1,18 +1,18 @@
 import { View } from 'react-native';
-import { createThemedStyles, spacing } from '../../theme';
+import { createThemedStyles } from '../../theme';
 import { Skeleton } from '../primitives/Skeleton';
 
 export type AlbumSkeletonVariant = 'cover' | 'page';
 
 export interface AlbumSkeletonProps {
-  /** `cover`: the two readouts and the latest rows; `page`: a progress line and table rows. */
+  /** `cover`: the album cover plus contents; `page`: a stripe plus slots. */
   variant: AlbumSkeletonVariant;
   testID?: string;
 }
 
-const ROWS = ['a', 'b', 'c', 'd', 'e'];
+const SLOTS = ['a', 'b', 'c', 'd'];
 
-/** Loading placeholders in the shape of the album: readouts, then hairline-row sized blocks. */
+/** Loading placeholders in the shape of the album: a cover block and sticker-shaped slots. */
 export function AlbumSkeleton({ variant, testID = 'collection-loading' }: AlbumSkeletonProps) {
   const styles = useStyles();
   return (
@@ -21,33 +21,21 @@ export function AlbumSkeleton({ variant, testID = 'collection-loading' }: AlbumS
       testID={testID}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      aria-hidden
     >
-      {variant === 'cover' ? (
-        <View style={styles.readouts}>
-          <View style={styles.total}>
-            <Skeleton height={112} />
+      <Skeleton height={variant === 'cover' ? 220 : 72} shape="sticker" />
+      <View style={styles.grid}>
+        {SLOTS.map((slot) => (
+          <View key={slot} style={styles.cell}>
+            <Skeleton height={variant === 'cover' ? 150 : 210} shape="sticker" />
           </View>
-          <View style={styles.level}>
-            <Skeleton height={72} />
-          </View>
-        </View>
-      ) : (
-        <Skeleton preset="line" width="40%" />
-      )}
-      <View style={styles.rows}>
-        {ROWS.map((row) => (
-          <Skeleton key={row} preset="line" />
         ))}
       </View>
     </View>
   );
 }
 
-const useStyles = createThemedStyles(() => ({
-  stack: { gap: spacing.lg },
-  readouts: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.lg },
-  total: { flex: 9 },
-  level: { flex: 5 },
-  rows: { gap: spacing.xl },
+const useStyles = createThemedStyles(({ spacing }) => ({
+  stack: { gap: spacing.md },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: spacing.smd },
+  cell: { width: '48.5%' },
 }));

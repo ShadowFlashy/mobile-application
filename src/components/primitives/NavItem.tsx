@@ -1,9 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { createThemedStyles, radii, spacing, touchTarget } from '../../theme';
-import { Badge } from './Badge';
+import { createThemedStyles, spacing, touchTarget, useTheme } from '../../theme';
 import { Icon, type IconName } from './Icon';
-import { spaceKey } from './keyboard';
 import { Text } from './Text';
 
 interface NavItemProps {
@@ -11,80 +9,72 @@ interface NavItemProps {
   onPress: () => void;
   active?: boolean;
   icon?: IconName;
-  /** A count badge on the icon, e.g. unread sightings. Hidden when 0. */
+  /** Small counter on the icon, e.g. unread sightings. Hidden when 0. */
   badgeCount?: number;
-  /**
-   * `tab` (default): icon and label, text colour when active and text-2 otherwise. `key`: the red
-   * Spot key (radius 10) holding the icon, with the label in text-2 under it.
-   */
-  variant?: 'tab' | 'key';
   testID?: string;
 }
 
-/** Icon area height and the Spot key's size (A-Album tab bar). */
-const ICON_ROW = 32;
-const KEY_WIDTH = 52;
-
 /**
- * One tab of the bottom bar. The active tab is the text colour (never red) and is announced as
- * selected; the Spot key is the one red element of the bar.
+ * One tab. The active tab gets the red indicator bar, a filled icon and bold text, so the state is
+ * never shown by colour alone.
  */
-export function NavItem({
-  label,
-  onPress,
-  active = false,
-  icon,
-  badgeCount = 0,
-  variant = 'tab',
-  testID,
-}: NavItemProps) {
+export function NavItem({ label, onPress, active = false, icon, badgeCount = 0, testID }: NavItemProps) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const styles = useStyles();
-  const isKey = variant === 'key';
-  // Active is the text colour for every tab, the Spot key included (its icon stays white on red).
-  const tone = active ? 'text' : 'text2';
+  const tint = active ? colors.text : colors.textMuted;
   return (
     <Pressable
       onPress={onPress}
-      {...spaceKey(onPress)}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
       aria-selected={active}
       accessibilityLabel={badgeCount > 0 ? t('a11y.nav_badge', { label, count: badgeCount }) : label}
-      style={({ pressed }) => [styles.base, pressed && !isKey && styles.pressed]}
+      style={({ pressed }) => [styles.base, pressed && styles.pressed]}
       testID={testID}
     >
-      {({ pressed }) => (
-        <>
-          <View style={[styles.iconRow, isKey && styles.key, isKey && pressed && styles.keyPressed]}>
-            {icon !== undefined && <Icon name={icon} size={24} tone={isKey ? 'onRed' : tone} />}
-            {badgeCount > 0 && (
-              <View style={styles.badge}>
-                <Badge count={badgeCount} testID={testID !== undefined ? `${testID}-badge` : undefined} />
-              </View>
-            )}
-          </View>
-          <Text variant="tab" tone={tone} numberOfLines={1}>
-            {label}
-          </Text>
-        </>
+      <View style={[styles.indicator, active && styles.indicatorActive]} />
+      {icon !== undefined && (
+        <View>
+          <Icon name={icon} size={24} color={tint} />
+          {badgeCount > 0 && (
+            <View style={styles.badge} testID={testID !== undefined ? `${testID}-badge` : undefined}>
+              <Text variant="caption" tone="onPrimary">
+                {badgeCount > 9 ? '9+' : String(badgeCount)}
+              </Text>
+            </View>
+          )}
+        </View>
       )}
+      <Text variant={active ? 'label' : 'caption'} color={tint} numberOfLines={1}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
 
-const useStyles = createThemedStyles(({ colors }) => ({
+const useStyles = createThemedStyles(({ colors, radii }) => ({
   base: {
     flex: 1,
-    minHeight: touchTarget,
+    minHeight: touchTarget + 8,
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     gap: spacing.xxs,
+    paddingBottom: spacing.xxs,
   },
-  pressed: { opacity: 0.6 },
-  iconRow: { height: ICON_ROW, minWidth: ICON_ROW, alignItems: 'center', justifyContent: 'center' },
-  key: { width: KEY_WIDTH, borderRadius: radii.key, backgroundColor: colors.red },
-  // The Spot key darkens while pressed (redPressed) instead of fading to a washed-out red.
-  keyPressed: { backgroundColor: colors.redPressed },
-  badge: { position: 'absolute', top: -1, end: -12 },
+  pressed: { opacity: 0.7 },
+  indicator: { width: 28, height: 3, borderRadius: radii.pill, marginBottom: spacing.xxs },
+  indicatorActive: { backgroundColor: colors.primary },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    end: -12,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: radii.pill,
+    backgroundColor: colors.dangerFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 }));

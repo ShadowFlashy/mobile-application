@@ -52,7 +52,7 @@ describe('Offline behaviour', () => {
     cy.location('pathname').should('eq', '/');
     cy.get('[data-testid="sticker-book-screen"]').should('be.visible');
 
-    // Profile shows the cached season and says the app is read-only.
+    // Me shows the cached season and says the app is read-only.
     cy.get('[data-testid="tab-profile"]').click();
     cy.get('[data-testid="profile-screen"]').should('be.visible');
     cy.get('[data-testid="offline-session-tag"]').should('contain.text', 'Offline · read-only');

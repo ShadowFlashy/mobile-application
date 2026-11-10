@@ -1,32 +1,27 @@
 import { Platform, type TextStyle } from 'react-native';
 
 /**
- * Direction A typography: Barlow Condensed (500, 600) for numerals, sticker numbers and screen
- * titles, Barlow (400, 500, 600) for everything else. Upright only, sentence case (no uppercase
- * transforms) and tabular figures on every variant. Variants set `fontFamily` only, never
- * `fontWeight` (Android ignores the weight of custom families). The faces are loaded by
- * `useAppFonts` (fonts.ts) in the app and by fonts.css in Storybook and Cypress.
+ * LIVERY typography (SPEC §7.3): Barlow Condensed for racing-livery headlines and numbers, Barlow
+ * for very legible UI text. Variants set `fontFamily` only, never `fontWeight` (Android ignores the
+ * weight of custom families). The font files themselves are loaded by `useAppFonts` (fonts.ts).
  */
 export const FONT_FAMILIES = {
+  condensedBold: 'BarlowCondensed_700Bold',
+  condensedExtraBoldItalic: 'BarlowCondensed_800ExtraBold_Italic',
   regular: 'Barlow_400Regular',
   medium: 'Barlow_500Medium',
-  semibold: 'Barlow_600SemiBold',
-  condensedMedium: 'BarlowCondensed_500Medium',
-  condensedSemibold: 'BarlowCondensed_600SemiBold',
+  bold: 'Barlow_700Bold',
 } as const;
 
 export type FontFamilyName = (typeof FONT_FAMILIES)[keyof typeof FONT_FAMILIES];
 
-const CONDENSED_FALLBACK = '"Arial Narrow", system-ui, sans-serif';
-const TEXT_FALLBACK = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
-
 /** CSS fallback stacks for the web, so text stays readable while the TTFs load. */
 const WEB_FALLBACK: Record<FontFamilyName, string> = {
-  Barlow_400Regular: TEXT_FALLBACK,
-  Barlow_500Medium: TEXT_FALLBACK,
-  Barlow_600SemiBold: TEXT_FALLBACK,
-  BarlowCondensed_500Medium: CONDENSED_FALLBACK,
-  BarlowCondensed_600SemiBold: CONDENSED_FALLBACK,
+  BarlowCondensed_700Bold: '"Arial Narrow", system-ui, sans-serif',
+  BarlowCondensed_800ExtraBold_Italic: '"Arial Narrow", system-ui, sans-serif',
+  Barlow_400Regular: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+  Barlow_500Medium: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+  Barlow_700Bold: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
 };
 
 /** The family to put in a style: the bare registered name on native, a fallback stack on the web. */
@@ -34,33 +29,12 @@ export function fontFamily(name: FontFamilyName): string {
   return Platform.select({ web: `${name}, ${WEB_FALLBACK[name]}`, default: name });
 }
 
-/** Direction A's type scale (A-NOTES "Type"). */
-export const A_TEXT_VARIANTS = [
+export const TEXT_VARIANTS = [
   'hero',
-  'heroSub',
-  'title',
-  'unit',
-  'num',
-  'numS',
-  'mark',
-  'heading',
-  'bodyL',
-  'body',
-  'value',
-  'meta',
-  'tab',
-  'button',
-] as const;
-export type ATextVariant = (typeof A_TEXT_VARIANTS)[number];
-
-/**
- * @deprecated LIVERY variant names, kept as aliases of A variants so old call sites compile until
- * their area is restyled: display → title, headline → heading, bodyStrong → bodyL, bodySm → value,
- * label → meta, caption → meta, number → title, numberSm → num, stickerNo → num.
- */
-export const LEGACY_TEXT_VARIANTS = [
   'display',
+  'title',
   'headline',
+  'body',
   'bodyStrong',
   'bodySm',
   'label',
@@ -69,39 +43,10 @@ export const LEGACY_TEXT_VARIANTS = [
   'numberSm',
   'stickerNo',
 ] as const;
-export type LegacyTextVariant = (typeof LEGACY_TEXT_VARIANTS)[number];
+export type TextVariant = (typeof TEXT_VARIANTS)[number];
 
-/** Every variant name the Text primitive accepts (A names first, then the deprecated aliases). */
-export const TEXT_VARIANTS = [...A_TEXT_VARIANTS, ...LEGACY_TEXT_VARIANTS] as const;
-export type TextVariant = ATextVariant | LegacyTextVariant;
-
-/** The A variant a deprecated alias resolves to. */
-export const LEGACY_VARIANT_MAP: Record<LegacyTextVariant, ATextVariant> = {
-  display: 'title',
-  headline: 'heading',
-  bodyStrong: 'bodyL',
-  bodySm: 'value',
-  label: 'meta',
-  caption: 'meta',
-  number: 'title',
-  numberSm: 'num',
-  stickerNo: 'num',
-};
-
-/**
- * Text tones: the colour role of a text, resolved to a colour token by the Text primitive.
- * A tones: `text` (default), `text2` (secondary), `inverse` (on a text-colour fill), `onRed` (on
- * red), `onStage` and `onStageMuted` (on the always-dark photo stage). The rest are deprecated
- * LIVERY tones that resolve to the A tone of the same role.
- */
+/** Text tones: the colour role of a text, resolved to a colour token by the Text primitive. */
 export const TEXT_TONES = [
-  'text',
-  'text2',
-  'inverse',
-  'onRed',
-  'onStage',
-  'onStageMuted',
-  // Deprecated aliases.
   'default',
   'muted',
   'subtle',
@@ -111,6 +56,9 @@ export const TEXT_TONES = [
   'danger',
   'info',
   'onPrimary',
+  'inverse',
+  'onStage',
+  'onStageMuted',
   'onSignal',
 ] as const;
 export type TextTone = (typeof TEXT_TONES)[number];
@@ -120,41 +68,24 @@ interface VariantSpec {
   size: number;
   line: number;
   tracking: number;
+  upper?: boolean;
+  tabular?: boolean;
 }
 
-const A_SPECS: Record<ATextVariant, VariantSpec> = {
-  hero: { family: FONT_FAMILIES.condensedSemibold, size: 80, line: 72, tracking: -1 },
-  heroSub: { family: FONT_FAMILIES.condensedMedium, size: 32, line: 36, tracking: 0 },
-  title: { family: FONT_FAMILIES.condensedSemibold, size: 34, line: 40, tracking: 0 },
-  unit: { family: FONT_FAMILIES.condensedMedium, size: 20, line: 24, tracking: 0 },
-  num: { family: FONT_FAMILIES.condensedSemibold, size: 17, line: 20, tracking: 0 },
-  numS: { family: FONT_FAMILIES.condensedMedium, size: 15, line: 20, tracking: 0 },
-  mark: { family: FONT_FAMILIES.condensedSemibold, size: 12, line: 12, tracking: 0 },
-  heading: { family: FONT_FAMILIES.semibold, size: 17, line: 24, tracking: 0 },
-  bodyL: { family: FONT_FAMILIES.medium, size: 17, line: 24, tracking: 0 },
-  body: { family: FONT_FAMILIES.medium, size: 15, line: 20, tracking: 0 },
-  value: { family: FONT_FAMILIES.regular, size: 15, line: 20, tracking: 0 },
-  meta: { family: FONT_FAMILIES.regular, size: 13, line: 18, tracking: 0 },
-  tab: { family: FONT_FAMILIES.medium, size: 11, line: 14, tracking: 0 },
-  button: { family: FONT_FAMILIES.semibold, size: 17, line: 24, tracking: 0 },
+const VARIANT_SPECS: Record<TextVariant, VariantSpec> = {
+  hero: { family: FONT_FAMILIES.condensedExtraBoldItalic, size: 44, line: 44, tracking: -0.5, upper: true },
+  display: { family: FONT_FAMILIES.condensedExtraBoldItalic, size: 34, line: 36, tracking: -0.25, upper: true },
+  title: { family: FONT_FAMILIES.condensedExtraBoldItalic, size: 24, line: 28, tracking: 0, upper: true },
+  headline: { family: FONT_FAMILIES.bold, size: 18, line: 24, tracking: 0 },
+  body: { family: FONT_FAMILIES.regular, size: 16, line: 24, tracking: 0 },
+  bodyStrong: { family: FONT_FAMILIES.bold, size: 16, line: 24, tracking: 0 },
+  bodySm: { family: FONT_FAMILIES.regular, size: 14, line: 20, tracking: 0 },
+  label: { family: FONT_FAMILIES.bold, size: 13, line: 16, tracking: 0.8, upper: true },
+  caption: { family: FONT_FAMILIES.medium, size: 12, line: 16, tracking: 0 },
+  number: { family: FONT_FAMILIES.condensedBold, size: 28, line: 30, tracking: 0, tabular: true },
+  numberSm: { family: FONT_FAMILIES.condensedBold, size: 17, line: 20, tracking: 0, tabular: true },
+  stickerNo: { family: FONT_FAMILIES.condensedExtraBoldItalic, size: 15, line: 16, tracking: 0 },
 };
-
-function specOf(variant: TextVariant): VariantSpec {
-  switch (variant) {
-    case 'display':
-    case 'headline':
-    case 'bodyStrong':
-    case 'bodySm':
-    case 'label':
-    case 'caption':
-    case 'number':
-    case 'numberSm':
-    case 'stickerNo':
-      return A_SPECS[LEGACY_VARIANT_MAP[variant]];
-    default:
-      return A_SPECS[variant];
-  }
-}
 
 function toTextStyle(spec: VariantSpec): TextStyle {
   return {
@@ -162,84 +93,39 @@ function toTextStyle(spec: VariantSpec): TextStyle {
     fontSize: spec.size,
     lineHeight: spec.line,
     letterSpacing: spec.tracking,
-    // Tabular figures on every number, so counts and times line up in columns.
-    fontVariant: ['tabular-nums'],
-  };
-}
-
-function buildVariants(): Record<TextVariant, TextStyle> {
-  const style = (variant: TextVariant): TextStyle => toTextStyle(specOf(variant));
-  return {
-    hero: style('hero'),
-    heroSub: style('heroSub'),
-    title: style('title'),
-    unit: style('unit'),
-    num: style('num'),
-    numS: style('numS'),
-    mark: style('mark'),
-    heading: style('heading'),
-    bodyL: style('bodyL'),
-    body: style('body'),
-    value: style('value'),
-    meta: style('meta'),
-    tab: style('tab'),
-    button: style('button'),
-    display: style('display'),
-    headline: style('headline'),
-    bodyStrong: style('bodyStrong'),
-    bodySm: style('bodySm'),
-    label: style('label'),
-    caption: style('caption'),
-    number: style('number'),
-    numberSm: style('numberSm'),
-    stickerNo: style('stickerNo'),
+    ...(spec.upper === true ? { textTransform: 'uppercase' } : {}),
+    ...(spec.tabular === true ? { fontVariant: ['tabular-nums'] } : {}),
   };
 }
 
 /** Ready-to-use text styles per variant (`theme.text`). */
-export const textVariants: Record<TextVariant, TextStyle> = buildVariants();
+export const textVariants: Record<TextVariant, TextStyle> = {
+  hero: toTextStyle(VARIANT_SPECS.hero),
+  display: toTextStyle(VARIANT_SPECS.display),
+  title: toTextStyle(VARIANT_SPECS.title),
+  headline: toTextStyle(VARIANT_SPECS.headline),
+  body: toTextStyle(VARIANT_SPECS.body),
+  bodyStrong: toTextStyle(VARIANT_SPECS.bodyStrong),
+  bodySm: toTextStyle(VARIANT_SPECS.bodySm),
+  label: toTextStyle(VARIANT_SPECS.label),
+  caption: toTextStyle(VARIANT_SPECS.caption),
+  number: toTextStyle(VARIANT_SPECS.number),
+  numberSm: toTextStyle(VARIANT_SPECS.numberSm),
+  stickerNo: toTextStyle(VARIANT_SPECS.stickerNo),
+};
 
 /** The registered (bare) family name of each variant, e.g. for `document.fonts.check`. */
 export function variantFamily(variant: TextVariant): FontFamilyName {
-  return specOf(variant).family;
+  return VARIANT_SPECS[variant].family;
 }
 
-/** The A variant a name resolves to (itself for A names). */
-export function resolveVariant(variant: TextVariant): ATextVariant {
-  switch (variant) {
-    case 'display':
-    case 'headline':
-    case 'bodyStrong':
-    case 'bodySm':
-    case 'label':
-    case 'caption':
-    case 'number':
-    case 'numberSm':
-    case 'stickerNo':
-      return LEGACY_VARIANT_MAP[variant];
-    default:
-      return variant;
-  }
-}
-
-/** Big display text may grow with the system font size, but only so far, so layouts survive. */
-export const MAX_FONT_SCALE: Partial<Record<TextVariant, number>> = {
-  hero: 1.2,
-  heroSub: 1.3,
-  title: 1.3,
-  display: 1.3,
-  number: 1.3,
-  // Figures sit in fixed columns and the roundel letter in a fixed disc: they grow less (or not).
-  num: 1.3,
-  numS: 1.3,
-  mark: 1,
-  tab: 1.3,
-};
+/** Big display text may grow with the system font size, but at most 1.4×, so layouts survive. */
+export const MAX_FONT_SCALE: Partial<Record<TextVariant, number>> = { hero: 1.4, display: 1.4, title: 1.4 };
 
 /**
  * @deprecated v1 scale, kept only so old components compile until their lanes restyle them. Use
  * the variants instead.
  */
-export const fontSizes = { sm: 13, md: 15, lg: 17, xl: 20, xxl: 34 } as const;
+export const fontSizes = { sm: 12, md: 14, lg: 16, xl: 20, xxl: 28 } as const;
 /** @deprecated v1 scale; see `fontSizes`. */
-export const lineHeights = { sm: 18, md: 20, lg: 24, xl: 24, xxl: 40 } as const;
+export const lineHeights = { sm: 16, md: 20, lg: 24, xl: 28, xxl: 34 } as const;

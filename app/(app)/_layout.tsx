@@ -1,6 +1,5 @@
 import { Redirect, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { HeaderBackButton } from '../../src/components/HeaderBackButton';
 import { Screen } from '../../src/components/primitives/Screen';
 import { Spinner } from '../../src/components/primitives/Spinner';
 import { Stack as VStack } from '../../src/components/primitives/Stack';
@@ -41,16 +40,8 @@ export default function AppLayout() {
 
   if (!isAuthenticated) return <Redirect href={routes.login} />;
 
-  // Every stack screen shows its own large condensed title in the content (A's header), so the
-  // native header keeps only the back button (with a translated name); `title` still names the
-  // browser tab.
   return (
-    <Stack
-      screenOptions={{
-        ...stack,
-        headerLeft: ({ canGoBack }) => (canGoBack ? <HeaderBackButton /> : null),
-      }}
-    >
+    <Stack screenOptions={stack}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="capture" options={{ presentation: 'fullScreenModal', headerShown: false }} />
       <Stack.Screen

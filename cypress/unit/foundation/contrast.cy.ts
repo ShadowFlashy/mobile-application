@@ -1,16 +1,18 @@
 import {
-  AA_NON_TEXT,
-  AA_TEXT,
+  collectionLiveries,
   CONTRAST_PAIRS,
   contrastRatio,
   darkColors,
-  darkTheme,
+  darkRarity,
+  instruments,
   lightColors,
-  lightTheme,
+  lightRarity,
+  liveries,
   relativeLuminance,
-  roundels,
 } from '../../../src/theme';
-import type { ThemeColors } from '../../../src/theme';
+import type { RarityPalette, ThemeColors } from '../../../src/theme';
+
+const AA = 4.5;
 
 function ratio(foreground: string, background: string): number {
   const value = contrastRatio(foreground, background);
@@ -25,7 +27,7 @@ describe('contrastRatio (WCAG 2.x)', () => {
     expect(ratio('#E10600', '#E10600')).to.equal(1);
   });
 
-  it('matches the documented value of white on Redline red (4.97:1)', () => {
+  it('matches the documented value of white on Redline Red (4.97:1)', () => {
     expect(ratio('#FFFFFF', '#E10600')).to.be.closeTo(4.97, 0.05);
   });
 
@@ -36,91 +38,64 @@ describe('contrastRatio (WCAG 2.x)', () => {
 });
 
 const SCHEMES: [string, ThemeColors][] = [
-  ['light', lightColors],
-  ['dark', darkColors],
+  ['Paddock Paper (light)', lightColors],
+  ['Night Session (dark)', darkColors],
 ];
 
-describe('direction A colour pairs', () => {
-  it('lists every pair A ships, with a 4.5:1 or 3:1 minimum and its use', () => {
-    expect(CONTRAST_PAIRS.length).to.be.at.least(12);
-    CONTRAST_PAIRS.forEach(({ fg, bg, min, use }) => {
-      expect([AA_TEXT, AA_NON_TEXT], `${fg} on ${bg}`).to.include(min);
-      expect(use.length, `${fg} on ${bg}`).to.be.greaterThan(0);
-    });
-    // Text pairs are held to 4.5:1: text and text-2 on both surfaces, labels on red.
-    const textPairs = CONTRAST_PAIRS.filter(({ min }) => min === AA_TEXT).map(({ fg, bg }) => `${fg}/${bg}`);
-    expect(textPairs).to.include.members(['text/bg', 'text/raise', 'text2/bg', 'text2/raise', 'onRed/red']);
+describe('LIVERY text/background pairs (SPEC §7.2)', () => {
+  it('checks the full documented list of pairs', () => {
+    // 8 text tokens × 4 surfaces, 5 X-on-XSoft, 4 white-on-fill, inverse, 2 stage, signal.
+    expect(CONTRAST_PAIRS).to.have.length(32 + 5 + 4 + 1 + 2 + 1);
   });
 
   SCHEMES.forEach(([name, colors]) => {
-    it(`${name}: every pair reaches its minimum`, () => {
-      const failures = CONTRAST_PAIRS.map(({ fg, bg, min }) => ({
-        pair: `${fg} on ${bg}`,
-        value: ratio(colors[fg], colors[bg]),
-        min,
-      })).filter(({ value, min }) => value < min);
+    it(`${name}: every pair is at least 4.5:1`, () => {
+      const failures = CONTRAST_PAIRS.map(({ text, background }) => ({
+        pair: `${text} on ${background}`,
+        value: ratio(colors[text], colors[background]),
+      })).filter(({ value }) => value < AA);
       expect(failures, JSON.stringify(failures)).to.deep.equal([]);
     });
   });
 
-  it('documents the measured values of A-NOTES', () => {
-    expect(ratio(darkColors.text, darkColors.bg)).to.be.closeTo(18.1, 0.1);
-    expect(ratio(darkColors.text2, darkColors.bg)).to.be.closeTo(6.0, 0.1);
-    expect(ratio(darkColors.text2, darkColors.raise)).to.be.closeTo(5.5, 0.1);
-    expect(ratio(lightColors.text2, lightColors.bg)).to.be.at.least(5.2);
-    expect(ratio(lightColors.text2, lightColors.raise)).to.be.at.least(AA_TEXT);
+  it('keeps the documented lowest pairs above the line', () => {
+    expect(ratio(lightColors.textSubtle, lightColors.surfaceSunken)).to.be.at.least(AA);
+    expect(ratio(lightColors.accent, lightColors.surfaceMuted)).to.be.at.least(AA);
   });
 });
 
-describe('direction A palette rules', () => {
-  SCHEMES.forEach(([name, colors]) => {
-    it(`${name}: red is the only accent; every other colour token is a neutral grey`, () => {
-      expect(colors.red).to.equal('#E10600');
-      expect(colors.onRed).to.equal('#FFFFFF');
-      Object.entries(colors)
-        .filter(([token]) => token !== 'red' && token !== 'redPressed')
-        .forEach(([token, value]) => {
-          const hex = /^#([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})$/i.exec(value);
-          const rgba = /^rgba\((\d+),(\d+),(\d+),[\d.]+\)$/.exec(value);
-          const channels = hex
-            ? [hex[1], hex[2], hex[3]].map((part) => parseInt(part ?? '', 16))
-            : rgba
-              ? [rgba[1], rgba[2], rgba[3]].map((part) => Number(part))
-              : undefined;
-          expect(channels, `${token} is a hex or rgba colour`).not.to.equal(undefined);
-          const spread = Math.max(...(channels ?? [])) - Math.min(...(channels ?? []));
-          expect(spread, token).to.be.at.most(8);
-        });
-    });
+describe('rarity chips, liveries and instruments', () => {
+  const palettes: [string, RarityPalette][] = [
+    ['light', lightRarity],
+    ['dark', darkRarity],
+  ];
 
-    it(`${name}: greys are neutral (no warm paper, no beige)`, () => {
-      (['bg', 'raise', 'line', 'text', 'text2'] as const).forEach((token) => {
-        const hex = colors[token];
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        // Neutral or cool: blue is never lower than red, and the channels stay within 8 of each other.
-        expect(b, token).to.be.at.least(r);
-        expect(Math.max(r, g, b) - Math.min(r, g, b), token).to.be.at.most(8);
+  palettes.forEach(([name, palette]) => {
+    it(`${name} rarity chips are at least 6.5:1`, () => {
+      Object.values(palette).forEach(({ background, text }) => {
+        expect(ratio(text, background), `${text} on ${background}`).to.be.at.least(6.5);
       });
     });
   });
 
-  it('keeps the light scheme on pure white', () => {
-    expect(lightColors.bg).to.equal('#FFFFFF');
-  });
-});
-
-describe('rarity roundels and the deprecated decorative sets', () => {
-  [lightTheme, darkTheme].forEach((theme) => {
-    it(`${theme.scheme}: every roundel letter is readable on its disc or on the background`, () => {
-      Object.entries(roundels).forEach(([rarity, style]) => {
-        const background = style.fill !== undefined ? theme.colors[style.fill] : theme.colors.bg;
-        expect(ratio(theme.colors[style.ink], background), rarity).to.be.at.least(AA_TEXT);
-        if (style.ring !== undefined) {
-          expect(ratio(theme.colors[style.ring], theme.colors.bg), `${rarity} ring`).to.be.at.least(AA_NON_TEXT);
-        }
-      });
+  it('livery text on its page base is readable', () => {
+    Object.entries(liveries).forEach(([page, { base, text }]) => {
+      expect(ratio(text, base), page).to.be.at.least(AA);
     });
+  });
+
+  it('collection livery text on its set base is readable (Appendix E)', () => {
+    Object.entries(collectionLiveries).forEach(([set, { base, text }]) => {
+      expect(ratio(text, base), set).to.be.at.least(AA);
+    });
+  });
+
+  it('pit board, roundel and timing colours carry readable text', () => {
+    expect(ratio(instruments.pitBoardText, instruments.pitBoard)).to.be.at.least(AA);
+    expect(ratio(instruments.pitBoardAccent, instruments.pitBoard)).to.be.at.least(AA);
+    expect(ratio(instruments.roundelInk, instruments.roundel)).to.be.at.least(AA);
+    expect(ratio('#FFFFFF', instruments.timingPurple)).to.be.at.least(AA);
+    expect(ratio('#FFFFFF', instruments.timingGreen)).to.be.at.least(AA);
+    expect(ratio(instruments.timingYellowInk, instruments.timingYellow)).to.be.at.least(AA);
   });
 });

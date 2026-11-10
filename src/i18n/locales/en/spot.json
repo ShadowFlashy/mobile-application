@@ -1,15 +1,19 @@
 {
-  "title": "Spot",
+  "eyebrow": "Pit stop",
+  "title": "Spot a car",
+  "subtitle": "Snap it. We blur it. You collect it.",
   "shutter_label": "Take a photo",
   "shutter_hint": "Opens the camera to photograph a car",
-  "gallery": "Choose from gallery",
+  "gallery": "From gallery",
   "gallery_hint": "Choose a photo of a car from your gallery",
-  "status_label": "Auto-fill status",
-  "chip_ai_on": "Auto-fill on",
-  "chip_ai_off": "Auto-fill off",
-  "chip_city_off": "City from location off",
-  "autofills_left_one": "{{count}} auto-fill left today",
-  "autofills_left_other": "{{count}} auto-fills left today",
+  "status_label": "Co-Driver status",
+  "chip_ai_on": "Co-Driver on",
+  "chip_ai_off": "Co-Driver off",
+  "chip_city_on": "Auto-city on",
+  "chip_city_off": "Auto-city off",
+  "chip_scans_one": "{{count}} scan left today",
+  "chip_scans_other": "{{count}} scans left today",
   "chip_offline": "Offline",
-  "privacy_body": "Plates are blurred on your phone before anything is uploaded. Only the city is stored, never your position."
+  "privacy_title": "Plates stay private",
+  "privacy_body": "Co-Driver suggests where the licence plates are. You check the boxes, and the plates are blurred on your phone before anything is uploaded. Your GPS position never leaves your phone: only the city is stored."
 }

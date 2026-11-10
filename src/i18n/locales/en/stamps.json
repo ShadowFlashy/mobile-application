@@ -1,0 +1,11 @@
+{
+  "new": "New",
+  "count": "×{{count}}",
+  "fresh_paint": "Fresh paint",
+  "wildcard": "Wildcard",
+  "full_page": "Full page",
+  "co_driver": "Co-Driver ✓",
+  "one_to_go": "One to go",
+  "set_complete": "Set complete",
+  "set_complete_label": "Set complete: every car of {{set}} is in your album"
+}

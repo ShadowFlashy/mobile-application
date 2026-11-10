@@ -12,11 +12,11 @@ export const Login: Story = {
   args: {
     children: (
       <>
-        <BrandHeader subtitle="Photograph the cars you spot. Plates are blurred on your phone." />
+        <BrandHeader subtitle="Snap it. We blur it. You collect it." />
         <InputField label="Email" value="" onChangeText={() => undefined} />
         <StyledButton label="Log in" onPress={() => undefined} />
       </>
     ),
-    footer: <StyledButton label="Create an account" variant="text" onPress={() => undefined} />,
+    footer: <StyledButton label="No account yet? Create one" variant="ghost" onPress={() => undefined} />,
   },
 };

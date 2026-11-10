@@ -28,7 +28,7 @@ import { clampRegion, coverage } from './plateRegions';
  * idle → preparing → identifying → reviewing → collecting → collected | failed.
  *
  * The review screen is shown from `preparing` on (D-15): identification runs in the background and
- * never blocks the user. After "Fill in myself" (`manual`) a late Auto-fill answer is ignored, and so
+ * never blocks the user. After "Fill in myself" (`manual`) a late Co-Driver answer is ignored, and so
  * is any answer that arrives once the user is saving.
  */
 
@@ -90,7 +90,7 @@ export function createDraft({ id, photo, source, now, shareNameDefault }: NewDra
 const ANALYSING: readonly CaptureStatus[] = ['preparing', 'identifying'];
 const SAVING: readonly CaptureStatus[] = ['collecting', 'collected'];
 
-/** True while Auto-fill may still deliver an answer that is worth applying. */
+/** True while Co-Driver may still deliver an answer that is worth applying. */
 export function isAnalysing(draft: CaptureDraft): boolean {
   return !draft.manual && ANALYSING.includes(draft.status);
 }

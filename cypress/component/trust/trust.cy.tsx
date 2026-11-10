@@ -1,161 +1,110 @@
-import { useState } from 'react';
-import { Text } from '../../../src/components/primitives/Text';
-import { AutofillQuota } from '../../../src/components/trust/AutofillQuota';
-import { DeleteAccountRow } from '../../../src/components/trust/DeleteAccountRow';
-import { OptionRow } from '../../../src/components/trust/OptionRow';
+import { DeleteAccountButton } from '../../../src/components/trust/DeleteAccountButton';
+import { DriverCard } from '../../../src/components/trust/DriverCard';
 import { OwnerVisibilityTable } from '../../../src/components/trust/OwnerVisibilityTable';
 import { PrivacyDocument, PRIVACY_SECTIONS } from '../../../src/components/trust/PrivacyDocument';
-import { ProfileIdentity } from '../../../src/components/trust/ProfileIdentity';
-import { TableHeader, TableRow } from '../../../src/components/trust/TableRow';
+import { SettingRow } from '../../../src/components/trust/SettingRow';
 import { TrustLedger } from '../../../src/components/trust/TrustLedger';
 
 describe('TrustLedger', () => {
-  const ledger = { photos: 27, plates: 0 as const, gpsPoints: 0 as const, cities: 6 };
+  const ledger = {
+    photos: 27,
+    plates: 0 as const,
+    gpsPoints: 0 as const,
+    cities: 6,
+    aiCallsLeft: 12,
+    aiDailyLimit: 15,
+  };
 
-  it('shows 0 plates and 0 GPS points as "Never stored", with photos and cities', () => {
-    cy.mount(<TrustLedger {...ledger} testID="trust-ledger" />);
+  it('shows 0 plates and 0 GPS points as "Never stored", with photos, cities and scans left', () => {
+    cy.mount(<TrustLedger {...ledger} aiEnabled testID="trust-ledger" />);
     cy.get('[data-testid="ledger-plates-value"]').should('have.text', '0');
     cy.get('[data-testid="ledger-gps-value"]').should('have.text', '0');
     cy.get('[data-testid="ledger-plates"]').should('contain.text', 'Never stored');
     cy.get('[data-testid="ledger-gps"]').should('contain.text', 'Never stored');
     cy.get('[data-testid="ledger-photos-value"]').should('have.text', '27');
     cy.get('[data-testid="ledger-cities-value"]').should('have.text', '6');
+    cy.get('[data-testid="ledger-ai-value"]').should('have.text', '12 of 15');
   });
 
-  it('gives each row one spoken label', () => {
-    cy.mount(<TrustLedger {...ledger} />);
+  it('gives each counter one spoken label', () => {
+    cy.mount(<TrustLedger {...ledger} aiEnabled />);
     cy.get('[data-testid="ledger-plates"]').should('have.attr', 'aria-label', 'Licence plates: 0, Never stored');
-    cy.get('[data-testid="ledger-photos"]').should(
-      'have.attr',
-      'aria-label',
-      'Blurred photos: 27, Plates blurred on your phone',
-    );
+    cy.get('[data-testid="ledger-ai"]').should('have.attr', 'aria-label', 'Co-Driver scans left today: 12 of 15');
   });
 
-  it('is a hairline table, not a grid of boxes', () => {
-    cy.mount(<TrustLedger {...ledger} />);
-    cy.get('[data-testid="ledger-plates"]').should(($row) => {
-      const style = getComputedStyle($row[0]);
-      expect(style.borderBottomWidth).to.equal('1px');
-      expect(style.borderTopWidth).to.equal('0px');
-      expect(style.backgroundColor).to.be.oneOf(['rgba(0, 0, 0, 0)', 'transparent']);
-    });
-  });
-
-  it('keeps the guaranteed zeros visible while the spots load', () => {
-    cy.mount(<TrustLedger {...ledger} isLoading />);
-    cy.get('[data-testid="ledger-photos-value"]').should('not.exist');
-    cy.get('[data-testid="ledger-plates-value"]').should('have.text', '0');
-    cy.get('[data-testid="ledger-gps-value"]').should('have.text', '0');
-  });
-});
-
-describe('AutofillQuota', () => {
-  it('shows the Auto-fills left today as a readout with a 2 px line', () => {
-    cy.mount(<AutofillQuota aiEnabled left={12} limit={15} testID="ledger-ai" />);
-    cy.get('[data-testid="ledger-ai-value"]').should('have.text', '12/15');
-    cy.get('[data-testid="ledger-ai-value"]').should('have.attr', 'aria-label', 'Auto-fills left today: 12 of 15');
-    cy.get('[data-testid="ledger-ai"]').should('contain.text', 'Auto-fills left today');
-    cy.get('[data-testid="ledger-ai"] [role="progressbar"]').should('have.attr', 'aria-valuenow');
-  });
-
-  it('says Auto-fill is off instead of counting', () => {
-    cy.mount(<AutofillQuota aiEnabled={false} left={12} limit={15} testID="ledger-ai" />);
-    cy.get('[data-testid="ledger-ai-value"]').should('have.text', 'Auto-fill is off');
-    cy.get('[data-testid="ledger-ai"]').should('not.contain.text', '12');
+  it('says Co-Driver is off instead of counting scans', () => {
+    cy.mount(<TrustLedger {...ledger} aiEnabled={false} />);
+    cy.get('[data-testid="ledger-ai-value"]').should('have.text', 'Co-Driver is off');
   });
 
   it('explains a missing quota instead of showing a wrong number', () => {
-    cy.mount(<AutofillQuota aiEnabled testID="ledger-ai" />);
+    cy.mount(<TrustLedger {...ledger} aiCallsLeft={undefined} aiDailyLimit={undefined} aiEnabled />);
     cy.get('[data-testid="ledger-ai-value"]').should('have.text', 'Shown when you are online');
   });
-});
 
-describe('ProfileIdentity', () => {
-  it('shows the initials avatar, the name and the email', () => {
-    cy.mount(<ProfileIdentity name="Jasper Degreef" email="tester@redline.test" testID="driver-card" />);
-    cy.get('[data-testid="driver-name"]').should('have.text', 'Jasper Degreef').and('have.attr', 'role', 'heading');
-    cy.get('[data-testid="driver-email"]').should('have.text', 'tester@redline.test');
-    cy.get('[data-testid="driver-card"]').should('contain.text', 'JD');
-    cy.get('[aria-label="Avatar of Jasper Degreef"]').should('exist');
-  });
-
-  it('is a plain row: no card fill, one hairline', () => {
-    cy.mount(<ProfileIdentity name="tester" testID="driver-card" />);
-    cy.get('[data-testid="driver-card"]').should(($row) => {
-      const style = getComputedStyle($row[0]);
-      expect(style.backgroundColor).to.be.oneOf(['rgba(0, 0, 0, 0)', 'transparent']);
-      expect(style.borderBottomWidth).to.equal('1px');
-      expect(style.borderRadius).to.equal('0px');
-    });
-    cy.get('[data-testid="driver-email"]').should('not.exist');
-  });
-
-  it('says an offline session is read-only', () => {
-    cy.mount(<ProfileIdentity name="tester" isOffline />);
-    cy.get('[data-testid="offline-session-tag"]').should('have.text', 'Offline · read-only');
+  it('keeps the guaranteed zeros visible while the spots load', () => {
+    cy.mount(<TrustLedger {...ledger} aiEnabled isLoading />);
+    cy.get('[data-testid="ledger-photos-value"]').should('not.exist');
+    cy.get('[data-testid="ledger-plates-value"]').should('have.text', '0');
   });
 });
 
-describe('OptionRow', () => {
-  const OPTIONS = [
-    { value: 'en', label: 'EN', accessibilityLabel: 'English' },
-    { value: 'nl', label: 'NL', accessibilityLabel: 'Nederlands' },
-  ] as const;
+describe('DriverCard', () => {
+  const level = { level: 5, title: 'Kerbside Scout', xp: 1240, nextLevelXp: 1500, ratio: 0.48 };
 
-  function Harness({ onChange }: { onChange: (value: string) => void }) {
-    const [value, setValue] = useState<'en' | 'nl'>('en');
-    return (
-      <OptionRow<'en' | 'nl'>
-        label="Language"
-        options={OPTIONS}
-        value={value}
-        onChange={(next) => {
-          setValue(next);
-          onChange(next);
-        }}
-        testID="language"
-      />
-    );
-  }
-
-  it('is a radio group with 44 px options named in full', () => {
-    cy.mount(<Harness onChange={cy.stub().as('onChange')} />);
-    cy.get('[data-testid="language"]')
-      .should('have.attr', 'role', 'radiogroup')
-      .and('have.attr', 'aria-label', 'Language');
-    cy.get('[data-testid="language-en"]').should('have.attr', 'role', 'radio').and('have.attr', 'aria-checked', 'true');
-    cy.get('[data-testid="language-nl"]').should('have.attr', 'aria-label', 'Nederlands').and('contain.text', 'NL');
-    cy.get('[data-testid="language-nl"]').invoke('outerHeight').should('be.at.least', 44);
-    cy.get('[data-testid="language-nl"]').invoke('outerWidth').should('be.at.least', 44);
+  it('shows the username, level title and the XP to the next level', () => {
+    cy.mount(<DriverCard name="tester" email="tester@redline.test" level={level} testID="driver-card" />);
+    cy.get('[data-testid="driver-name"]').should('have.text', 'tester');
+    cy.get('[data-testid="driver-title"]').should('have.text', 'Kerbside Scout');
+    cy.get('[data-testid="driver-xp"]').should('have.text', '1,240 XP · 260 XP to level 6');
+    cy.get('[data-testid="driver-card"]').should('contain.text', 'Level 5');
+    cy.get('[data-testid="driver-card"]').should('contain.text', 'tester@redline.test');
   });
 
-  it('selects an option on press', () => {
-    cy.mount(<Harness onChange={cy.stub().as('onChange')} />);
-    cy.get('[data-testid="language-nl"]').click();
-    cy.get('@onChange').should('have.been.calledOnceWith', 'nl');
-    cy.get('[data-testid="language-nl"]').should('have.attr', 'aria-checked', 'true');
-    cy.get('[data-testid="language-en"]').should('have.attr', 'aria-checked', 'false');
+  it('announces the driver as one heading', () => {
+    cy.mount(<DriverCard name="tester" level={level} />);
+    cy.get('[aria-label="tester, level 5, Kerbside Scout"]').should('exist');
+  });
+
+  it('labels the shift lights with the progress in words', () => {
+    cy.mount(<DriverCard name="tester" level={level} />);
+    cy.get('[data-testid="driver-shift-lights"]').should('have.attr', 'aria-label', 'Progress to level 6: 48%');
+  });
+
+  it('shows a counting state before the progress is derived', () => {
+    cy.mount(<DriverCard name="tester" />);
+    cy.contains('Counting your XP…').should('be.visible');
+    cy.get('[data-testid="driver-title"]').should('not.exist');
+  });
+
+  it('tags an offline session as read-only', () => {
+    cy.mount(<DriverCard name="tester" level={level} isOffline />);
+    cy.get('[data-testid="offline-session-tag"]').should('contain.text', 'Offline · read-only');
   });
 });
 
-describe('TableRow', () => {
-  it('reads as one sentence when it has a spoken label, and hides the column header', () => {
+describe('SettingRow', () => {
+  it('is a 48 dp link with a chevron that calls onPress', () => {
+    const onPress = cy.stub().as('onPress');
     cy.mount(
-      <>
-        <TableHeader left="Data" right="Owner sees" testID="table-header" />
-        <TableRow
-          label="City"
-          hint="Only the city name"
-          value={<Text>Shown</Text>}
-          accessibilityLabel="City: Shown"
-          testID="row"
-        />
-      </>,
+      <SettingRow
+        icon="shield-checkmark-outline"
+        label="Trust Center"
+        description="Co-Driver, auto-city and what Redline stores"
+        onPress={onPress}
+        testID="trust-link"
+      />,
     );
-    cy.get('[data-testid="row"]').should('have.attr', 'aria-label', 'City: Shown');
-    cy.get('[data-testid="row"]').invoke('outerHeight').should('be.at.least', 56);
-    cy.get('[data-testid="table-header"]').should('have.attr', 'aria-hidden', 'true');
+    cy.get('[data-testid="trust-link"]').should('have.attr', 'role', 'link').and('contain.text', 'Trust Center');
+    cy.get('[data-testid="trust-link"]').invoke('outerHeight').should('be.at.least', 48);
+    cy.get('[data-testid="trust-link"]').click();
+    cy.get('@onPress').should('have.been.calledOnce');
+  });
+
+  it('shows a value without being pressable when it has no onPress', () => {
+    cy.mount(<SettingRow icon="information-circle-outline" label="Version" value="2.0.0" testID="version" />);
+    cy.get('[data-testid="version"]').should('contain.text', '2.0.0').and('not.have.attr', 'role', 'link');
+    cy.get('[data-testid="version"]').should('have.attr', 'aria-label', 'Version, 2.0.0');
   });
 });
 
@@ -197,30 +146,12 @@ describe('PrivacyDocument', () => {
       .and('contain.text', 'Mistral AI');
     cy.get('[role="heading"]').should('have.length.at.least', PRIVACY_SECTIONS.length);
   });
-
-  it('calls the AI feature Auto-fill, never Co-Driver', () => {
-    cy.mount(<PrivacyDocument testID="privacy-document" />);
-    cy.get('[data-testid="privacy-section-ai"]').should('contain.text', 'Auto-fill');
-    cy.get('[data-testid="privacy-document"]').should('not.contain.text', 'Co-Driver');
-  });
-
-  it('shows a toolbar under the title', () => {
-    cy.mount(<PrivacyDocument toolbar={<Text testID="toolbar">Language</Text>} />);
-    cy.get('[data-testid="toolbar"]').should('be.visible');
-  });
 });
 
-describe('DeleteAccountRow', () => {
-  it('is a plain row that asks for confirmation before it deletes, and closes afterwards', () => {
+describe('DeleteAccountButton', () => {
+  it('asks for confirmation before it deletes, and closes afterwards', () => {
     const onConfirm = cy.stub().as('onConfirm').resolves();
-    cy.mount(<DeleteAccountRow onConfirm={onConfirm} isDeleting={false} testID="delete-account-button" />);
-    cy.get('[data-testid="delete-account-button"]')
-      .should('have.attr', 'role', 'button')
-      .and('contain.text', 'Delete account')
-      .and(($row) => {
-        expect(getComputedStyle($row[0]).backgroundColor).to.be.oneOf(['rgba(0, 0, 0, 0)', 'transparent']);
-      });
-    cy.get('[data-testid="delete-account-button"]').invoke('outerHeight').should('be.at.least', 44);
+    cy.mount(<DeleteAccountButton onConfirm={onConfirm} isDeleting={false} testID="delete-account-button" />);
     cy.get('[data-testid="delete-account-button"]').click();
     cy.get('[data-testid="confirm-dialog"]').should('contain.text', 'Delete your account?');
     cy.get('@onConfirm').should('not.have.been.called');
@@ -231,7 +162,7 @@ describe('DeleteAccountRow', () => {
 
   it('closes on cancel without deleting', () => {
     const onConfirm = cy.stub().as('onConfirm').resolves();
-    cy.mount(<DeleteAccountRow onConfirm={onConfirm} isDeleting={false} testID="delete-account-button" />);
+    cy.mount(<DeleteAccountButton onConfirm={onConfirm} isDeleting={false} testID="delete-account-button" />);
     cy.get('[data-testid="delete-account-button"]').click();
     cy.get('[data-testid="confirm-dialog-cancel"]').click();
     cy.get('[data-testid="confirm-dialog"]').should('not.exist');
@@ -240,7 +171,7 @@ describe('DeleteAccountRow', () => {
 
   it('closes the dialog when deletion fails, so the error toast is visible', () => {
     const onConfirm = cy.stub().as('onConfirm').rejects(new Error('demo_protected'));
-    cy.mount(<DeleteAccountRow onConfirm={onConfirm} isDeleting={false} testID="delete-account-button" />);
+    cy.mount(<DeleteAccountButton onConfirm={onConfirm} isDeleting={false} testID="delete-account-button" />);
     cy.get('[data-testid="delete-account-button"]').click();
     cy.get('[data-testid="confirm-dialog-confirm"]').click();
     cy.get('[data-testid="confirm-dialog"]').should('not.exist');

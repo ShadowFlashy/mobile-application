@@ -1,6 +1,6 @@
 {
   "label": "Which car is it?",
-  "placeholder": "Search, e.g. Golf GTI or 911",
+  "placeholder": "Search, e.g. vw golf, lambo, eend",
   "hint": "Search the album. Nicknames work too.",
   "hint_other": "Not in the album? Fill in the brand and model below.",
   "sticker_number": "Sticker #{{number}}",

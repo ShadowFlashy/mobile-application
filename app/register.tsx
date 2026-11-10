@@ -60,9 +60,9 @@ export default function RegisterScreen() {
 
   if (isWaitingForConfirmation) {
     return (
-      <Screen>
+      <Screen padding="lg">
         <EmptyState
-          icon="mail"
+          icon="mail-unread-outline"
           title={t('auth.confirm_title')}
           description={t('auth.confirm_description', { email: form.email.trim() })}
           action={<StyledButton label={t('auth.back_to_login')} onPress={() => router.replace(routes.login)} />}
@@ -79,13 +79,14 @@ export default function RegisterScreen() {
         <>
           <StyledButton
             label={t('auth.go_to_login')}
-            variant="text"
+            variant="ghost"
             onPress={() => router.replace(routes.login)}
             testID="go-to-login"
           />
           <StyledButton
             label={t('auth.privacy_link')}
-            variant="text"
+            variant="ghost"
+            icon="shield-checkmark-outline"
             onPress={() => router.push(routes.privacy)}
             testID="go-to-privacy"
           />

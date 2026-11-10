@@ -9,7 +9,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { createThemedStyles, lines, spacing } from '../../theme';
+import { createThemedStyles } from '../../theme';
 import type { AlbumPageData } from '../../types/Album';
 import type { CarModel } from '../../types/CarModel';
 import type { AlbumPageId } from '../../types/Progress';
@@ -30,20 +30,11 @@ export interface AlbumPagerProps {
   testID?: string;
 }
 
-interface Size {
-  width: number;
-  height: number;
-}
-
 const keyExtractor = (page: AlbumPageData): string => page.id;
 
 /**
- * Swipeable album pages: a horizontal paging list opened at the URL page, with a plain footer of
- * previous / "03/09" / next (usable without swiping: keyboard, screen readers, desktop).
- *
- * Each page gets the measured width AND height of the list area, so its own vertical ScrollView
- * is the scroller. Without the height, a page grew to its full content height and the horizontal
- * list clipped the rows below the fold on the web.
+ * Swipeable album pages: a horizontal paging list opened at the URL page. Previous/next buttons
+ * and a "03/09" position make it usable without swiping (keyboard, screen readers, desktop).
  */
 export function AlbumPager({
   pages,
@@ -60,15 +51,21 @@ export function AlbumPager({
     0,
     pages.findIndex((page) => page.id === initialPageId),
   );
-  const [size, setSize] = useState<Size>({ width: 0, height: 0 });
+  const [size, setSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [index, setIndex] = useState(initialIndex);
   const indexRef = useRef(initialIndex);
 
+  // Each page gets the measured width AND height of the list area, so its own vertical ScrollView
+  // scrolls. Without a height a page grew to its full content height and the horizontal list
+  // clipped it on the web, so long pages (05 Classics, 06 JDM) could not be scrolled.
   const onLayout = (event: LayoutChangeEvent) => {
-    const width = Math.round(event.nativeEvent.layout.width);
-    const height = Math.round(event.nativeEvent.layout.height);
-    setSize((current) => (current.width === width && current.height === height ? current : { width, height }));
+    const nextWidth = Math.round(event.nativeEvent.layout.width);
+    const nextHeight = Math.round(event.nativeEvent.layout.height);
+    setSize((current) =>
+      current.width === nextWidth && current.height === nextHeight ? current : { width: nextWidth, height: nextHeight },
+    );
   };
+  const { width, height } = size;
 
   const settle = useCallback(
     (next: number) => {
@@ -83,8 +80,8 @@ export function AlbumPager({
   );
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (size.width === 0) return;
-    settle(Math.round(event.nativeEvent.contentOffset.x / size.width));
+    if (width === 0) return;
+    settle(Math.round(event.nativeEvent.contentOffset.x / width));
   };
 
   // The buttons jump without animation: on the web a smooth scroll inside a snapping list can be
@@ -97,43 +94,39 @@ export function AlbumPager({
   };
 
   const renderPage = ({ item }: ListRenderItemInfo<AlbumPageData>) => (
-    <View style={{ width: size.width, height: size.height }}>
+    <View style={{ width, height }}>
       <ScrollView style={styles.page} contentContainerStyle={styles.pageContent} testID={`pager-page-${item.id}`}>
-        <AlbumPage page={item} showTitle onPressSlot={onPressSlot} onPressSpot={onPressSpot} />
+        <AlbumPage page={item} onPressSlot={onPressSlot} onPressSpot={onPressSpot} />
       </ScrollView>
     </View>
   );
 
   return (
     <View style={styles.root} testID={testID}>
-      <View style={styles.listArea} onLayout={onLayout}>
-        {size.width > 0 && size.height > 0 && (
+      <View style={styles.listArea} onLayout={onLayout} testID={`${testID}-area`}>
+        {width > 0 && height > 0 && (
           <FlatList
             ref={listRef}
             data={pages}
             keyExtractor={keyExtractor}
             renderItem={renderPage}
-            extraData={size}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             initialScrollIndex={initialIndex}
-            getItemLayout={(_, itemIndex) => ({
-              length: size.width,
-              offset: size.width * itemIndex,
-              index: itemIndex,
-            })}
+            getItemLayout={(_, itemIndex) => ({ length: width, offset: width * itemIndex, index: itemIndex })}
             onScroll={onScroll}
             scrollEventThrottle={32}
             initialNumToRender={1}
             windowSize={3}
             style={styles.list}
+            extraData={size}
           />
         )}
       </View>
       <View style={styles.footer}>
         <IconButton
-          icon="chevron-left"
+          icon="chevron-back"
           label={t('album.previous_page')}
           onPress={() => goTo(index - 1)}
           disabled={index === 0}
@@ -144,15 +137,15 @@ export function AlbumPager({
           accessibilityLabel={t('album.pager_label', { current: index + 1, total: pages.length })}
           accessibilityLiveRegion="polite"
         >
-          <Text variant="num" testID="pager-position">
-            {String(index + 1).padStart(2, '0')}
-            <Text variant="num" tone="text2">
-              {t('album.pager_total', { total: String(pages.length).padStart(2, '0') })}
-            </Text>
+          <Text variant="numberSm" testID="pager-position">
+            {t('album.pager_position', {
+              current: String(index + 1).padStart(2, '0'),
+              total: String(pages.length).padStart(2, '0'),
+            })}
           </Text>
         </View>
         <IconButton
-          icon="chevron-right"
+          icon="chevron-forward"
           label={t('album.next_page')}
           onPress={() => goTo(index + 1)}
           disabled={index >= pages.length - 1}
@@ -163,19 +156,22 @@ export function AlbumPager({
   );
 }
 
-const useStyles = createThemedStyles(({ colors }) => ({
-  root: { flex: 1, backgroundColor: colors.bg },
+const useStyles = createThemedStyles(({ colors, spacing }) => ({
+  root: { flex: 1, backgroundColor: colors.background },
+  // minHeight 0 lets the list area shrink to the space above the footer; without it the first
+  // (too tall) measurement props it up and the last row of a long page hides behind the footer.
   listArea: { flex: 1, minHeight: 0 },
   list: { flex: 1 },
   page: { flex: 1 },
-  pageContent: { paddingHorizontal: spacing.gutter, paddingTop: spacing.sm, paddingBottom: spacing.xl },
+  pageContent: { padding: spacing.md, paddingBottom: spacing.xl },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.sm,
-    borderTopWidth: lines.hairline,
-    borderTopColor: colors.line,
-    backgroundColor: colors.bg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.surface,
   },
 }));

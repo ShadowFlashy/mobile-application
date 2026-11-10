@@ -12,15 +12,15 @@ interface BrandHeaderProps {
   testID?: string;
 }
 
-/** The rev-counter mark next to the "Redline" wordmark, with a plain tagline (login and register). */
+/** The BrandMark sticker next to the REDLINE wordmark, with a tagline (login and register). */
 export function BrandHeader({ subtitle, size = 'lg', testID }: BrandHeaderProps) {
   return (
-    <Stack gap="sm" testID={testID}>
+    <Stack gap="smd" testID={testID}>
       <Row gap="smd" align="center">
-        <BrandMark size={size === 'lg' ? 40 : 32} testID="brand-mark" />
+        <BrandMark size={size === 'lg' ? 56 : 44} testID="brand-mark" />
         <Wordmark size={size} testID="brand-wordmark" />
       </Row>
-      <Text variant="value" tone="text2">
+      <Text variant="bodyStrong" tone="muted">
         {subtitle}
       </Text>
     </Stack>

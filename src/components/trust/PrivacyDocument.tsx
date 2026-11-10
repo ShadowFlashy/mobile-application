@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { createThemedStyles, lines, spacing } from '../../theme';
+import { createThemedStyles, spacing } from '../../theme';
+import { KerbStripe } from '../primitives/KerbStripe';
 import { Text } from '../primitives/Text';
 
 /** The sections of the policy, in reading order (SPEC P0-18: controller, purposes, legal basis,
@@ -24,62 +24,54 @@ export const PRIVACY_SECTIONS = [
 ] as const;
 
 export interface PrivacyDocumentProps {
-  /** Shown under the title and date, e.g. the language tabs. */
-  toolbar?: ReactNode;
   testID?: string;
 }
 
 /**
- * The privacy policy (SPEC P0-18, §12) in the current language, set as a plain document: the
- * condensed title, the date and intro, then numbered sections, each a hairline, a text-2 number and
- * a real heading over a body paragraph. The text lives in the `privacy` namespace (en and nl).
+ * The privacy policy (SPEC P0-18, §12) in the current language: a numbered, readable document
+ * with real headings for screen readers. The text lives in the `privacy` namespace (en and nl).
  */
-export function PrivacyDocument({ toolbar, testID }: PrivacyDocumentProps) {
+export function PrivacyDocument({ testID }: PrivacyDocumentProps) {
   const { t } = useTranslation();
   const styles = useStyles();
   return (
     <View style={styles.document} testID={testID}>
       <View style={styles.masthead}>
-        <Text variant="title" heading testID="privacy-title">
+        <Text variant="label" tone="accent">
+          {t('privacy.eyebrow')}
+        </Text>
+        <Text variant="display" heading testID="privacy-title">
           {t('privacy.title')}
         </Text>
-        <Text variant="meta" tone="text2">
+        <Text variant="caption" tone="muted">
           {t('privacy.updated')}
         </Text>
+        <Text tone="muted">{t('privacy.intro')}</Text>
       </View>
-      {toolbar}
-      <Text variant="bodyL">{t('privacy.intro')}</Text>
-      <View>
-        {PRIVACY_SECTIONS.map((section, index) => (
-          <View key={section.id} style={styles.section} testID={`privacy-section-${section.id}`}>
-            <View style={styles.heading}>
-              <Text variant="numS" tone="text2" decorative>
-                {String(index + 1).padStart(2, '0')}
+      <KerbStripe height={4} />
+      {PRIVACY_SECTIONS.map((section, index) => (
+        <View key={section.id} style={styles.section} testID={`privacy-section-${section.id}`}>
+          <View style={styles.heading}>
+            <Text variant="stickerNo" tone="accent">
+              {String(index + 1).padStart(2, '0')}
+            </Text>
+            <View style={styles.headingText}>
+              <Text variant="headline" heading>
+                {t(section.title)}
               </Text>
-              <View style={styles.headingText}>
-                <Text variant="heading" heading>
-                  {t(section.title)}
-                </Text>
-              </View>
             </View>
-            <Text variant="value">{t(section.body)}</Text>
           </View>
-        ))}
-      </View>
+          <Text>{t(section.body)}</Text>
+        </View>
+      ))}
     </View>
   );
 }
 
-const useStyles = createThemedStyles(({ colors }) => ({
+const useStyles = createThemedStyles(() => ({
   document: { gap: spacing.lg },
   masthead: { gap: spacing.xs },
-  section: {
-    gap: spacing.sm,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-    borderTopWidth: lines.hairline,
-    borderTopColor: colors.line,
-  },
-  heading: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.smd },
-  headingText: { flex: 1, minWidth: 0 },
+  section: { gap: spacing.sm },
+  heading: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
+  headingText: { flex: 1 },
 }));

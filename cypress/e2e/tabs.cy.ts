@@ -1,14 +1,11 @@
-// The 5-tab shell in direction A: Album, Stats, the red Spot key, Garage and Profile.
+// The 5-tab LIVERY shell (P0-09): Album, Pit Wall, the raised SPOT Ignition button, Garage and Me.
 const TABS = [
   { id: 'tab-index', en: 'Album', nl: 'Album', screen: 'sticker-book-screen' },
-  { id: 'tab-progress', en: 'Stats', nl: 'Statistieken', screen: 'progress-screen' },
-  { id: 'tab-spot', en: 'Spot', nl: 'Spot', screen: 'spot-screen' },
+  { id: 'tab-progress', en: 'Pit Wall', nl: 'Pitmuur', screen: 'progress-screen' },
+  { id: 'tab-spot', en: 'SPOT', nl: 'SPOT', screen: 'spot-screen' },
   { id: 'tab-owners', en: 'Garage', nl: 'Garage', screen: 'owners-screen' },
-  { id: 'tab-profile', en: 'Profile', nl: 'Profiel', screen: 'profile-screen' },
+  { id: 'tab-profile', en: 'Me', nl: 'Ik', screen: 'profile-screen' },
 ] as const;
-
-/** Redline red as getComputedStyle reports it. */
-const RED = 'rgb(225, 6, 0)';
 
 describe('Main tabs', () => {
   beforeEach(() => {
@@ -34,19 +31,15 @@ describe('Main tabs', () => {
     });
   });
 
-  it('shows Spot as the one red key, level with the other tabs; active tabs are never red', () => {
+  it('raises the SPOT Ignition button above the other tabs', () => {
     cy.get('[data-testid="tab-index"]').then(($album) => {
       const albumTop = $album[0]?.getBoundingClientRect().top ?? 0;
       cy.get('[data-testid="tab-spot"]').should(($spot) => {
         const rect = $spot[0]?.getBoundingClientRect();
-        expect(Math.abs((rect?.top ?? 0) - albumTop)).to.be.lessThan(2);
-        expect(rect?.height ?? 0).to.be.at.least(44);
+        expect(rect?.top ?? 0).to.be.lessThan(albumTop);
+        expect(rect?.height ?? 0).to.be.at.least(64);
       });
     });
-    cy.get('[data-testid="bottom-tab-bar"] div')
-      .filter((_, element) => getComputedStyle(element).backgroundColor === RED)
-      .should('have.length', 1)
-      .and(($key) => expect($key.closest('[data-testid="tab-spot"]').length).to.equal(1));
   });
 
   it('labels the tabs in Dutch and sets the page language', () => {
@@ -58,7 +51,7 @@ describe('Main tabs', () => {
     });
     cy.get('html').should('have.attr', 'lang', 'nl');
     TABS.forEach((tab) => cy.get(`[data-testid="${tab.id}"]`).should('contain.text', tab.nl));
-    cy.get('[data-testid="tab-progress"]').should('not.contain.text', 'Stats');
-    cy.get('[data-testid="tab-profile"]').should('not.contain.text', 'Profile');
+    cy.get('[data-testid="tab-progress"]').should('not.contain.text', 'Pit Wall');
+    cy.get('[data-testid="tab-profile"]').should('not.contain.text', 'Me');
   });
 });

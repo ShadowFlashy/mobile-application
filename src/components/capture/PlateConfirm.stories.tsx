@@ -27,4 +27,4 @@ function Interactive({ regionCount, ignoredCount }: { regionCount: number; ignor
 
 export const WithBoxes: Story = { render: () => <Interactive regionCount={2} ignoredCount={0} /> };
 export const NoBoxYet: Story = { render: () => <Interactive regionCount={0} ignoredCount={0} /> };
-export const AutoFillSawAPlate: Story = { render: () => <Interactive regionCount={0} ignoredCount={1} /> };
+export const CoDriverSawAPlate: Story = { render: () => <Interactive regionCount={0} ignoredCount={1} /> };

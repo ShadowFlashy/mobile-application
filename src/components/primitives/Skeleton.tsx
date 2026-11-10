@@ -5,14 +5,14 @@ import { createThemedStyles, radii, useMotion } from '../../theme';
 
 /**
  * Named placeholder heights, so screens never pass pixel sizes (golden rule 2: no styling in app/**).
- * line: a text line · header: a title row · row: a list row · plaque: an achievement row ·
- * board: a challenge block · card: a car row block · panel: a car header · photo: a photo.
+ * line: a text line · header: a title row · row: a list row · plaque: an achievement plaque ·
+ * board: a pit board · card: a garage car card · panel: a car header · photo: a sighting photo.
  */
 export const SKELETON_PRESETS = {
   line: 16,
-  header: 44,
-  row: 56,
-  plaque: 56,
+  header: 48,
+  row: 96,
+  plaque: 110,
   board: 120,
   card: 140,
   panel: 160,
@@ -26,16 +26,16 @@ interface SkeletonProps {
   height?: number;
   /** A named height from SKELETON_PRESETS; wins over `height`. */
   preset?: SkeletonPreset;
-  /** `rect` (default, radius 4), `photo` (radius 8), `circle`. `sticker` is the deprecated name of `photo`. */
-  shape?: 'rect' | 'photo' | 'sticker' | 'circle';
+  /** `sticker` uses the sticker radius (slot-shaped skeletons), `circle` a full round. Default `rect`. */
+  shape?: 'rect' | 'sticker' | 'circle';
   /** @deprecated Use `shape`. */
   borderRadius?: number;
   testID?: string;
 }
 
-const SHAPE_RADII = { rect: radii.sm, photo: radii.md, sticker: radii.md, circle: radii.pill } as const;
+const SHAPE_RADII = { rect: 4, sticker: radii.sticker, circle: radii.pill } as const;
 
-/** A flat `raise` block that pulses gently while content loads (static when motion is reduced). */
+/** A pulsing placeholder (static with reduced motion). */
 export function Skeleton({
   width = '100%',
   height = SKELETON_PRESETS.line,
@@ -52,13 +52,13 @@ export function Skeleton({
 
   useEffect(() => {
     if (reduced) {
-      opacity.setValue(1);
+      opacity.setValue(0.6);
       return undefined;
     }
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.55, duration: 900, useNativeDriver: nativeDriver }),
-        Animated.timing(opacity, { toValue: 1, duration: 900, useNativeDriver: nativeDriver }),
+        Animated.timing(opacity, { toValue: 0.4, duration: 800, useNativeDriver: nativeDriver }),
+        Animated.timing(opacity, { toValue: 1, duration: 800, useNativeDriver: nativeDriver }),
       ]),
     );
     animation.start();
@@ -78,5 +78,5 @@ export function Skeleton({
 }
 
 const useStyles = createThemedStyles(({ colors }) => ({
-  base: { backgroundColor: colors.raise },
+  base: { backgroundColor: colors.surfaceSunken },
 }));

@@ -5,6 +5,6 @@ const meta: Meta<typeof ProvenanceTag> = { title: 'Capture/ProvenanceTag', compo
 export default meta;
 type Story = StoryObj<typeof ProvenanceTag>;
 
-export const AutoFill: Story = { args: { provenance: 'ai' } };
+export const CoDriver: Story = { args: { provenance: 'ai' } };
 export const Auto: Story = { args: { provenance: 'auto' } };
 export const You: Story = { args: { provenance: 'user' } };

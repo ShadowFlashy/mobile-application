@@ -6,8 +6,8 @@ import { Screen } from '../../../src/components/primitives/Screen';
 export default function ShareScreen() {
   const { t } = useTranslation();
   return (
-    <Screen title={t('shell.share_title')} testID="share-screen">
-      <EmptyState icon="share" title={t('shell.coming_soon')} />
+    <Screen testID="share-screen">
+      <EmptyState icon="construct-outline" title={t('shell.share_title')} description={t('shell.coming_soon')} />
     </Screen>
   );
 }

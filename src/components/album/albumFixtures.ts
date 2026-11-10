@@ -1,8 +1,6 @@
 import type { CarModel } from '../../types/CarModel';
 import type { Collection } from '../../types/Collection';
-import type { ChallengeProgress, WeeklyChallenge } from '../../types/Progress';
 import type { Spot } from '../../types/Spot';
-import { levelForXp } from '../../utils/progression';
 
 /**
  * Sample data for the album stories and component tests (never imported by the app).
@@ -143,32 +141,4 @@ export const SAMPLE_COLLECTIONS: Collection[] = [
   { id: 'italian-exotics', number: 4, modelIds: [ferrari308.id, ferrari296.id] },
   { id: 'jdm-legends', number: 1, modelIds: [mx5.id] },
   { id: 'autobahn-heroes', number: 3, modelIds: [porsche.id, golf.id] },
-];
-
-/** The mockup's level: 3,015 XP is level 8, 585 XP to level 9. */
-export const SAMPLE_LEVEL = levelForXp(3015);
-
-/** End of the sample challenge week (2026-W46, Monday 16 November 00:00 in Brussels). */
-export const SAMPLE_WEEK_ENDS_AT = '2026-11-15T23:00:00.000Z';
-
-function challenge(
-  slot: WeeklyChallenge['slot'],
-  template: WeeklyChallenge['template'],
-  params: WeeklyChallenge['params'],
-  target: number,
-  xp: number,
-): WeeklyChallenge {
-  return { id: `2026-W46:${slot}`, weekKey: '2026-W46', slot, template, params, target, xp };
-}
-
-/** The mockup's week: 2/3 spots, 0/1 orange car, and the Epic stretch done. */
-export const SAMPLE_CHALLENGES: ChallengeProgress[] = [
-  { challenge: challenge('warmup', 'spots', {}, 3, 75), value: 2, isComplete: false },
-  { challenge: challenge('main', 'paint', { paint: 'orange' }, 1, 125), value: 0, isComplete: false },
-  {
-    challenge: challenge('stretch', 'rarity_min', { rarity: 'epic' }, 1, 250),
-    value: 1,
-    isComplete: true,
-    completedAt: '2026-11-09T12:00:00.000Z',
-  },
 ];

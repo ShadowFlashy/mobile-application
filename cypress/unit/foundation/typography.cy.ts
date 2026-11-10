@@ -1,29 +1,8 @@
-import {
-  A_TEXT_VARIANTS,
-  FONT_FAMILIES,
-  LEGACY_TEXT_VARIANTS,
-  LEGACY_VARIANT_MAP,
-  MAX_FONT_SCALE,
-  resolveVariant,
-  TEXT_VARIANTS,
-  textVariants,
-  variantFamily,
-} from '../../../src/theme';
+import { FONT_FAMILIES, MAX_FONT_SCALE, TEXT_VARIANTS, textVariants, variantFamily } from '../../../src/theme';
 
 const REGISTERED_FAMILIES: string[] = Object.values(FONT_FAMILIES);
 
-describe('typography (direction A)', () => {
-  it('loads exactly five upright faces: Barlow 400/500/600 and Barlow Condensed 500/600', () => {
-    expect([...REGISTERED_FAMILIES].sort()).to.deep.equal([
-      'BarlowCondensed_500Medium',
-      'BarlowCondensed_600SemiBold',
-      'Barlow_400Regular',
-      'Barlow_500Medium',
-      'Barlow_600SemiBold',
-    ]);
-    REGISTERED_FAMILIES.forEach((family) => expect(family).not.to.match(/Italic|700|800/));
-  });
-
+describe('typography (SPEC §7.3)', () => {
   it('defines every variant', () => {
     expect(Object.keys(textVariants).sort()).to.deep.equal([...TEXT_VARIANTS].sort());
   });
@@ -43,58 +22,37 @@ describe('typography (direction A)', () => {
     });
   });
 
-  it("has A's sizes, line heights and families", () => {
-    const expected: Record<string, [number, number, string]> = {
-      hero: [80, 72, 'BarlowCondensed_600SemiBold'],
-      heroSub: [32, 36, 'BarlowCondensed_500Medium'],
-      title: [34, 40, 'BarlowCondensed_600SemiBold'],
-      unit: [20, 24, 'BarlowCondensed_500Medium'],
-      num: [17, 20, 'BarlowCondensed_600SemiBold'],
-      numS: [15, 20, 'BarlowCondensed_500Medium'],
-      mark: [12, 12, 'BarlowCondensed_600SemiBold'],
-      heading: [17, 24, 'Barlow_600SemiBold'],
-      bodyL: [17, 24, 'Barlow_500Medium'],
-      body: [15, 20, 'Barlow_500Medium'],
-      value: [15, 20, 'Barlow_400Regular'],
-      meta: [13, 18, 'Barlow_400Regular'],
-      tab: [11, 14, 'Barlow_500Medium'],
-      button: [17, 24, 'Barlow_600SemiBold'],
+  it('has the documented sizes and line heights', () => {
+    const expected: Record<string, [number, number]> = {
+      hero: [44, 44],
+      display: [34, 36],
+      title: [24, 28],
+      headline: [18, 24],
+      body: [16, 24],
+      bodyStrong: [16, 24],
+      bodySm: [14, 20],
+      label: [13, 16],
+      caption: [12, 16],
+      number: [28, 30],
+      numberSm: [17, 20],
+      stickerNo: [15, 16],
     };
-    A_TEXT_VARIANTS.forEach((variant) => {
-      const style = textVariants[variant];
-      expect([style.fontSize, style.lineHeight, variantFamily(variant)], variant).to.deep.equal(expected[variant]);
-    });
-    expect(textVariants.hero.letterSpacing).to.equal(-1);
-  });
-
-  it('maps every deprecated LIVERY name onto an A variant with the same style', () => {
-    LEGACY_TEXT_VARIANTS.forEach((legacy) => {
-      const target = LEGACY_VARIANT_MAP[legacy];
-      expect(resolveVariant(legacy), legacy).to.equal(target);
-      expect(textVariants[legacy], legacy).to.deep.equal(textVariants[target]);
-    });
-    expect(resolveVariant('body')).to.equal('body');
-  });
-
-  it('never uppercases and uses tabular figures on every variant', () => {
     TEXT_VARIANTS.forEach((variant) => {
-      expect(textVariants[variant].textTransform, variant).to.equal(undefined);
-      expect(textVariants[variant].fontStyle, variant).to.equal(undefined);
-      expect(textVariants[variant].fontVariant, variant).to.deep.equal(['tabular-nums']);
+      const style = textVariants[variant];
+      expect([style.fontSize, style.lineHeight], variant).to.deep.equal(expected[variant]);
     });
   });
 
-  it('caps font scaling on the big condensed styles and the fixed-width figures', () => {
-    expect(MAX_FONT_SCALE).to.deep.equal({
-      hero: 1.2,
-      heroSub: 1.3,
-      title: 1.3,
-      display: 1.3,
-      number: 1.3,
-      num: 1.3,
-      numS: 1.3,
-      mark: 1,
-      tab: 1.3,
+  it('uppercases the livery headlines and labels, and uses tabular numbers', () => {
+    (['hero', 'display', 'title', 'label'] as const).forEach((variant) => {
+      expect(textVariants[variant].textTransform, variant).to.equal('uppercase');
     });
+    expect(textVariants.number.fontVariant).to.deep.equal(['tabular-nums']);
+    expect(textVariants.numberSm.fontVariant).to.deep.equal(['tabular-nums']);
+    expect(textVariants.body.textTransform).to.equal(undefined);
+  });
+
+  it('caps font scaling at 1.4 on hero, display and title only', () => {
+    expect(MAX_FONT_SCALE).to.deep.equal({ hero: 1.4, display: 1.4, title: 1.4 });
   });
 });

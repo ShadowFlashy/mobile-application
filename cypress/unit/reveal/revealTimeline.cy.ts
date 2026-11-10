@@ -6,19 +6,28 @@ import type { RevealData } from '../../../src/types/Progress';
 import type { Spot } from '../../../src/types/Spot';
 import { levelForXp } from '../../../src/utils/progression';
 import {
-  countUpValue,
   hasLevelUp,
-  hasRewards,
-  REVEAL_ENTRANCE_MS,
+  ledFrames,
+  litLeds,
   revealPageProgress,
   revealSetProgress,
   revealSets,
+  revealStamp,
+  revealTimeline,
   spotsUpTo,
   tierName,
   toAchievementId,
   toCollectionId,
-  XP_COUNT_UP_MS,
+  xpTiming,
+  type RevealSetProgress,
 } from '../../../src/utils/revealTimeline';
+
+const ids = (reveal: RevealData, reduced = false, sets: RevealSetProgress[] = []) =>
+  revealTimeline(reveal, reduced, sets).map((step) => step.id);
+
+const ONE_SET: RevealSetProgress[] = [
+  { id: 'italian-exotics', number: 4, collected: 3, total: 12, isComplete: false, justCompleted: false },
+];
 
 function spot(id: string, carModelId: string | undefined, createdAt: string): Spot {
   return {
@@ -45,44 +54,143 @@ const model = (id: string, category: CarModel['category'], stickerNumber: number
   stickerNumber,
 });
 
-describe('the reveal result (SPEC P0-15)', () => {
-  it('has one quick entrance (at most 300 ms) and a quick XP count-up from the motion tokens', () => {
-    expect(REVEAL_ENTRANCE_MS).to.equal(durations.base);
-    expect(REVEAL_ENTRANCE_MS).to.be.at.most(300);
-    expect(XP_COUNT_UP_MS).to.equal(durations.slow);
+describe('revealTimeline (SPEC P0-15)', () => {
+  it('plays packet → tear → stamp → XP → shift lights → page → stick for a plain new sticker', () => {
+    expect(ids(revealFixture({ kind: 'new' }))).to.deep.equal([
+      'packet',
+      'tear',
+      'stamp',
+      'xp',
+      'shiftLights',
+      'pageProgress',
+      'stick',
+    ]);
   });
 
-  it('counts the XP total up with an ease-out and lands exactly on the total', () => {
-    expect(countUpValue(195, 0, 320)).to.equal(0);
-    const half = countUpValue(195, 160, 320);
-    expect(half)
-      .to.be.greaterThan(195 / 2)
-      .and.below(195);
-    expect(countUpValue(195, 320, 320)).to.equal(195);
-    expect(countUpValue(195, 5000, 320)).to.equal(195);
-    expect(countUpValue(195, 100, 0)).to.equal(195);
-    expect(countUpValue(0, 100, 320)).to.equal(0);
-    expect(countUpValue(Number.NaN, 100, 320)).to.equal(0);
-    let previous = 0;
-    for (let elapsed = 0; elapsed <= 320; elapsed += 20) {
-      const value = countUpValue(195, elapsed, 320);
-      expect(value).to.be.at.least(previous);
-      previous = value;
+  it('adds the levelUp step only when the level changed', () => {
+    const plain = revealFixture({ levelUp: false });
+    const shifted = revealFixture({ levelUp: true });
+    expect(plain.levelBefore.level).to.equal(plain.levelAfter.level);
+    expect(ids(plain)).not.to.include('levelUp');
+    expect(shifted.levelAfter.level).to.be.greaterThan(shifted.levelBefore.level);
+    expect(ids(shifted)).to.deep.equal([
+      'packet',
+      'tear',
+      'stamp',
+      'xp',
+      'shiftLights',
+      'levelUp',
+      'pageProgress',
+      'stick',
+    ]);
+  });
+
+  it('adds sets only with set progress and rewards only with a plaque or challenge', () => {
+    const reveal = revealFixture({ rewards: true });
+    expect(ids(reveal, false, ONE_SET)).to.deep.equal([
+      'packet',
+      'tear',
+      'stamp',
+      'xp',
+      'shiftLights',
+      'pageProgress',
+      'sets',
+      'rewards',
+      'stick',
+    ]);
+    expect(ids(revealFixture())).not.to.include.members(['sets', 'rewards']);
+  });
+
+  it('gives every kind the same ritual (new, duplicate, fresh_paint, wildcard)', () => {
+    for (const kind of ['new', 'duplicate', 'fresh_paint', 'wildcard'] as const) {
+      const steps = ids(revealFixture({ kind }));
+      expect(steps[0], kind).to.equal('packet');
+      expect(steps[steps.length - 1], kind).to.equal('stick');
     }
   });
 
-  it('knows when a level-up or a reward happened', () => {
-    const plain = revealFixture({ levelUp: false });
-    const shifted = revealFixture({ levelUp: true });
-    expect(hasLevelUp(plain)).to.equal(false);
-    expect(hasLevelUp(shifted)).to.equal(true);
-    expect(hasLevelUp({ ...plain, levelBefore: levelForXp(1400), levelAfter: levelForXp(1600) })).to.equal(true);
-    expect(hasRewards(revealFixture())).to.equal(false);
-    expect(hasRewards(revealFixture({ rewards: true }))).to.equal(true);
+  it('uses the motion tokens and the haptic patterns of SPEC §7.6–7.7', () => {
+    const steps = revealTimeline(revealFixture({ levelUp: true }), false);
+    const byId = new Map(steps.map((step) => [step.id, step]));
+    expect(byId.get('tear')?.duration).to.equal(durations.flip);
+    expect(byId.get('stamp')?.duration).to.equal(durations.stamp);
+    expect(byId.get('xp')?.duration).to.equal(durations.odometer);
+    expect(byId.get('stick')?.duration).to.equal(durations.stick);
+    expect(byId.get('tear')?.haptic).to.equal('tear');
+    expect(byId.get('stamp')?.haptic).to.equal('stamp');
+    expect(byId.get('levelUp')?.haptic).to.equal('shiftUp');
+    expect(byId.get('stick')?.haptic).to.equal('stick');
+    expect(byId.get('packet')?.haptic).to.equal(undefined);
+  });
+
+  it('waits for the STICK IT tap only at the end', () => {
+    const steps = revealTimeline(revealFixture(), false);
+    expect(steps.filter((step) => step.awaitsTap).map((step) => step.id)).to.deep.equal(['stick']);
+  });
+
+  it('collapses every duration and hold to 0 with reduced motion, keeping only the tap haptic', () => {
+    const steps = revealTimeline(revealFixture({ levelUp: true, rewards: true }), true, ONE_SET);
+    for (const step of steps) {
+      expect(step.duration, step.id).to.equal(0);
+      expect(step.hold, step.id).to.equal(0);
+    }
+    expect(steps.filter((step) => step.haptic !== undefined).map((step) => step.id)).to.deep.equal(['stick']);
+  });
+
+  it('times the shift lights LED by LED', () => {
+    const reveal = revealFixture({ levelUp: true });
+    const shiftLights = revealTimeline(reveal, false).find((step) => step.id === 'shiftLights');
+    expect(shiftLights?.duration).to.equal(ledFrames(reveal).length * 60);
   });
 });
 
-describe('tierName and the id guards', () => {
+describe('shift lights (litLeds, ledFrames)', () => {
+  it('lights round(ratio × 15) LEDs, clamped', () => {
+    expect(litLeds(0)).to.equal(0);
+    expect(litLeds(0.5)).to.equal(8);
+    expect(litLeds(1)).to.equal(15);
+    expect(litLeds(1.7)).to.equal(15);
+    expect(litLeds(-1)).to.equal(0);
+    expect(litLeds(Number.NaN)).to.equal(0);
+  });
+
+  it('climbs from the old ratio to the new one without a level-up', () => {
+    const reveal = { ...revealFixture(), levelBefore: levelForXp(1000), levelAfter: levelForXp(1200) };
+    // Level 5 runs from 1,000 to 1,500 XP: 0 → 0.4 = 6 LEDs.
+    expect(ledFrames(reveal)).to.deep.equal([1, 2, 3, 4, 5, 6]);
+  });
+
+  it('climbs all the way to the redline on a level-up', () => {
+    const reveal = { ...revealFixture(), levelBefore: levelForXp(1400), levelAfter: levelForXp(1600) };
+    expect(hasLevelUp(reveal)).to.equal(true);
+    expect(ledFrames(reveal)).to.deep.equal([13, 14, 15]);
+  });
+
+  it('has no frames when nothing changed', () => {
+    const reveal = { ...revealFixture(), levelBefore: levelForXp(1000), levelAfter: levelForXp(1000) };
+    expect(ledFrames(reveal)).to.deep.equal([]);
+  });
+});
+
+describe('revealStamp, xpTiming, tierName and the id guards', () => {
+  it('maps the reveal kind to its stamp', () => {
+    expect(revealStamp(revealFixture({ kind: 'new' }))).to.deep.equal({ kind: 'new' });
+    expect(revealStamp(revealFixture({ kind: 'duplicate' }))).to.deep.equal({ kind: 'count', count: 3 });
+    expect(revealStamp(revealFixture({ kind: 'fresh_paint' }))).to.deep.equal({ kind: 'fresh_paint' });
+    expect(revealStamp(revealFixture({ kind: 'wildcard' }))).to.deep.equal({ kind: 'wildcard' });
+  });
+
+  it('colours XP rows like a timing screen', () => {
+    expect(xpTiming('new_sticker')).to.equal('purple');
+    expect(xpTiming('page_complete')).to.equal('purple');
+    expect(xpTiming('set_complete')).to.equal('purple');
+    expect(xpTiming('streak')).to.equal('green');
+    expect(xpTiming('challenge')).to.equal('green');
+    expect(xpTiming('achievement')).to.equal('green');
+    expect(xpTiming('duplicate')).to.equal('yellow');
+    expect(xpTiming('spot')).to.equal('yellow');
+  });
+
   it('names plaque tiers', () => {
     expect(tierName(0)).to.equal(undefined);
     expect(tierName(1)).to.equal('bronze');

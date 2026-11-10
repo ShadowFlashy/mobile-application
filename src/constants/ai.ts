@@ -1,5 +1,5 @@
 /**
- * Auto-fill (identify-car Edge Function) client constants. The function is deployed and frozen:
+ * Co-Driver (identify-car Edge Function) client constants. The function is deployed and frozen:
  * these values match supabase/functions/identify-car and 20261110080000_identify_quota.sql.
  */
 export const IDENTIFY_FUNCTION = 'identify-car';

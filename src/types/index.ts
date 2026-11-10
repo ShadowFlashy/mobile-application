@@ -47,6 +47,7 @@ export type {
   ProgressSnapshot,
   RevealData,
   RevealKind,
+  StampKind,
   StreakInfo,
   WeeklyChallenge,
   XpEntry,

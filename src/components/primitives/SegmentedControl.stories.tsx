@@ -7,9 +7,8 @@ export default meta;
 type Story = StoryObj<typeof SegmentedControl>;
 
 type Visibility = 'badge' | 'vanity';
-type Contents = 'pages' | 'collections';
 
-function Choice() {
+function Interactive() {
   const [value, setValue] = useState<Visibility>('badge');
   return (
     <SegmentedControl<Visibility>
@@ -24,24 +23,4 @@ function Choice() {
   );
 }
 
-function TextTabs() {
-  const [value, setValue] = useState<Contents>('pages');
-  return (
-    <SegmentedControl<Contents>
-      options={[
-        { value: 'pages', label: 'Pages' },
-        { value: 'collections', label: 'Collections' },
-      ]}
-      value={value}
-      onChange={setValue}
-      role="tab"
-      accessibilityLabel="Album contents"
-      testID="contents"
-    />
-  );
-}
-
-/** A setting choice (radio semantics). */
-export const Default: Story = { render: () => <Choice /> };
-/** A's text tabs ("Pages | Collections", tab semantics). */
-export const Tabs: Story = { render: () => <TextTabs /> };
+export const Default: Story = { render: () => <Interactive /> };

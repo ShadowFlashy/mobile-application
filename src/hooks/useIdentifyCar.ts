@@ -17,17 +17,17 @@ const DISABLED: IdentifyOutcome = { status: 'unavailable', reason: 'disabled' };
 const OFFLINE: IdentifyOutcome = { status: 'unavailable', reason: 'offline' };
 const ERROR: IdentifyOutcome = { status: 'unavailable', reason: 'error' };
 
-/** The stored Auto-fill switch, read at call time (so a "Fill in myself" a moment ago counts). */
+/** The stored Co-Driver switch, read at call time (so a "Fill in myself" a moment ago counts). */
 async function isCoDriverEnabled(): Promise<boolean> {
   await useSettingsStore.getState().load();
   return useSettingsStore.getState().aiEnabled;
 }
 
 /**
- * Asks Auto-fill to identify the car (SPEC §10.4).
- * - With Auto-fill switched off, or offline, the function is never called (privacy invariant, §0.1).
+ * Asks Co-Driver to identify the car (SPEC §10.4).
+ * - With Co-Driver switched off, or offline, the function is never called (privacy invariant, §0.1).
  * - The answer is never put in the query cache: a mutation (not a query) with no retry. Only the
- *   `remainingToday` counter is copied into the quota query, for the Privacy and auto-fill screen.
+ *   `remainingToday` counter is copied into the quota query, for the Trust Center.
  * - `identify` never rejects: every failure is an `unavailable` outcome.
  */
 export function useIdentifyCar(): UseIdentifyCar {
@@ -38,7 +38,7 @@ export function useIdentifyCar(): UseIdentifyCar {
   const mutation = useMutation({
     mutationFn: identifyCar,
     retry: 0,
-    // Never paused offline: a paused identify call would resume later, even after Auto-fill was switched off.
+    // Never paused offline: a paused identify call would resume later, even after Co-Driver was switched off.
     networkMode: 'always',
     onSuccess: (outcome) => {
       if (outcome.status === 'unavailable') return;

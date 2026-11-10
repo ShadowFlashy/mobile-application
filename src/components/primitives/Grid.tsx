@@ -78,8 +78,8 @@ export function Grid<T>({
           <RefreshControl
             refreshing={refreshing === true}
             onRefresh={onRefresh}
-            tintColor={colors.text2}
-            colors={[colors.text]}
+            tintColor={colors.accent}
+            colors={[colors.primary]}
           />
         ) : undefined
       }
@@ -90,14 +90,7 @@ export function Grid<T>({
 }
 
 const useStyles = createThemedStyles(({ colors }) => ({
-  list: { flex: 1, backgroundColor: colors.bg },
-  content: {
-    paddingHorizontal: spacing.gutter,
-    paddingVertical: spacing.md,
-    flexGrow: 1,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
+  list: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.md, flexGrow: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
   cell: { flex: 1, minWidth: 0 },
 }));

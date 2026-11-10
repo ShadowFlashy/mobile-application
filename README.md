@@ -3,11 +3,11 @@
 <div align="center">
   <img src="assets/icon.png" alt="Redline logo: a tachometer needle in the red zone on a die-cut sticker" width="96" height="96" />
 
-  <h1>Redline 2.1</h1>
+  <h1>Redline 2.0</h1>
 
   <p>
-    <strong>Spot a car, blur the plates, add it to your album.</strong><br />
-    The car-spotting sticker album. Take a photo of a car: auto-fill recognises it, your phone blurs every licence plate, and the car is added to your album as a sticker.
+    <strong>Snap it. We blur it. You collect it.</strong><br />
+    The car-spotting sticker album. Point your phone at a car: Co-Driver names it, your phone blurs every licence plate, and a foil sticker slaps into your album.
   </p>
 
   <p>
@@ -21,7 +21,7 @@
   </p>
 </div>
 
-> UCLL – Mobile Applications (MBI51j) 2026-2027 · Assignment 1: **PWA** · Jasper Degreef · version **2.1.0** (Season 1)
+> UCLL – Mobile Applications (MBI51j) 2026-2027 · Assignment 1: **PWA** · Jasper Degreef · version **2.0.0** (Season 1)
 
 ## Demo account
 
@@ -32,17 +32,17 @@
 | Password | `Redline!Demo26`                                                     |
 
 - The demo account is **shared** by everyone who reads this README. It **cannot be deleted**, and its password, email, cars, car nickname and shout-out cannot be changed (the database refuses; spots older than a day cannot be deleted either, spots you add today can). It owns a pre-verified car with the plate **`DEMO-123`**, so the whole owner flow works with this one account.
-- Auto-fill (the AI) has a limit of **15 photos per account per day**, and the free provider allowance is shared by all accounts. Please use auto-fill sparingly on the demo account; the manual path (auto-fill off) is just as complete.
+- Co-Driver (the AI) has a limit of **15 photos per account per day**, and the free provider allowance is shared by all accounts. Please use Co-Driver sparingly on the demo account; the manual path (Co-Driver off) is just as complete.
 - **Install it as an app (Android):** open the link in Chrome → menu ⋮ → _Install app_ / _Add to Home screen_.
 
 ### Lecturer demo path (about 5 minutes)
 
-1. **Log in** as `demo@redline.test`. The app opens on **Album**.
-2. **Spot** (the red key in the middle of the tab bar): tap **Take a photo** and photograph any car (a printed photo works), or **Choose from gallery**. On the first use, **Use auto-fill?** asks for consent: tap **Use auto-fill** (or **Fill in myself**). The **New spot** review opens at once. Auto-fill fills in the car, generation, years, paint, body style and sticker in the background (shown as e.g. "94% match"), and the city and date come from the photo or the phone. Under **Plates**, tap the dashed box on the photo to blur it (or drag to draw your own), choose **Every plate is blurred**, then tap **Add to album**. The result screen shows the sticker number, **New sticker**, the album page and set progress and the XP rows; **Done** opens the album page with the sticker.
-3. **Stats**: your level and XP, the weekly streak, this week's three challenges and the achievements.
+1. **Log in** as `demo@redline.test`.
+2. **SPOT** (the raised red button in the middle of the tab bar): take a photo of any car (a printed photo works) or pick one from the gallery. The review screen opens at once. Co-Driver fills in the car, generation, years, paint, body style and sticker match in the background, and the city and date come from the photo or the phone. Tap the dashed plate box to accept it (or draw your own), tap **Every plate is blurred**, then **COLLECT**. The reveal plays (packet, stamp, XP, shift lights) and the sticker is stuck into its album page.
+3. **Pit Wall**: your level and title, the weekly streak and this week's three pit-board challenges.
 4. **Garage**: the verified `DEMO-123` car.
-5. **Profile → Privacy and auto-fill**: switch **Auto-fill** off. Spot another car: the review shows "Auto-fill is off", you pick the car yourself and the app makes zero AI calls. Under **Owner**, type `DEMO-123` in the licence plate field (this switches on **Notify the owner**), check the plates and tap **Add to album**. The Garage gets a live sighting (toast and tab badge).
-6. **Privacy and auto-fill**: "What Redline stores" shows **0 licence plates** and **0 GPS points**.
+5. **Me → Trust Center**: switch **Co-Driver AI** off. Spot another car: the review opens in manual mode and the app makes zero AI calls. Type `DEMO-123` in the owner-ping plate field and collect. The Garage gets a live sighting (toast and tab badge).
+6. **Trust Center**: "What Redline stores" shows **0 licence plates** and **0 GPS points**.
 
 <details>
   <summary>Table of contents</summary>
@@ -50,14 +50,14 @@
     <li><a href="#about-the-project">About the project</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#the-album-catalogue-and-collections">The album, catalogue and collections</a></li>
-    <li><a href="#auto-fill-the-ai">Auto-fill (the AI)</a></li>
+    <li><a href="#co-driver-the-ai">Co-Driver (the AI)</a></li>
     <li><a href="#ethical-gamification">Ethical gamification</a></li>
     <li><a href="#getting-started">Getting started</a></li>
     <li><a href="#backend-setup">Backend setup (database, function, smoke test)</a></li>
     <li><a href="#testing">Testing and test plan</a></li>
     <li><a href="#building-and-deploying">Building and deploying</a></li>
     <li><a href="#privacy-and-security">Privacy and security</a></li>
-    <li><a href="#project-structure-and-design-system">Project structure and design system</a></li>
+    <li><a href="#project-structure-and-the-styling-rule">Project structure and the styling rule</a></li>
     <li><a href="#architecture-decisions">Architecture decisions</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#release-notes">Release notes</a></li>
@@ -88,13 +88,13 @@ Car spotters photograph special cars they see on the street: supercars, classics
 
 ### What changed in 2.0, and the lecturer's suggestions
 
-| Ask                                                                                | How Redline 2.0 answers it                                                                                                                                                                                                                                                                                     |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| "Make sure the license plates are not visible"                                     | The **plate gate**: **Add to album** stays disabled ("Check the plates first") until you explicitly choose **Every plate is blurred** (needs at least one box) or **No plate visible**. AI boxes are only dashed suggestions; any box change resets the confirmation. The preview is exactly what is uploaded. |
-| "Some vanity plates might just be wanted to be shown"                              | A verified owner can choose **Vanity plate** (re-typing the plate as consent). Spotters of that car then see it, read live through an RPC, never copied into their spots.                                                                                                                                      |
-| "A portal for special car owners that gets pinged every time their car is spotted" | The **Garage**: owners register up to 3 cars. Once **verified**, they get a privacy-safe **sighting** (car, city, hour, blurred photo) for every spot of their plate, with a realtime toast and tab badge.                                                                                                     |
-| The student's own ask: "fill it in automatically, I just edit it if it's wrong"    | **Auto-fill** pre-fills everything in the background; with a confident answer, **Add to album** is the only extra tap after the plates.                                                                                                                                                                        |
-| "Use only style components" (screens without styling)                              | The **timing screen** design system (2.1): screens in `app/**` contain zero styling, enforced by ESLint as an **error**.                                                                                                                                                                                       |
+| Ask                                                                                | How Redline 2.0 answers it                                                                                                                                                                                                                                                             |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Make sure the license plates are not visible"                                     | The **plate gate**: COLLECT stays disabled until you explicitly confirm **Every plate is blurred** (needs at least one box) or **No licence plate is visible**. AI boxes are only dashed suggestions; any box change resets the confirmation. The preview is exactly what is uploaded. |
+| "Some vanity plates might just be wanted to be shown"                              | A verified owner can choose **Vanity plate** (re-typing the plate as consent). Spotters of that car then see it, read live through an RPC, never copied into their spots.                                                                                                              |
+| "A portal for special car owners that gets pinged every time their car is spotted" | The **Garage**: owners register up to 3 cars. Once **verified**, they get a privacy-safe **sighting** (car, city, hour, blurred photo) for every spot of their plate, with a realtime toast and tab badge.                                                                             |
+| The student's own ask: "fill it in automatically, I just edit it if it's wrong"    | **Co-Driver** pre-fills everything in the background; with a confident answer, COLLECT is the only extra tap after the plates.                                                                                                                                                         |
+| "Use only style components" (screens without styling)                              | The **LIVERY** design system: screens in `app/**` contain zero styling, enforced by ESLint as an **error**.                                                                                                                                                                            |
 
 ### Competitors
 
@@ -119,27 +119,27 @@ Checked on the App Store / Google Play and on the web (November 2026):
 - [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/) (Mistral Small 3.1, free daily allowance, zero data retention) behind the `identify-car` Edge Function.
 - [TanStack Query](https://tanstack.com/query) (server state, persisted for offline use) and [Zustand](https://zustand.docs.pmnd.rs) (client state).
 - [i18next](https://www.i18next.com) + react-i18next + expo-localization: English and Dutch, typed per namespace.
-- `react-native-svg` (the app's own icon set, car silhouettes, brand mark), Barlow and Barlow Condensed (`@expo-google-fonts`). Animations use React Native `Animated`.
-- [Cypress](https://www.cypress.io) (unit, component and end-to-end), [Storybook](https://storybook.js.org) (components in light and dark), [Vercel](https://vercel.com) (hosting).
+- `react-native-svg` (silhouettes, tacho, brand mark), `expo-linear-gradient` (foil), Barlow and Barlow Condensed (`@expo-google-fonts`). Animations use React Native `Animated`.
+- [Cypress](https://www.cypress.io) (unit, component and end-to-end), [Storybook](https://storybook.js.org) (every component in light and dark), [Vercel](https://vercel.com) (hosting).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Features
 
-The app has five tabs: **Album**, **Stats**, **Spot** (the red key in the middle), **Garage** and **Profile**.
+The app has five tabs: **Album**, **Pit Wall**, **SPOT** (the raised Ignition button), **Garage** and **Me**.
 
-| Area                 | What you get                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **New spot** (Spot)  | **Take a photo** or **Choose from gallery**. The **New spot** review opens immediately; the EXIF date, the city, the 768 px AI image and auto-fill run in the background. One scrolling screen: **Plates** → **Car** → **Details** (date, city, paint) → **Owner** (plate, **Notify the owner**) → **Add a note**, with a sticky **Add to album** button and a one-line reason while it is disabled ("Check the plates first", "Pick the car first"). Every pre-filled field shows its source: **Auto-fill**, **From photo** or **You**.                                                                           |
-| **Plate gate**       | Dashed AI suggestions you accept with a tap, boxes you can move, resize, add (**Add box**) and remove. A live redacted preview (the same function as the upload). Two explicit choices, **Every plate is blurred** and **No plate visible**, nothing pre-selected; if auto-fill saw a plate and you choose "No plate visible", a second confirmation ("Yes, no plate is visible") is required.                                                                                                                                                                                                                     |
-| **Never a dead end** | Offline, auto-fill off, not set up, daily limit, provider busy, timeout (35 s) or an error: a specific message ("Auto-fill is off", "No auto-fills left today", …) and the same manual path. **Fill in myself** is always visible while auto-fill is analysing. "Auto-fill found no car in this photo" offers **Retake** or **It is a car, fill in myself**. A duplicate photo (perceptual hash) shows "You already added this photo on …" with **View** and **Save anyway**.                                                                                                                                      |
-| **Smarter search**   | Accent-folding search with nicknames and aliases: "huracan", "citroen 2cv", "vw golf", "gtr", "supra mk4", "g-wagon", "lambo", "merc amg gt", "eend", "kever", and "magnum" for the Ferrari 308 GTSi. Free text only appears after **Not in the album**.                                                                                                                                                                                                                                                                                                                                                           |
-| **Result**           | After **Add to album**: the photo, the big sticker number, the headline (**New sticker**, **Duplicate ×N**, **New colour** or **Wildcard**), the album page and set progress as 2 px lines, the XP rows with the total, a level-up line and what you earned (achievements, challenges). **Done** opens the album page with the sticker; **Spot another** opens the camera again. Haptics after a user gesture; reduced motion is respected.                                                                                                                                                                        |
-| **Album**            | Big readouts: stickers collected out of 118 (% of Season 1) and your level with the XP to the next one, plus the weekly streak. **Latest**: a timing-tower list (sticker number, thumbnail, car, set, when, rarity roundel) with **See all**. **This week**: the three weekly challenges with a countdown. **Pages** and **Collections**: a table of the 9 pages and 8 sets with counts and 2 px progress lines. Swipeable pages with one row per sticker (missing stickers as a silhouette) and a page footer (02/09). Sticker and spot detail pages; a missing sticker shows what it is worth ("Worth +160 XP"). |
-| **Stats**            | Level and XP, stickers collected, spots logged, the weekly streak with its last 8 weeks, the three **weekly challenges** with a live countdown, and **Achievements** (15, bronze, silver, gold, "7 of 15 earned").                                                                                                                                                                                                                                                                                                                                                                                                 |
-| **Garage**           | Up to 3 cars (**Add a car**). New cars are **Waiting for verification** and receive nothing. Verified cars get **Sightings** (paged by 20, grouped by day, marked read when opened, **Mark all read**), a realtime toast and a tab badge. **What spotters see** (Hidden, Badge with an 80-character shout-out, Vanity plate), **Pause pings**, remove.                                                                                                                                                                                                                                                             |
-| **Profile**          | Your account, readouts (stickers, spots, level), **Season** (cities, my cars), **Settings** (language EN/NL, haptics), **Privacy and auto-fill**, **Privacy policy**, **Sign out** and **Delete account**. **Privacy and auto-fill**: the **Auto-fill**, **Auto-city** and **Share my name with owners** switches, **Auto-fill today** (auto-fills left out of 15), the **What Redline stores** ledger and the **What owners see** table. A public `/privacy` page in English and Dutch.                                                                                                                           |
-| **PWA**              | Installable, a per-build service worker (precached shell, every album and collection page, fonts and icons), an update toast, photos cached without their token, the album opens offline with an expired session (read-only), strict security headers with a generated CSP.                                                                                                                                                                                                                                                                                                                                        |
+| Area                        | What you get                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Pit Stop capture** (SPOT) | Camera shutter or gallery. The review screen opens immediately; EXIF date, the city, the 768 px AI image and Co-Driver run in the background. One scrolling screen: plates → car → sticker match → paint → city → date → owner ping → notes, with a sticky **COLLECT** bar. Every pre-filled field shows its source: **CO-DRIVER**, **AUTO** or **YOU**.                           |
+| **Plate gate**              | Dashed AI suggestions you accept with a tap, boxes you can move, resize, add ("Add box") and remove. A live redacted preview (the same function as the upload). Two explicit statements, nothing pre-selected; if Co-Driver saw a plate and you say "no plate", a second tap is required.                                                                                          |
+| **Never a dead end**        | Offline, AI off, not configured, daily limit, provider busy, timeout (35 s) or an error: a specific banner and the same manual path. **Fill in myself** is always visible while Co-Driver is analysing. "Not a car" offers Retake or "It is a car, fill in myself". A duplicate photo (perceptual hash) shows "You already added this photo" with View and Save anyway.            |
+| **Smarter search**          | Accent-folding search with nicknames and aliases: "huracan", "citroen 2cv", "vw golf", "gtr", "supra mk4", "g-wagon", "lambo", "merc amg gt", "eend", "kever", and "magnum" for the Ferrari 308 GTSi. Free text only appears after **Not in the album**.                                                                                                                           |
+| **Reveal**                  | A full-screen ritual: chrome packet → tear → stamp (NEW, ×N, FRESH PAINT, WILDCARD) → XP rows on an odometer → 15 shift lights → SHIFT UP on a level-up → page and set progress ("ITALIAN EXOTICS 3/12") → plaques and challenges → **Stick it** into the mini album page. **Skip** is always visible; reduced motion shows the final state at once. Haptics after a user gesture. |
+| **Album**                   | A cover with a tacho gauge (red zone in the last 15 %), the sticker odometer, your level roundel and a pit-board teaser. Contents of 9 pages plus a **Collections** shelf. Swipeable pages with livery headers, silhouette slots and die-cut foil stickers (matte, chrome, holo, gold by rarity). Sticker and spot detail pages.                                                   |
+| **Pit Wall**                | Level, title and XP on 15 shift lights, a weekly streak with an 8-week lap chart, three weekly pit-board challenges with live countdowns, and a cabinet of 15 dash plaques (bronze, silver, gold).                                                                                                                                                                                 |
+| **Garage**                  | Up to 3 cars. New cars are **Pending verification** and receive nothing. Verified cars get sightings (paged by 20, grouped by day, marked read when opened, "Mark all read"), a realtime toast and a tab badge. Visibility (Hidden, Badge with an 80-character shout-out, Vanity plate), pause pings, remove.                                                                      |
+| **Me and Trust Center**     | Driver card, stats, language, haptics, logout, delete account. Trust Center: Co-Driver, Auto-city and "Share my name with owners" switches, the "What Redline stores" ledger, the "What owners see" table and Co-Driver scans left today. A public `/privacy` page in English and Dutch.                                                                                           |
+| **PWA**                     | Installable, a per-build service worker (precached shell, every album and collection page, fonts and icons), an update toast, photos cached without their token, the album opens offline with an expired session (read-only), strict security headers with a generated CSP.                                                                                                        |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -150,9 +150,9 @@ The app has five tabs: **Album**, **Stats**, **Spot** (the red key in the middle
 - **Season 1 (#1–48)** keeps its ids and numbers (live spots reference them): [`supabase/seed.sql`](supabase/seed.sql).
 - **#49–118** were added with the collections: [`supabase/seed_collections.sql`](supabase/seed_collections.sql). The data was reviewed by hand; the judgement calls are listed at the top of that file.
 
-**Album pages** follow the categories: Icons (10), Sports cars (17), Supercars (11), Hypercars (11), Classics (29), JDM (14), Muscle (10) and Electric (16), plus **Wildcards** for every car you spot that is not in the catalogue. A full page earns +300 XP ("Full page" in the XP rows).
+**Album pages** follow the categories: Icons (10), Sports cars (17), Supercars (11), Hypercars (11), Classics (29), JDM (14), Muscle (10) and Electric (16), plus **Wildcards** for every car you spot that is not in the catalogue. A full page earns a FULL PAGE stamp and +300 XP.
 
-**Eight themed collections** cut across the categories; a car can sit in several sets. A completed set reads **Complete · 12/12** and earns +250 XP ("Set complete") and progress on the **Set collector** achievement (`set_collector`: 1, 4 and 8 sets).
+**Eight themed collections** cut across the categories; a car can sit in several sets. Completing a set earns a gold-foil **SET COMPLETE** stamp, +250 XP and progress on the `set_collector` plaque (1, 4 and 8 sets).
 
 | Collection                 | Cars | Examples                                                      |
 | -------------------------- | ---- | ------------------------------------------------------------- |
@@ -167,20 +167,18 @@ The app has five tabs: **Album**, **Stats**, **Spot** (the red key in the middle
 
 The **Ferrari 308 GTSi** (#82, Italy, 1980–1982, epic, Classics page) is in Italian Exotics, with its own fun fact about _Magnum, P.I._ in both languages.
 
-Pages and collections are data-driven: a page is any ordered list of models, shown as one row per sticker, so new models and sets only need seed rows. Auto-fill's catalogue matching covers all 118 models and therefore every collection, because the `identify-car` function builds its prompt from the `car_models` table.
+Pages and collections are data-driven: a page is any ordered list of models, laid out on a 2-column grid, so new models and sets only need seed rows. Co-Driver's catalogue matching covers all 118 models and therefore every collection, because the `identify-car` function builds its prompt from the `car_models` table.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Auto-fill (the AI)
-
-In the code, auto-fill keeps its internal names: the `co_driver` i18n namespace, `useIdentifyCar`, `useIdentifyQuota` and the `identify-car` function.
+## Co-Driver (the AI)
 
 - **Provider:** [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/) with `@cf/mistralai/mistral-small-3.1-24b-instruct`, on the free daily allowance and with **zero data retention**. The Mistral AI API is an optional fallback, used only if its key is configured. There is no paid provider.
 - **Where:** the Supabase Edge Function [`supabase/functions/identify-car`](supabase/functions/identify-car/index.ts). The provider keys are Edge Function secrets and never reach the app. A JWT is required, uploads are capped at 4 MB, and each account gets **15 identifications a day** (`consume_identify_quota`).
 - **What is sent:** one ≤768 px JPEG, re-encoded on a canvas (so EXIF, including GPS, is stripped). Nothing else.
 - **What comes back:** make, model, generation, years, paint, body style, confidence, a catalogue id, plate boxes, plate text and a fun fact. The app validates every field with type guards. Plate boxes are only dashed suggestions; the plate text pre-fills the owner-ping row (shown masked, `••34`) and is sent once, only if the ping toggle is on. The answer is never logged, persisted or put in the query cache.
-- **Confidence:** `sure` ≥ 0.85, `likely` 0.60–0.85 ("Check the model"), `guess` < 0.60 ("Is it one of these?" with candidate rows). Shown as a figure plus a word ("94% match"), never by colour alone.
-- **Off switch:** with auto-fill off (**Profile → Privacy and auto-fill**, or **Fill in myself** in the first-use "Use auto-fill?" sheet) the app makes **zero** calls to the function; an E2E test counts them. Offline, it makes none either.
+- **Confidence:** `sure` ≥ 0.85, `likely` 0.60–0.85 ("Check the model"), `guess` < 0.60 ("Is it one of these?" with candidate chips). Shown with 5-LED shift lights plus a word, never by colour alone.
+- **Off switch:** with Co-Driver off (Trust Center, or "Fill in myself" in the first-use consent sheet) the app makes **zero** calls to the function; an E2E test counts them. Offline, it makes none either.
 - **Never blocks:** identification starts in the background as soon as a photo is chosen (about 12 s on the free tier) while you handle the plates.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -189,12 +187,12 @@ In the code, auto-fill keeps its internal names: the `co_driver` i18n namespace,
 
 Progression is designed to reward going out and spotting, not to keep people hooked:
 
-- **Derived on the device** from your own spots (`deriveProgress`), with no progression tables. It works offline, and it stays honest after a delete: remove a spot and its XP, sticker and achievements are recalculated away.
-- **No randomness, no currency, no loot boxes, no paid anything.** The result after a spot is deterministic: the same spot always gives the same XP. Weekly challenges come from a seeded generator, so everyone gets the same three challenges.
+- **Derived on the device** from your own spots (`deriveProgress`), with no progression tables. It works offline, and it stays honest after a delete: remove a spot and its XP, sticker and plaques are recalculated away ("Progress is calculated from your spots").
+- **No randomness, no currency, no loot boxes, no paid anything.** The reveal is deterministic: the same spot always gives the same XP. Weekly challenges come from a seeded generator, so everyone gets the same three boards.
 - **No leaderboards and no social pressure.** Your progress is only visible to you.
 - **Weekly, not daily, streaks**, so a quiet week costs nothing more than a reset of the streak.
 - **Owner matches give 0 XP**, so there is no incentive to hunt particular people's cars, and duplicates of the same model score once per 24 h.
-- XP table: spot +10; new sticker +40 / +80 / +160 / +400 by rarity; duplicate +5; fresh paint +25; wildcard +15; full page +300; set complete +250; whole album (118/118) +2,000; challenges +75 / +125 / +250 and +150 for a clean sweep; streak +25 × weeks (max 8); achievements +50 / +100 / +250 (bronze, silver, gold). Level L needs 50 × L × (L − 1) XP.
+- XP table: spot +10; new sticker +40 / +80 / +160 / +400 by rarity; duplicate +5; fresh paint +25; wildcard +15; full page +300; set complete +250; whole album (118/118) +2,000; challenges +75 / +125 / +250 and +150 for a clean sweep; streak +25 × weeks (max 8); plaques +50 / +100 / +250. Level L needs 50 × L × (L − 1) XP.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -242,7 +240,7 @@ Everything runs in the Supabase **SQL editor** of an EU project. Take a backup f
 | #   | File                                                                                                                | What it does                                                                                                                                                                                                   |
 | --- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | [`migrations/20261109120000_init_redline.sql`](supabase/migrations/20261109120000_init_redline.sql)                 | v1 schema (only for a new project; the live project already has it)                                                                                                                                            |
-| 2   | [`migrations/20261110080000_identify_quota.sql`](supabase/migrations/20261110080000_identify_quota.sql)             | Auto-fill's 15/day quota (`consume_identify_quota`)                                                                                                                                                            |
+| 2   | [`migrations/20261110080000_identify_quota.sql`](supabase/migrations/20261110080000_identify_quota.sql)             | Co-Driver's 15/day quota (`consume_identify_quota`)                                                                                                                                                            |
 | 3   | [`migrations/20261110090000_redline_v2.sql`](supabase/migrations/20261110090000_redline_v2.sql)                     | v2: spot fields, private plate matches, verified-only snapshot pings, rate limits, owner verification RPCs, showcase RPC, demo guard, collections tables and car years                                         |
 | 4   | [`seed.sql`](supabase/seed.sql)                                                                                     | Season 1 catalogue (#1–48) with body style and country                                                                                                                                                         |
 | 5   | [`seed_collections.sql`](supabase/seed_collections.sql)                                                             | Catalogue #49–118 with years, the 8 collections and their 94 memberships                                                                                                                                       |
@@ -250,13 +248,13 @@ Everything runs in the Supabase **SQL editor** of an EU project. Take a backup f
 | 7   | [`migrations/20261110110000_redline_v2_hardening.sql`](supabase/migrations/20261110110000_redline_v2_hardening.sql) | Hardening: the demo account cannot be taken over or emptied, pending owners read no sighting (also not old v1 pings), sighting photo paths must be the spot's own, owner snapshots only carry gazetteer cities |
 | 8   | [`migrations/20261110100000_hide_spotter_key.sql`](supabase/migrations/20261110100000_hide_spotter_key.sql)         | **After the v2 app is deployed:** owners can no longer read a sighting's `spotter_key` (the per-car spotter pseudonym) or `spot_id`. The v1 app still needs `spot_id`.                                         |
 
-The v1 app keeps working after step 3 (it just no longer sees owner matches). Existing v1 owner cars become **Waiting for verification**.
+The v1 app keeps working after step 3 (it just no longer sees owner matches). Existing v1 owner cars become **Pending verification**.
 
-**2. The `identify-car` function.** It is deployed through the Supabase dashboard (Edge Functions → `identify-car`), with these secrets (Edge Functions → Secrets): `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` (a Workers AI token), optionally `CLOUDFLARE_AI_MODEL`, and only if you want the fallback, `MISTRAL_API_KEY`. If the function or its secrets are missing, the app shows "Auto-fill is not set up" and works in manual mode.
+**2. The `identify-car` function.** It is deployed through the Supabase dashboard (Edge Functions → `identify-car`), with these secrets (Edge Functions → Secrets): `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` (a Workers AI token), optionally `CLOUDFLARE_AI_MODEL`, and only if you want the fallback, `MISTRAL_API_KEY`. If the function or its secrets are missing, the app shows "Co-Driver is not set up" and works in manual mode.
 
 **3. SQL smoke test.** Run [`supabase/tests/redline_v2_smoke.sql`](supabase/tests/redline_v2_smoke.sql) in the SQL editor (or `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/redline_v2_smoke.sql`). It runs inside one transaction that is **rolled back**, impersonates temporary `*@redline.test` users and asserts the safety rules (pending cars get no ping, one ping per spotter per 24 h, paused cars, the 30 plate lookups a day, owners cannot read spot rows or self-verify, the 3-car limit, the plate lock, the demo guard, the quota, service-role-only verification). The last row must read **ALL OK**. Before step 8, a NOTICE "KNOWN ISSUE … spotter_key" may appear; it is not a failure. After step 7, also run [`supabase/tests/redline_v2_hardening_smoke.sql`](supabase/tests/redline_v2_hardening_smoke.sql) the same way (demo guard, pending owners, gazetteer cities); its last row must read **ALL OK** too.
 
-**4. Owner verification (beta).** New cars stay **Waiting for verification**: no pings, no stats, no showcase. During the beta the developer verifies an owner out of band (for example a photo of the registration papers next to the car) and then runs:
+**4. Owner verification (beta).** New cars stay Pending: no pings, no stats, no showcase. During the beta the developer verifies an owner out of band (for example a photo of the registration papers next to the car) and then runs:
 
 ```sql
 update public.owner_cars set verified_at = now() where id = '<car id>';
@@ -273,42 +271,42 @@ Everything uses **Cypress**, the course's test framework. Unit and component tes
 | Command                          | What it runs                                                                                                       |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `npm run typecheck`              | TypeScript strict, for the app and for the Cypress project                                                         |
-| `npm run lint`                   | ESLint: Expo config, the course rules and the zero-styling rules (errors)                                          |
-| `npm run test:unit`              | 65 unit and component specs in `cypress/unit/<area>` and `cypress/component/<area>`                                |
+| `npm run lint`                   | ESLint: Expo config, the course rules and the LIVERY zero-styling rules (errors)                                   |
+| `npm run test:unit`              | 62 unit and component specs in `cypress/unit/<area>` and `cypress/component/<area>`                                |
 | `npm run build:web`              | The static web export plus postbuild (service worker, CSP, header files)                                           |
 | `npm run test:e2e`               | Serves `dist/` with its generated `serve.json` (same headers as Vercel) and runs the 11 E2E specs in `cypress/e2e` |
 | `npm test`                       | `test:unit`, `build:web` and `test:e2e` in a row                                                                   |
-| `npm run build-storybook`        | Builds Storybook; every primitive and feature component has a story, rendered in light and dark side by side       |
+| `npm run build-storybook`        | Builds Storybook; every component has a story, rendered in light and dark side by side                             |
 | `node scripts/check-secrets.mjs` | The secret scan (also in the pre-commit hook)                                                                      |
 | DB smoke                         | `supabase/tests/redline_v2_smoke.sql` and `redline_v2_hardening_smoke.sql` (see [Backend setup](#backend-setup))   |
 
 A **pre-commit hook** (Husky + lint-staged) runs ESLint, Prettier and the secret scan on the staged files, then the type check and the unit tests.
 
-**What the tests prove, among others:** the uploaded JPEG has no EXIF segment and its pixel variance inside every plate box drops by at least 80 %; with auto-fill off there are zero `identify-car` calls; no request URL or body contains coordinates; the plate is sent only when the ping toggle is on; every text and background colour pair is at least 4.5:1; English and Dutch have the same keys and placeholders; every catalogue model is on a page or in a set and the Ferrari 308 GTSi row is right; progression is deterministic, including the daylight-saving weeks.
+**What the tests prove, among others:** the uploaded JPEG has no EXIF segment and its pixel variance inside every plate box drops by at least 80 %; with Co-Driver off there are zero `identify-car` calls; no request URL or body contains coordinates; the plate is sent only when the ping toggle is on; every text and background colour pair is at least 4.5:1; English and Dutch have the same keys and placeholders; every catalogue model is on a page or in a set and the Ferrari 308 GTSi row is right; progression is deterministic, including the daylight-saving weeks.
 
 ### Test plan
 
 Validation criteria per feature (course ch. 12), used for the automated runs, the manual test on a real Android phone and the user tests.
 
-| #   | Feature                 | Steps → expected result                                                                                                                                                                             | Automated                            |
-| --- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| 1   | Login and register      | Wrong password → clear error. Demo login → Album. No "Lecturer?" text; link to Privacy; the condensed font is loaded.                                                                               | `login.cy.ts`                        |
-| 2   | App shell               | 5 tabs in order (Album, Stats, Spot, Garage, Profile), Spot as the red key; each opens its screen; Dutch labels Album/Statistieken/Spot/Garage/Profiel and `html[lang=nl]`.                         | `tabs.cy.ts`                         |
-| 3   | Capture, sure answer    | Camera photo → accept the dashed plate box → Every plate is blurred → Add to album, no typing → insert has `identified_by: ai`, paint, city Leuven, the plate once → result screen.                 | `capture.cy.ts`                      |
-| 4   | Capture, gallery + EXIF | Photo with EXIF date and GPS near Spa → `spotted_at` is that date, city Spa, the device position is never asked.                                                                                    | `capture.cy.ts`                      |
-| 5   | Capture, fallbacks      | Unsure → candidate pick saves `ai_edited`; not a car → Retake; not set up, network error → manual; auto-fill off → 0 calls; no plate → Add to album blocked until "No plate visible".               | `capture.cy.ts`, `trust.cy.ts`       |
-| 6   | Plate gate              | Confirm needs ≥ 1 box; any box change resets it; second tap when a suggestion was ignored; pixels pixelated and EXIF gone.                                                                          | component + unit (`capture/`)        |
-| 7   | Album and collections   | Readout 2/6 with the fixture; a missing sticker shows "Worth +160 XP"; collected sticker shows its sets; Wildcards; a completed set reads "Complete · n/n"; showcase only when the RPC returns it.  | `album.cy.ts`                        |
-| 8   | Result after a spot     | Deep link → sticker number, New sticker, XP total, page and set progress, Done → album page; Spot another; missing spot → "Spot not found" with a way back to the Album.                            | `reveal.cy.ts`                       |
-| 9   | Stats                   | Frozen week → deterministic weekly challenges with a live countdown, level from the fixture XP, a 2-week streak, achievements marked New until opened.                                              | `progress.cy.ts`                     |
-| 10  | Garage                  | Add a car → Waiting for verification, plate sent once, no pings; verified car shows Verified; opening a sighting PATCHes `read_at`; Mark all read; Pause pings; Vanity plate needs the plate again. | `owners.cy.ts` + DB smoke            |
-| 11  | Privacy and auto-fill   | Opens from Profile; ledger 0 plates / 0 GPS points; `/privacy` is public in en and nl.                                                                                                              | `trust.cy.ts`, `privacy.cy.ts`       |
-| 12  | Offline                 | Expired session + no network + reload → Album still shown, read-only.                                                                                                                               | `offline.cy.ts` + manual             |
-| 13  | PWA                     | Manifest, two theme-color metas, fonts, service worker active, security headers.                                                                                                                    | `pwa.cy.ts` + `smoke:live`           |
-| 14  | Install                 | Chrome on Android → Install app → opens full screen from the new icon.                                                                                                                              | manual                               |
-| 15  | Accessibility           | TalkBack reads every control; text at 200 % still fits; rarity and confidence also as words; reduced motion respected; dark mode readable.                                                          | manual + `contrast.cy.ts`            |
-| 16  | Delete                  | Delete a spot → sticker may lock again; delete account → login; the demo account refuses.                                                                                                           | manual                               |
-| 17  | Real auto-fill          | A real photo on the live app → car recognised and pre-filled within ~15 s; the auto-fills-left counter drops by one.                                                                                | manual (needs the deployed function) |
+| #   | Feature                 | Steps → expected result                                                                                                                                                 | Automated                            |
+| --- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| 1   | Login and register      | Wrong password → clear error. Demo login → Album. No "Lecturer?" text; link to Privacy; the condensed font is loaded.                                                   | `login.cy.ts`                        |
+| 2   | App shell               | 5 tabs in order, SPOT raised; each opens its screen; Dutch labels Album/Pitmuur/SPOT/Garage/Ik and `html[lang=nl]`.                                                     | `tabs.cy.ts`                         |
+| 3   | Capture, sure answer    | Camera photo → accept the dashed plate box → Every plate is blurred → COLLECT, no typing → insert has `identified_by: ai`, paint, city Leuven, the plate once → reveal. | `capture.cy.ts`                      |
+| 4   | Capture, gallery + EXIF | Photo with EXIF date and GPS near Spa → `spotted_at` is that date, city Spa, the device position is never asked.                                                        | `capture.cy.ts`                      |
+| 5   | Capture, fallbacks      | Unsure → candidate pick saves `ai_edited`; not a car → Retake; not configured, network error → manual; AI off → 0 calls; no plate → COLLECT blocked.                    | `capture.cy.ts`, `trust.cy.ts`       |
+| 6   | Plate gate              | Confirm needs ≥ 1 box; any box change resets it; second tap when a suggestion was ignored; pixels pixelated and EXIF gone.                                              | component + unit (`capture/`)        |
+| 7   | Album and collections   | Cover 2/6 with the fixture; locked slot "Worth +160 XP"; collected sticker shows its sets; Wildcards; SET COMPLETE; showcase only when the RPC returns it.              | `album.cy.ts`                        |
+| 8   | Reveal                  | Deep link → NEW stamp, XP total, page and set progress, Stick it → View page; Skip → Spot another; missing spot → Album.                                                | `reveal.cy.ts`                       |
+| 9   | Pit Wall                | Frozen week → deterministic boards, level and title from the fixture XP, a 2-week streak.                                                                               | `progress.cy.ts`                     |
+| 10  | Garage                  | Register → Pending, plate sent once, no pings; verified car shows Verified; opening a sighting PATCHes `read_at`; Mark all read; pause; Vanity needs the plate.         | `owners.cy.ts` + DB smoke            |
+| 11  | Trust and privacy       | Ledger 0 plates / 0 GPS points; `/privacy` is public in en and nl.                                                                                                      | `trust.cy.ts`, `privacy.cy.ts`       |
+| 12  | Offline                 | Expired session + no network + reload → Album still shown, read-only.                                                                                                   | `offline.cy.ts` + manual             |
+| 13  | PWA                     | Manifest, two theme-color metas, fonts, service worker active, security headers.                                                                                        | `pwa.cy.ts` + `smoke:live`           |
+| 14  | Install                 | Chrome on Android → Install app → opens full screen from the new icon.                                                                                                  | manual                               |
+| 15  | Accessibility           | TalkBack reads every control; text at 200 % still fits; rarity and confidence also as words; reduced motion respected; dark mode readable.                              | manual + `contrast.cy.ts`            |
+| 16  | Delete                  | Delete a spot → sticker may lock again; delete account → login; the demo account refuses.                                                                               | manual                               |
+| 17  | Real Co-Driver          | A real photo on the live app → car recognised and pre-filled within ~15 s; the quota counter drops by one.                                                              | manual (needs the deployed function) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -337,7 +335,7 @@ npm install -g eas-cli && eas login
 npm run build:android:preview   # signed APK for internal distribution
 ```
 
-The native build still lacks on-device plate redaction and the AI image (planned with Skia), so the native review shows "Auto-fill is not available here" and cannot upload yet. Versions follow semantic versioning (`app.json` → `version`).
+The native build still lacks on-device plate redaction and the AI image (planned with Skia), so the native review shows "not supported" for Co-Driver and cannot upload yet. Versions follow semantic versioning (`app.json` → `version`).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -350,7 +348,7 @@ Redline processes data of people who never use the app (owners of spotted cars, 
 - The raw photo is never uploaded or persisted; only the redacted, canvas-re-encoded JPEG (no EXIF) is.
 - Plate text is never stored, logged, cached or put in a URL. It lives in memory and is sent at most once, in `spots.plate_input`; a trigger hashes it (keyed HMAC), matches it against **verified** cars and clears it before the row is written.
 - GPS coordinates never leave the device. The city is looked up in a bundled list of 210 places on the phone (rounded position, then discarded); only the city label is stored.
-- With auto-fill off there are zero calls to `identify-car`.
+- With Co-Driver off there are zero calls to `identify-car`.
 
 ### Threat model
 
@@ -378,18 +376,18 @@ Redline processes data of people who never use the app (owners of spotted cars, 
 | Owner car (make/model, nickname, plate hash, last 2 characters, visibility)       | `owner_cars`                                                                                                | the owner                                        | until the car or account is deleted       |
 | Sighting snapshot (car label, city, hour, photo path, optional spotter name)      | `spot_notifications`                                                                                        | the owner                                        | until the spot, car or account is deleted |
 | AI usage counts, plate-lookup counts                                              | `private.*`                                                                                                 | nobody (rate limits only)                        | 2 days / 24 h                             |
-| The photo for auto-fill (≤768 px, EXIF-free)                                      | transient: through our function to Cloudflare Workers AI (zero data retention), or Mistral AI if configured | the processor only                               | not stored by Redline                     |
-| Settings, seen achievements, query cache                                          | the device (localStorage / AsyncStorage)                                                                    | the user                                         | until logout or clearing the app          |
+| The photo for Co-Driver (≤768 px, EXIF-free)                                      | transient: through our function to Cloudflare Workers AI (zero data retention), or Mistral AI if configured | the processor only                               | not stored by Redline                     |
+| Settings, seen plaques, query cache                                               | the device (localStorage / AsyncStorage)                                                                    | the user                                         | until logout or clearing the app          |
 
 **Sub-processors:** Supabase (database, auth, storage, functions; eu-central-1 Frankfurt), Vercel (static hosting, no personal data), Cloudflare (Workers AI) and Mistral AI (EU) only when it is configured as the fallback.
 
-**Consent and controls:** a consent sheet ("Use auto-fill?") on the first auto-fill use, with an off switch in **Profile → Privacy and auto-fill**; the Auto-city switch (off = no location prompt and no EXIF GPS lookup); "Share my name with owners" (off by default, also per spot); haptics; delete a spot or the whole account (photos are deleted page by page, then the account). The audience is 14+ (Belgium's digital-consent age is 13). No analytics, ads or trackers.
+**Consent and controls:** a consent sheet on the first Co-Driver use, with an off switch in the Trust Center; the Auto-city switch (off = no location prompt and no EXIF GPS lookup); "Share my name with owners" (off by default, also per spot); haptics; delete a spot or the whole account (photos are deleted page by page, then the account). The audience is 14+ (Belgium's digital-consent age is 13). No analytics, ads or trackers.
 
 **Secrets:** no keys in the code. Client config only through `EXPO_PUBLIC_*` in the gitignored `.env`; the AI keys only as Edge Function secrets. `scripts/check-secrets.mjs` blocks commits with key-like strings.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Project structure and design system
+## Project structure and the styling rule
 
 The folder structure of the course boilerplate is kept. New components live in domain folders.
 
@@ -398,13 +396,12 @@ app/                         Expo Router screens: they only compose components (
   _layout.tsx / .web.tsx     Root providers; the web one adds the PWA head and the service worker
   login.tsx register.tsx privacy.tsx onboarding.tsx (P1 placeholder)
   (app)/_layout.tsx          Auth gate + stack (capture and reveal as full-screen modals)
-  (app)/(tabs)/              index (Album) · progress (Stats) · spot (Spot) · owners (Garage) · profile (Profile)
+  (app)/(tabs)/              index (Album) · progress (Pit Wall) · spot · owners (Garage) · profile (Me)
   (app)/capture.tsx  reveal/[spotId]  album/[page]  album/collection/[id]  sticker/[id]  details/[id]
-  (app)/garage/new  garage/[carId]/index  garage/[carId]/verify  sighting/[id]  share/[spotId] (P1)
-  (app)/trust.tsx            The "Privacy and auto-fill" screen (opened from Profile)
+  (app)/garage/new  garage/[carId]/index  garage/[carId]/verify  sighting/[id]  trust  share/[spotId] (P1)
 src/
-  theme/                     Design tokens: colours (dark and light), type, spacing, radii, lines, motion
-  components/primitives/     Themed base components (Text, Screen, Section, ListRow, TimingRow, Readout, …) + stories
+  theme/                     LIVERY tokens: colours (Paddock Paper / Night Session), type, spacing, motion
+  components/primitives/     Themed base components (Text, Stack, Grid, Surface, Sheet, …) + stories
   components/{album,capture,garage,progress,reveal,trust,brand}/   Feature components + stories
   hooks/  services/  state/  Data hooks (TanStack Query) · all Supabase calls · Zustand stores
   utils/                     Pure, unit-tested logic (progression engine, capture machine, EXIF, …)
@@ -415,20 +412,7 @@ public/  scripts/            PWA manifest, service-worker template, icons, host 
 cypress/                     unit/<area>  component/<area>  e2e/  fixtures/  support/
 ```
 
-### Design system: "timing screen" (2.1)
-
-The look is modelled on motorsport live-timing graphics: black, white and one red, data first.
-
-- **Dark and light follow the device.** The theme reads the system colour scheme (`Appearance`) and switches live. Light is the same structure on pure white with neutral greys, never beige.
-- **Colour tokens** (`src/theme/colors.ts`): `bg` (#0B0B0C / #FFFFFF), `raise` (#161618 / #F2F2F4, the only filled surface: inputs, sheets, dialogs), `line` (#2A2A2E / #E3E3E8, 1 px hairlines and progress tracks), `text` (#F5F5F7 / #0B0B0C), `text2` (#8E8E93 / #6C6C72) and `red` (#E10600, with `onRed` white). Every other token is a neutral grey; a unit test checks this and every text pair against 4.5:1 in both schemes.
-- **Fonts:** Barlow Condensed (upright, 500/600) for figures, sticker numbers and screen titles; Barlow (400/500/600) for everything else. Tabular figures everywhere, sentence case, no italics. Variants in `src/theme/typography.ts`: `hero`, `title`, `num`, `heading`, `body`, `meta`, `button` and a few more.
-- **Layout:** one 20 px left edge, a 4-pt spacing rhythm (`src/theme/spacing.ts`), 24 px between sections. Sections are hairline rows under a heading, not cards; no nested boxes, shadows, gradients or chips.
-- **Red is only for the primary action:** the Spot key in the tab bar, **Add to album** and primary buttons. Active and selected states use the text colour, never red. Success, warnings and errors are text plus an icon.
-- **Progress** is a 2 px line. **Rarity** is a small monochrome roundel with the tier letter (C, R, E, L); screen readers hear the full word (Common, Rare, Epic, Legendary).
-- **Icons:** one SVG set drawn for the app (24 px grid, 1.75 px stroke), in `src/components/primitives/icons.ts`.
-- **Accessibility:** touch targets of at least 44 × 44, roles and accessible names on every control, and reduced motion turns animations off.
-
-**The styling rule (lecturer: "use only style components"):** screens in `app/**` never import `StyleSheet`, `useTheme`, `createThemedStyles` or the raw `View`/`Text`/`Image`/`Pressable`/`ScrollView`/`FlatList`, and never pass `style`, `color`, `backgroundColor` or similar props. They use component variants and tones instead (`<Text variant="title" tone="text2">`). Components style themselves only through `createThemedStyles` and tokens; hex and `rgba(` literals are banned outside `src/theme`. ESLint enforces all of this as **errors** (`.eslintrc.js`), and `npm run lint` is clean.
+**The styling rule (lecturer: "use only style components"):** screens in `app/**` never import `StyleSheet`, `useTheme`, `createThemedStyles` or the raw `View`/`Text`/`Image`/`Pressable`/`ScrollView`/`FlatList`, and never pass `style`, `color`, `backgroundColor` or similar props. They use component variants and tones instead (`<Text variant="title" tone="muted">`). Components style themselves only through `createThemedStyles` and tokens; hex and `rgba(` literals are banned outside `src/theme`. ESLint enforces all of this as **errors** (`.eslintrc.js`), and `npm run lint` is clean.
 
 **Other rules:** everything typed (no `any`, no `!`, no `as` casts except `as const`); no API calls in components (Supabase only in `src/services`); every string through `t()` in both languages; every component has a story and every pure util a unit test; web-only APIs only in `*.web.ts(x)` files with a native counterpart.
 
@@ -436,49 +420,38 @@ The look is modelled on motorsport live-timing graphics: black, white and one re
 
 ## Architecture decisions
 
-| Decision                                                               | Why                                                                                             | Consequence                                                                                     |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Supabase as backend                                                    | Chosen by the course: Postgres + RLS + Auth + Storage + Realtime + Functions in one EU service  | Business and safety rules live in RLS, triggers and RPCs (and are tested by the SQL smoke test) |
-| A free AI provider behind a frozen Edge Function                       | The keys stay server-side, Cloudflare's free tier keeps no data; the app adapts to the contract | ~12 s latency, so identification runs in the background and every failure falls back to manual  |
-| AI plate boxes are suggestions, confirmation is explicit               | The model's boxes are imprecise; a plate must never upload readable                             | At most 3 taps for a confident answer instead of zero, but no auto-confirm                      |
-| Owner pings only for verified owners, as snapshots                     | Closes the v1 "claim any plate" stalking hole                                                   | New cars wait for verification; owners never read spot rows                                     |
-| Progression derived on the device                                      | Offline, private, deterministic and honest after a delete                                       | No progression tables; pure TypeScript with unit tests                                          |
-| City from a bundled gazetteer                                          | Auto-fill without a geocoding sub-processor or a GPS trail                                      | 210 places in BE/NL and nearby; anything else is picked by hand                                 |
-| Timing-screen design system: tokens + themed components, lint-enforced | The lecturer's styling rule, and one calm, consistent look in dark and light                    | Screens are pure composition; the 2.1 redesign changed no data, routes or backend               |
-| Data-driven, variable-size album pages                                 | Collections and new models need only seed rows                                                  | Pages range from 10 to 29 stickers, one row each                                                |
-| Static web export + generated service worker and CSP                   | The lecturer's PWA approach; every build gets its own cache and exact script hashes             | Postbuild must run after every export (`npm run build:web` does it)                             |
-| TanStack Query for server state, Zustand for client state              | Course ch. 6.7; caching, retries and offline persistence come for free                          | Screens never keep fetched data in `useState`                                                   |
-| No CI pipeline                                                         | Course: a pre-commit hook and npm scripts are enough for a one-person project                   | Tests run locally before every commit                                                           |
+| Decision                                                  | Why                                                                                             | Consequence                                                                                     |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Supabase as backend                                       | Chosen by the course: Postgres + RLS + Auth + Storage + Realtime + Functions in one EU service  | Business and safety rules live in RLS, triggers and RPCs (and are tested by the SQL smoke test) |
+| A free AI provider behind a frozen Edge Function          | The keys stay server-side, Cloudflare's free tier keeps no data; the app adapts to the contract | ~12 s latency, so identification runs in the background and every failure falls back to manual  |
+| AI plate boxes are suggestions, confirmation is explicit  | The model's boxes are imprecise; a plate must never upload readable                             | At most 3 taps for a confident answer instead of zero, but no auto-confirm                      |
+| Owner pings only for verified owners, as snapshots        | Closes the v1 "claim any plate" stalking hole                                                   | New cars wait for verification; owners never read spot rows                                     |
+| Progression derived on the device                         | Offline, private, deterministic and honest after a delete                                       | No progression tables; pure TypeScript with unit tests                                          |
+| City from a bundled gazetteer                             | Auto-fill without a geocoding sub-processor or a GPS trail                                      | 210 places in BE/NL and nearby; anything else is picked by hand                                 |
+| LIVERY: tokens + themed components, lint-enforced         | The lecturer's styling rule, and one consistent motorsport look                                 | Screens are pure composition; new looks become component variants                               |
+| Data-driven, variable-size album pages                    | Collections and new models need only seed rows                                                  | Pages range from 10 to 29 slots on a 2-column grid                                              |
+| Static web export + generated service worker and CSP      | The lecturer's PWA approach; every build gets its own cache and exact script hashes             | Postbuild must run after every export (`npm run build:web` does it)                             |
+| TanStack Query for server state, Zustand for client state | Course ch. 6.7; caching, retries and offline persistence come for free                          | Screens never keep fetched data in `useState`                                                   |
+| No CI pipeline                                            | Course: a pre-commit hook and npm scripts are enough for a one-person project                   | Tests run locally before every commit                                                           |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Roadmap
 
-| Date     | Milestone                             | Result                                                                                                                   |
-| -------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| 07.10.26 | Idea + pitch by email                 | ✅ Approved; feedback: hide plates, owner portal                                                                         |
-| 10.11.26 | **Assignment 1 – PWA**                | ✅ Redline 2.0: auto-fill, plate gate, album with collections, result screen, stats, Garage; 2.1: timing-screen redesign |
-| 17.11.26 | Developing with AI (guest lecture)    | Security review + extra tests with AI                                                                                    |
-| 01.12.26 | User testing (3–5 spotters + 1 owner) | The [test plan](#test-plan) with real users, feedback list                                                               |
-| 15.12.26 | Native Android build with EAS         | Native plate redaction (Skia), native AI image, push notifications                                                       |
-| 31.12.26 | **Assignment 2 – final native app**   | Signed Android APK + release notes                                                                                       |
+| Date     | Milestone                             | Result                                                                                  |
+| -------- | ------------------------------------- | --------------------------------------------------------------------------------------- |
+| 07.10.26 | Idea + pitch by email                 | ✅ Approved; feedback: hide plates, owner portal                                        |
+| 10.11.26 | **Assignment 1 – PWA**                | ✅ Redline 2.0: Co-Driver, plate gate, album with collections, reveal, Pit Wall, Garage |
+| 17.11.26 | Developing with AI (guest lecture)    | Security review + extra tests with AI                                                   |
+| 01.12.26 | User testing (3–5 spotters + 1 owner) | The [test plan](#test-plan) with real users, feedback list                              |
+| 15.12.26 | Native Android build with EAS         | Native plate redaction (Skia), native AI image, push notifications                      |
+| 31.12.26 | **Assignment 2 – final native app**   | Signed Android APK + release notes                                                      |
 
 **Next (P1), in this order:** Web Push for owners, automated owner verification (`verify-owner`), "Download my data" (the `export_my_data` RPC exists), an offline outbox, onboarding and sharing a sticker as an image (both routes are placeholders today).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Release notes
-
-**2.1.0 – Timing screen redesign (10 Nov 2026)**
-
-- **New design system:** the whole app is restyled after motorsport timing graphics. Black, white and one red; hairline rows instead of cards; Barlow Condensed numerals for figures and titles, Barlow for text; progress as 2 px lines; rarity as a monochrome roundel with the tier letter. It replaces the LIVERY look (foil, chrome, stripes, gradients and stamps are gone).
-- **Dark and light:** both schemes are designed and follow the device setting. Light uses pure white and neutral greys.
-- **Red only for the primary action:** the Spot key, **Add to album** and primary buttons. Active and selected states are white (dark) or black (light).
-- **Plainer copy, in English and Dutch:** tabs are Album, Stats, Spot, Garage and Profile. Co-Driver is now **Auto-fill**, COLLECT is **Add to album**, Pit stop is **New spot**, Pit Wall is **Stats**, Me is **Profile**, dash plaques are **Achievements**, pit-board challenges are **Weekly challenges**, and the Trust Center is **Privacy and auto-fill**. Sentence case, no exclamation marks.
-- **Result screen:** the reveal animation (packet, stamp, shift lights) is replaced by a static result with the sticker number, album and set progress and the XP rows, with **Done** and **Spot another**.
-- **Album pages** list one row per sticker instead of a 2-column grid.
-- **Accessibility:** a translated back button ("Back" / "Terug"), one keyboard focus ring in the text colour, Space toggles switches, radios, checkboxes and tabs on the web, switch and field descriptions are linked for screen readers, text fields and toasts have a 3:1 outline, plate boxes use a two-tone line that shows on any photo, and the plate resize handle is a 44 px target.
-- **Unchanged:** behaviour, data, routes, the backend, the plate gate, the privacy guarantees and the PWA. All unit, component and E2E tests pass.
 
 **2.0.0 – 10 Nov 2026 (PWA, Season 1)**
 
@@ -501,6 +474,6 @@ The look is modelled on motorsport live-timing graphics: black, white and one re
 
 Jasper Degreef – [@ShadowFlashy](https://github.com/ShadowFlashy) – project: [github.com/ShadowFlashy/mobile-application](https://github.com/ShadowFlashy/mobile-application)
 
-**Acknowledgments:** the UCLL Mobile Applications course and boilerplate, the [Best-README-Template](https://github.com/othneildrew/Best-README-Template), [Barlow](https://github.com/jpt/barlow) by Jeremy Tribby, and [Supabase](https://supabase.com/docs).
+**Acknowledgments:** the UCLL Mobile Applications course and boilerplate, the [Best-README-Template](https://github.com/othneildrew/Best-README-Template), [Ionicons](https://ionic.io/ionicons), [Barlow](https://github.com/jpt/barlow) by Jeremy Tribby, and [Supabase](https://supabase.com/docs).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

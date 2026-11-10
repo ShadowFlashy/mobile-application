@@ -8,7 +8,7 @@ export interface UseHaptics {
 }
 
 /**
- * Plays a haptic pattern unless the user switched haptics
+ * Plays a LIVERY haptic pattern (tear, stamp, shift-up, stick, …) unless the user switched haptics
  * off in Me (SPEC P0-15). The setting is read when the pattern plays, so a timer that fires after
  * the switch was flipped still respects it.
  */

@@ -1,7 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../../utils/formatDate';
-import { StyledButton } from '../StyledButton';
-import { StatusRow } from './StatusRow';
+import { Icon } from '../primitives/Icon';
+import { Row } from '../primitives/Row';
+import { Stack } from '../primitives/Stack';
+import { Surface } from '../primitives/Surface';
+import { Tag } from '../primitives/Tag';
+import { Text } from '../primitives/Text';
 
 export interface DuplicateBannerProps {
   /** When the look-alike spot was saved (ISO). */
@@ -11,7 +15,7 @@ export interface DuplicateBannerProps {
   testID?: string;
 }
 
-/** "You already added this photo on 3 Nov" (SPEC P0-21) as a status row: View it, or save this one anyway. */
+/** "You already added this photo on 3 Nov" (SPEC P0-21): View it, or save this one anyway. */
 export function DuplicateBanner({
   spottedAt,
   onView,
@@ -20,21 +24,26 @@ export function DuplicateBanner({
 }: DuplicateBannerProps) {
   const { t, i18n } = useTranslation();
   return (
-    <StatusRow
-      icon="copy"
-      title={t('capture.duplicate_title', { date: formatDate(spottedAt, i18n.language) })}
-      actions={
-        <>
-          <StyledButton label={t('capture.duplicate_view')} variant="text" onPress={onView} testID="duplicate-view" />
-          <StyledButton
+    <Surface variant="sunken" padding="smd" testID={testID}>
+      <Stack gap="sm">
+        <Row gap="sm" align="flex-start">
+          <Icon name="copy-outline" tone="warning" />
+          <Stack flex={1}>
+            <Text variant="bodyStrong">
+              {t('capture.duplicate_title', { date: formatDate(spottedAt, i18n.language) })}
+            </Text>
+          </Stack>
+        </Row>
+        <Row gap="sm" wrap>
+          <Tag label={t('capture.duplicate_view')} icon="eye-outline" onPress={onView} testID="duplicate-view" />
+          <Tag
             label={t('capture.duplicate_save_anyway')}
-            variant="text"
+            icon="checkmark"
             onPress={onSaveAnyway}
             testID="duplicate-save-anyway"
           />
-        </>
-      }
-      testID={testID}
-    />
+        </Row>
+      </Stack>
+    </Surface>
   );
 }

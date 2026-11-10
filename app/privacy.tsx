@@ -11,7 +11,7 @@ import { isSupportedLanguage, SUPPORTED_LANGUAGES, type Language } from '../src/
 
 /**
  * The privacy policy (SPEC P0-18): public, so anyone can read it before creating an account, in
- * English and Dutch. Linked from login, register, Profile and the Trust Center.
+ * English and Dutch. Linked from login, register, Me and the Trust Center.
  */
 export default function PrivacyScreen() {
   const { t } = useTranslation();
@@ -27,21 +27,22 @@ export default function PrivacyScreen() {
   return (
     <Screen testID="privacy-screen">
       <Stack gap="lg">
-        <PrivacyDocument
-          toolbar={
-            <SegmentedControl<Language>
-              options={languageOptions}
-              value={language}
-              onChange={(next) => {
-                if (isSupportedLanguage(next)) changeLanguage(next);
-              }}
-              accessibilityLabel={t('privacy.language_label')}
-              testID="privacy-language"
-            />
-          }
-          testID="privacy-document"
+        <SegmentedControl<Language>
+          options={languageOptions}
+          value={language}
+          onChange={(next) => {
+            if (isSupportedLanguage(next)) changeLanguage(next);
+          }}
+          testID="privacy-language"
         />
-        <StyledButton label={t('privacy.back')} variant="secondary" onPress={goBack} testID="privacy-back" />
+        <PrivacyDocument testID="privacy-document" />
+        <StyledButton
+          label={t('privacy.back')}
+          icon="arrow-back"
+          variant="secondary"
+          onPress={goBack}
+          testID="privacy-back"
+        />
       </Stack>
     </Screen>
   );

@@ -14,7 +14,7 @@ import { ALBUM_PAGE_IDS, type AlbumPageId } from '../../../src/types/Progress';
 import type { Spot } from '../../../src/types/Spot';
 import { isAlbumPageId } from '../../../src/utils/typeGuards';
 
-/** One album page (a sticker table) in a swipeable pager over all 9 pages, opened at the page in the URL. */
+/** One album page in a swipeable pager over all 9 pages, opened at the page in the URL. */
 export default function AlbumPageScreen() {
   const { page } = useLocalSearchParams<{ page: string }>();
   const { t } = useTranslation();
@@ -36,7 +36,7 @@ export default function AlbumPageScreen() {
       <Screen testID="album-page-screen">
         <Stack.Screen options={{ title: t('shell.album_title') }} />
         <EmptyState
-          icon="album"
+          icon="albums-outline"
           title={t('album.not_found_title')}
           description={t('album.not_found_description')}
           action={<StyledButton label={t('album.back_to_album')} onPress={() => router.replace(routes.home)} />}
@@ -48,8 +48,7 @@ export default function AlbumPageScreen() {
 
   return (
     <Screen scrollable={false} padding="none" testID="album-page-screen">
-      {/* Each page shows its own big title, so the bar keeps only the back button. */}
-      <Stack.Screen options={{ title: pageTitle(currentPageId ?? initialPageId), headerTitle: '' }} />
+      <Stack.Screen options={{ title: pageTitle(currentPageId ?? initialPageId) }} />
       {isLoading ? (
         <AlbumSkeleton variant="page" />
       ) : (

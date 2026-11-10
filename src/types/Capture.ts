@@ -35,7 +35,7 @@ export interface CaptureDraft {
   photo: PickedPhoto;
   source: CaptureSource;
   status: CaptureStatus;
-  /** "Fill in myself" (or Auto-fill unavailable): later AI results are ignored. */
+  /** "Fill in myself" (or Co-Driver unavailable): later AI results are ignored. */
   manual: boolean;
   aiImage?: AiImage;
   exif?: { takenAt?: string; gps?: Coordinates };
@@ -45,20 +45,20 @@ export interface CaptureDraft {
   /** padded AI boxes, shown dashed until accepted */ suggestions: PlateRegion[];
   acceptedSuggestions: number[];
   /** explicit user statement; reset on every region change */ plateConfirmation?: PlateConfirmation;
-  /** Second tap: "No licence plate is visible" although Auto-fill suggested plates. W4 addition. */
+  /** Second tap: "No licence plate is visible" although Co-Driver suggested plates. W4 addition. */
   ignoredSuggestionsConfirmed: boolean;
   form: CaptureForm;
   provenance: FieldProvenance;
   /** Fields the user edited themselves; never overwritten by a late AI answer. W4 addition. */
   touched: CaptureField[];
-  /** Fields Auto-fill filled in (to tell `ai` from `ai_edited`). W4 addition. */
+  /** Fields Co-Driver filled in (to tell `ai` from `ai_edited`). W4 addition. */
   aiFilled: CaptureField[];
   /** Waiting for the first-use AI consent (AiConsentSheet). W4 addition. */
   awaitingConsent: boolean;
   /** A cached spot whose photo looks the same (dHash distance ≤ 6). W4 addition. */
   duplicateOfId?: string;
   duplicateDismissed: boolean;
-  /** Message of the last failed save, shown above Add to album. W4 addition. */
+  /** Message of the last failed save, shown above COLLECT. W4 addition. */
   saveError?: string;
 }
 

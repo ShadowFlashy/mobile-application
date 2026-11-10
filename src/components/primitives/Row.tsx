@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { gapStyles, type Align, type GapToken, type Justify } from './layout';
-import { ListRow, type ListRowProps } from './ListRow';
 
-interface RowLayoutProps {
+interface RowProps {
   children: ReactNode;
   gap?: GapToken;
   align?: Align;
@@ -11,25 +10,10 @@ interface RowLayoutProps {
   wrap?: boolean;
   flex?: number;
   testID?: string;
-  /** Layout rows have no title: pass `title` to get A's hairline list row instead. */
-  title?: undefined;
 }
 
-/**
- * Two modes, picked by `title`:
- * - with `title`: A's hairline list row (40/44/56 pitch, leading, title and subtitle, trailing
- *   value, chevron, onPress with a 44 px target). Same props as `ListRow`.
- * - without: a horizontal layout of its children with token gaps ('flex-start' is the start of
- *   the reading direction, so rows are RTL-ready).
- */
-export type RowProps = RowLayoutProps | ListRowProps;
-
-export function Row(props: RowProps) {
-  if (props.title !== undefined) return <ListRow {...props} />;
-  return <LayoutRow {...props} />;
-}
-
-function LayoutRow({
+/** Horizontal layout; 'flex-start' is the start of the reading direction, so rows are RTL-ready. */
+export function Row({
   children,
   gap = 'none',
   align = 'center',
@@ -37,7 +21,7 @@ function LayoutRow({
   wrap = false,
   flex,
   testID,
-}: RowLayoutProps) {
+}: RowProps) {
   return (
     <View
       style={[

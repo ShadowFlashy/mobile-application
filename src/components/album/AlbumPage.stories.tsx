@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { buildAlbumPages, buildCollectionPages } from '../../utils/album';
 import { AlbumPage } from './AlbumPage';
-import { SAMPLE_COLLECTIONS, SAMPLE_MODELS, SAMPLE_SPOTS, porsche } from './albumFixtures';
+import { SAMPLE_COLLECTIONS, SAMPLE_MODELS, SAMPLE_SPOTS, mx5, porsche } from './albumFixtures';
 
 const pages = buildAlbumPages(SAMPLE_MODELS, SAMPLE_SPOTS);
 const sets = buildCollectionPages(SAMPLE_COLLECTIONS, SAMPLE_MODELS, SAMPLE_SPOTS);
@@ -20,4 +20,5 @@ export const LockedPage: Story = { args: { page: supercars } };
 export const Wildcards: Story = { args: { page: wildcards } };
 export const CollectionInProgress: Story = { args: { page: italianSet } };
 export const CollectionSetComplete: Story = { args: { page: jdmSet } };
+export const CompactForReveal: Story = { args: { page: sports, compact: true, highlightModelId: mx5.id } };
 export const Highlighted: Story = { args: { page: sports, highlightModelId: porsche.id } };

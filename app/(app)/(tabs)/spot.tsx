@@ -2,7 +2,10 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { FormError } from '../../../src/components/brand/FormError';
 import { AiStatusChips } from '../../../src/components/capture/AiStatusChips';
-import { Screen, Stack, Text } from '../../../src/components/primitives';
+import { ShutterButton } from '../../../src/components/capture/ShutterButton';
+import { Screen, Stack } from '../../../src/components/primitives';
+import { PrivacyNotice } from '../../../src/components/PrivacyNotice';
+import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { StyledButton } from '../../../src/components/StyledButton';
 import { routes } from '../../../src/constants/routes';
 import { useCapture } from '../../../src/hooks/useCapture';
@@ -11,9 +14,9 @@ import { useSettings } from '../../../src/hooks/useSettings';
 import type { PhotoSource } from '../../../src/services/cameraService';
 
 /**
- * The Spot tab (SPEC §5, P0-03): "Take a photo" (the screen's one red action), "Choose from
- * gallery", the auto-fill status as a meta line and one privacy line. Picking a photo opens the New
- * spot review (/capture) at once; EXIF, the AI image and auto-fill run in the background (useCapture).
+ * The SPOT tab (SPEC §5, P0-03): a launcher with the camera shutter, the gallery button and the
+ * Co-Driver status. Picking a photo opens the Pit Stop review (/capture) at once; EXIF, the AI image
+ * and Co-Driver run in the background (useCapture).
  */
 export default function SpotScreen() {
   const { t } = useTranslation();
@@ -26,20 +29,14 @@ export default function SpotScreen() {
   };
 
   return (
-    <Screen title={t('spot.title')} testID="spot-screen">
+    <Screen testID="spot-screen">
       <Stack gap="lg">
-        <Stack gap="smd">
-          <StyledButton
-            label={t('spot.shutter_label')}
-            icon="camera"
-            onPress={() => void open('camera')}
-            isLoading={capture.isPicking}
-            accessibilityHint={t('spot.shutter_hint')}
-            testID="take-photo-button"
-          />
+        <ScreenHeader eyebrow={t('spot.eyebrow')} title={t('spot.title')} subtitle={t('spot.subtitle')} />
+        <Stack gap="md" align="center">
+          <ShutterButton onPress={() => void open('camera')} isLoading={capture.isPicking} testID="take-photo-button" />
           <StyledButton
             label={t('spot.gallery')}
-            icon="images"
+            icon="images-outline"
             variant="secondary"
             onPress={() => void open('library')}
             disabled={capture.isPicking}
@@ -54,9 +51,7 @@ export default function SpotScreen() {
           />
         </Stack>
         <FormError message={capture.pickError} testID="spot-error" />
-        <Text variant="meta" tone="text2" testID="spot-privacy">
-          {t('spot.privacy_body')}
-        </Text>
+        <PrivacyNotice title={t('spot.privacy_title')}>{t('spot.privacy_body')}</PrivacyNotice>
       </Stack>
     </Screen>
   );

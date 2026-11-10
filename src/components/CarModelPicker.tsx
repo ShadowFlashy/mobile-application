@@ -4,12 +4,12 @@ import type { CarModel } from '../types/CarModel';
 import { searchCatalogue } from '../utils/carSearch';
 import { Icon } from './primitives/Icon';
 import { InputField } from './primitives/InputField';
-import { ListRow } from './primitives/ListRow';
-import { RarityRoundel } from './primitives/RarityRoundel';
 import { Row } from './primitives/Row';
 import { Stack } from './primitives/Stack';
+import { Surface } from './primitives/Surface';
+import { Tag } from './primitives/Tag';
 import { Text } from './primitives/Text';
-import { StyledButton } from './StyledButton';
+import { RarityBadge } from './RarityBadge';
 
 interface CarModelPickerProps {
   models: readonly CarModel[];
@@ -28,8 +28,8 @@ interface CarModelPickerProps {
 const MAX_RESULTS = 6;
 
 /**
- * Search the sticker catalogue with everyday spellings (carSearch: accents, nicknames, aliases), as
- * a search field over hairline rows. Free text is never offered before "Not in the album".
+ * Search the sticker catalogue with everyday spellings (carSearch: accents, nicknames, aliases).
+ * Free text is never offered before "Not in the album" (SPEC P0-07).
  */
 export function CarModelPicker({
   models,
@@ -52,23 +52,20 @@ export function CarModelPicker({
 
   if (selected !== undefined) {
     return (
-      <ListRow
-        title={`${selected.make} ${selected.model}`}
-        subtitle={t('picker.sticker_number', { number: selected.stickerNumber })}
-        kind="primary"
-        trailing={
-          <Row gap="md" align="center">
-            <RarityRoundel rarity={selected.rarity} showLabel />
-            <StyledButton
-              label={t('picker.change')}
-              variant="text"
-              onPress={() => onSelect(undefined)}
-              testID="change-car-model"
-            />
-          </Row>
-        }
-        testID="selected-car-model"
-      />
+      <Surface variant="raised" padding="md" testID="selected-car-model">
+        <Row gap="md" justify="space-between" align="center">
+          <Stack gap="xs" flex={1}>
+            <Text variant="stickerNo" tone="muted">
+              {t('picker.sticker_number', { number: selected.stickerNumber })}
+            </Text>
+            <Text variant="bodyStrong">
+              {selected.make} {selected.model}
+            </Text>
+            <RarityBadge rarity={selected.rarity} />
+          </Stack>
+          <Tag label={t('picker.change')} onPress={() => onSelect(undefined)} testID="change-car-model" />
+        </Row>
+      </Surface>
     );
   }
 
@@ -83,39 +80,54 @@ export function CarModelPicker({
         autoCapitalize="none"
         testID="car-model-search"
       />
-      {results.length > 0 && (
-        <Stack>
-          {results.map((model) => (
-            <ListRow
-              key={model.id}
-              title={`${model.make} ${model.model}`}
-              subtitle={t('picker.sticker_number', { number: model.stickerNumber })}
-              trailing={<Icon name="plus" size={20} tone="text" />}
-              onPress={() => {
-                setQuery('');
-                onSelect(model);
-              }}
-              accessibilityLabel={t('picker.choose', { car: `${model.make} ${model.model}` })}
-              testID={`car-model-option-${model.id}`}
-            />
-          ))}
-        </Stack>
-      )}
+      {results.map((model) => (
+        <Surface
+          key={model.id}
+          variant="flat"
+          padding="smd"
+          onPress={() => {
+            setQuery('');
+            onSelect(model);
+          }}
+          accessibilityLabel={t('picker.choose', { car: `${model.make} ${model.model}` })}
+          testID={`car-model-option-${model.id}`}
+        >
+          <Row gap="md" justify="space-between" align="center">
+            <Stack gap="xxs" flex={1}>
+              <Text variant="bodyStrong">
+                {model.make} {model.model}
+              </Text>
+              <Text variant="caption" tone="muted">
+                {t('picker.sticker_number', { number: model.stickerNumber })}
+              </Text>
+            </Stack>
+            <Icon name="add-circle-outline" tone="accent" />
+          </Row>
+        </Surface>
+      ))}
       {trimmedQuery.length > 0 && results.length === 0 && (
-        <Text variant="meta" tone="text2" testID="car-model-no-results">
+        <Text variant="bodySm" tone="muted" testID="car-model-no-results">
           {t('picker.no_results', { query: trimmedQuery })}
         </Text>
       )}
       {onChooseOther !== undefined && !isOtherSelected && (
-        <ListRow
-          title={t('picker.not_in_album')}
-          subtitle={t('picker.not_in_album_hint')}
-          leading={<Icon name="help" size={20} tone="text2" />}
-          chevron
+        <Surface
+          variant="sunken"
+          padding="smd"
           onPress={onChooseOther}
           accessibilityLabel={`${t('picker.not_in_album')}. ${t('picker.not_in_album_hint')}`}
           testID="not-in-album-button"
-        />
+        >
+          <Row gap="sm" align="center">
+            <Icon name="help-circle-outline" tone="muted" />
+            <Stack gap="xxs" flex={1}>
+              <Text variant="bodyStrong">{t('picker.not_in_album')}</Text>
+              <Text variant="caption" tone="muted">
+                {t('picker.not_in_album_hint')}
+              </Text>
+            </Stack>
+          </Row>
+        </Surface>
       )}
     </Stack>
   );

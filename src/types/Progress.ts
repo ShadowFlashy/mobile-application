@@ -180,3 +180,5 @@ export interface RevealData {
   pageId: AlbumPageId;
   /** 0..5 on a category page */ slotIndex?: number;
 }
+export const STAMP_KINDS = ['new', 'count', 'fresh_paint', 'wildcard', 'full_page', 'co_driver', 'one_to_go'] as const;
+export type StampKind = (typeof STAMP_KINDS)[number];

@@ -1,12 +1,12 @@
 import type { AlbumPageData, AlbumSlotData } from '../../types/Album';
 import type { CarModel } from '../../types/CarModel';
-import type { RevealData, RevealKind, XpEntry } from '../../types/Progress';
+import type { AchievementProgress, RevealData, RevealKind, XpEntry } from '../../types/Progress';
 import type { Spot } from '../../types/Spot';
 import { levelForXp } from '../../utils/progression';
 import type { RevealPageProgress, RevealSetProgress } from '../../utils/revealTimeline';
 
 /**
- * Example reveals for the RevealResult story and the reveal component tests (never imported by the
+ * Example reveals for the RevealStage story and the reveal component tests (never imported by the
  * app). The star is the Ferrari 308 GTSi from the Italian Exotics set (Appendix E).
  */
 
@@ -83,7 +83,7 @@ export interface RevealFixtureOptions {
   levelUp?: boolean;
   /** The spot completes the Italian Exotics set (SET COMPLETE). */
   setComplete?: boolean;
-  /** An achievement tier and a weekly challenge were won. */
+  /** A plaque and a weekly challenge were won. */
   rewards?: boolean;
 }
 
@@ -159,7 +159,7 @@ export function revealFixture({
   };
 }
 
-/** The set rows RevealResult shows for a fixture (what revealSets returns). */
+/** The set rows RevealStage shows for a fixture (what revealSets returns). */
 export function setsFixture(reveal: RevealData): RevealSetProgress[] {
   return reveal.sets.map((set, index) => ({
     id: 'italian-exotics',
@@ -178,7 +178,7 @@ export function pageProgressFixture(reveal: RevealData): RevealPageProgress {
     : { pageId: 'classic', collected: 3, total: CLASSICS.length, isComplete: false, justCompleted: false };
 }
 
-/** The album page the sticker goes on (the reveal shows its page number). */
+/** The compact album page the sticker is stuck into. */
 export function pageFixture(reveal: RevealData): AlbumPageData {
   if (reveal.pageId === 'wildcards') {
     return {
@@ -200,3 +200,8 @@ export function pageFixture(reveal: RevealData): AlbumPageData {
   });
   return { id: 'classic', number: 5, slots, wildcards: [], collected: 3, total: slots.length, isComplete: false };
 }
+
+/** The plaque the rewards row shows. */
+export const ACHIEVEMENTS_FIXTURE: AchievementProgress[] = [
+  { id: 'ignition', tier: 3, value: 1, isSecret: false, unlockedAt: { gold: 'spot-308' } },
+];

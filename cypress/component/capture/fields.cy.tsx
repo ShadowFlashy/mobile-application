@@ -12,9 +12,8 @@ import { NotACarCard } from '../../../src/components/capture/NotACarCard';
 import { NotesField } from '../../../src/components/capture/NotesField';
 import { OwnerPingRow } from '../../../src/components/capture/OwnerPingRow';
 import { PaintPicker } from '../../../src/components/capture/PaintPicker';
-import { ChallengeRow } from '../../../src/components/capture/ChallengeRow';
-import { DetailRow } from '../../../src/components/capture/DetailRow';
-import { StatusRow } from '../../../src/components/capture/StatusRow';
+import { PlateShield } from '../../../src/components/capture/PlateShield';
+import { ShutterButton } from '../../../src/components/capture/ShutterButton';
 import type { GateReason } from '../../../src/types/Capture';
 
 function OwnerPing({ plate }: { plate: string }) {
@@ -46,20 +45,12 @@ describe('CollectBar', () => {
     });
   });
 
-  it('adds to the album when the gate is open, and shows a save error above the button', () => {
+  it('collects when the gate is open, and shows a save error above the button', () => {
     const onCollect = cy.stub().as('collect');
-    cy.mount(
-      <CollectBar
-        gate={{ ok: true }}
-        onCollect={onCollect}
-        result="#31 · +125 XP"
-        saveError="Your spot could not be saved."
-      />,
-    );
+    cy.mount(<CollectBar gate={{ ok: true }} onCollect={onCollect} saveError="Your spot could not be saved." />);
     cy.get('[data-testid="collect-reason"]').should('not.exist');
-    cy.get('[data-testid="collect-result"]').should('have.text', '#31 · +125 XP');
     cy.get('[data-testid="collect-error"]').should('contain.text', 'Your spot could not be saved.');
-    cy.get('[data-testid="collect-button"]').should('contain.text', 'Add to album').click();
+    cy.get('[data-testid="collect-button"]').should('contain.text', 'Collect').click();
     cy.get('@collect').should('have.been.calledOnce');
   });
 
@@ -98,18 +89,14 @@ describe('OwnerPingRow', () => {
 });
 
 describe('PaintPicker', () => {
-  it('shows the paint as a row and offers all 14 paints by name in a sheet', () => {
+  it('offers all 14 paints by name and reports the choice', () => {
     const onChange = cy.stub().as('change');
     cy.mount(<PaintPicker value="blue" onChange={onChange} provenance="ai" />);
-    cy.get('[data-testid="paint-picker-value"]').should('have.text', 'Blue');
-    cy.get('[data-testid="provenance-ai"]').should('have.text', 'Auto-fill');
-    cy.get('[data-testid="paint-option-blue"]').should('not.exist');
-    cy.get('[data-testid="paint-picker"]').click();
     cy.get('[data-testid^="paint-option-"]').should('have.length', 14);
     cy.get('[data-testid="paint-option-blue"]').should('have.attr', 'aria-checked', 'true');
     cy.get('[data-testid="paint-option-red"]').should('contain.text', 'Red').click();
     cy.get('@change').should('have.been.calledOnceWith', 'red');
-    cy.get('[data-testid="paint-option-red"]').should('not.exist');
+    cy.get('[data-testid="provenance-ai"]').should('be.visible');
   });
 });
 
@@ -151,11 +138,11 @@ describe('CityField', () => {
     cy.get('[data-testid="city-search"]').should('not.exist');
   });
 
-  it('shows the value with its provenance as plain meta text', () => {
+  it('shows the value with its AUTO provenance tag', () => {
     cy.mount(<CityField value="Antwerp" provenance="auto" onChange={cy.stub()} />);
     cy.get('[data-testid="city-field-value"]').should('have.text', 'Antwerp');
     cy.get('[data-testid="city-field"]').should('have.attr', 'aria-label', 'City: Antwerp');
-    cy.get('[data-testid="city-field"] [data-testid="provenance-auto"]').should('have.text', 'From photo');
+    cy.get('[data-testid="city-field"] [data-testid="provenance-auto"]').should('exist');
   });
 });
 
@@ -163,7 +150,7 @@ describe('DateField', () => {
   it('opens a sheet, validates and sets the date', () => {
     const onChange = cy.stub().as('change');
     cy.mount(<DateField value="2026-11-03T13:12:00.000Z" onChange={onChange} provenance="auto" />);
-    cy.get('[data-testid="provenance-auto"]').should('have.text', 'From photo');
+    cy.get('[data-testid="provenance-auto"]').should('contain.text', 'AUTO');
     cy.get('[data-testid="date-field"]').click();
     cy.get('[data-testid="date-input"]').clear().type('2026-02-31');
     cy.get('[data-testid="date-apply"]').click();
@@ -186,42 +173,38 @@ describe('NotesField', () => {
   });
 });
 
-describe('Auto-fill states', () => {
-  it('AnalysingChip is a status row that always offers "Fill in myself"', () => {
+describe('Co-Driver states', () => {
+  it('AnalysingChip always offers "Fill in myself"', () => {
     const onFill = cy.stub().as('fill');
     cy.mount(<AnalysingChip onFillManually={onFill} />);
-    cy.get('[data-testid="analysing-chip"]').should('contain.text', 'Auto-fill is analysing');
+    cy.get('[data-testid="analysing-chip"]').should('contain.text', 'Co-Driver is analysing');
     cy.get('[data-testid="fill-myself-button"]').click();
     cy.get('@fill').should('have.been.calledOnce');
   });
 
   it('AiStatusBanner explains every reason', () => {
     cy.mount(<AiStatusBanner reason="quota" />);
-    cy.get('[data-testid="ai-status-banner-quota"]').should('have.text', 'No auto-fills left today');
-    cy.get('[data-testid="ai-status-banner"]').should('contain.text', 'Fill in the car yourself.');
+    cy.get('[data-testid="ai-status-banner-quota"]').should('have.text', 'No Co-Driver scans left today');
     cy.mount(<AiStatusBanner reason="not_configured" />);
-    cy.get('[data-testid="ai-status-banner-not_configured"]').should('have.text', 'Auto-fill is not set up');
-    cy.mount(<AiStatusBanner reason="offline" />);
-    cy.get('[data-testid="ai-status-banner-offline"]').should('have.text', 'No connection for auto-fill');
+    cy.get('[data-testid="ai-status-banner-not_configured"]').should('have.text', 'Co-Driver is not set up');
   });
 
   it('NotACarCard offers Retake and "It is a car"', () => {
     const onRetake = cy.stub().as('retake');
     const onFill = cy.stub().as('fill');
     cy.mount(<NotACarCard onRetake={onRetake} onFillManually={onFill} />);
-    cy.contains('Auto-fill found no car in this photo').should('be.visible');
+    cy.contains("Co-Driver doesn't see a car here").should('be.visible');
     cy.get('[data-testid="retake-button"]').click();
     cy.get('[data-testid="it-is-a-car-button"]').click();
     cy.get('@retake').should('have.been.calledOnce');
     cy.get('@fill').should('have.been.calledOnce');
   });
 
-  it('AiConsentSheet: use auto-fill or fill in myself', () => {
+  it('AiConsentSheet: use Co-Driver or fill in myself', () => {
     const onAccept = cy.stub().as('accept');
     const onDecline = cy.stub().as('decline');
     cy.mount(<AiConsentSheet visible onAccept={onAccept} onDecline={onDecline} />);
     cy.get('[data-testid="ai-consent-sheet"]').should('contain.text', 'Cloudflare Workers AI');
-    cy.get('[data-testid="consent-accept"]').should('contain.text', 'Use auto-fill');
     cy.get('[data-testid="consent-accept"]').click();
     cy.get('[data-testid="consent-decline"]').click();
     cy.get('@accept').should('have.been.calledOnce');
@@ -244,64 +227,30 @@ describe('Auto-fill states', () => {
 });
 
 describe('Launcher', () => {
-  it('AiStatusChips is one meta line: auto-fills left today, and only the states that apply', () => {
+  it('ShutterButton opens the camera and is busy while picking', () => {
+    const onPress = cy.stub().as('press');
+    cy.mount(<ShutterButton onPress={onPress} />);
+    cy.get('[data-testid="shutter-button"]').should('have.attr', 'aria-label', 'Take a photo').click();
+    cy.get('@press').should('have.been.calledOnce');
+    cy.mount(<ShutterButton onPress={onPress} isLoading />);
+    cy.get('[data-testid="shutter-button"]').should('have.attr', 'aria-disabled', 'true');
+  });
+
+  it('AiStatusChips show the Co-Driver, auto-city and quota state in words', () => {
     cy.mount(<AiStatusChips aiEnabled autoLocation remaining={12} isOnline />);
-    cy.get('[data-testid="ai-status-line"]').should('have.text', '12 auto-fills left today');
-    cy.mount(<AiStatusChips aiEnabled autoLocation isOnline />);
-    cy.get('[data-testid="ai-status-line"]').should('have.text', 'Auto-fill on');
-    cy.mount(<AiStatusChips aiEnabled={false} autoLocation={false} remaining={12} isOnline={false} />);
-    cy.get('[data-testid="ai-status-line"]')
-      .should('contain.text', 'Auto-fill off')
-      .and('contain.text', 'City from location off')
-      .and('contain.text', 'Offline')
-      .and('not.contain.text', 'left today');
-  });
-});
-
-describe('Review rows', () => {
-  it('StatusRow shows the status, a meta line and its actions', () => {
-    const onPress = cy.stub().as('press');
-    cy.mount(
-      <StatusRow
-        icon="offline"
-        title="Working"
-        body="Second line"
-        titleTestID="status-title"
-        actions={<button onClick={onPress}>Act</button>}
-        testID="status"
-      />,
-    );
-    cy.get('[data-testid="status-title"]').should('have.text', 'Working');
-    cy.get('[data-testid="status"]').should('contain.text', 'Second line');
-    cy.contains('Act').click();
-    cy.get('@press').should('have.been.calledOnce');
+    cy.get('[data-testid="chip-ai-on"]').should('contain.text', 'Co-Driver on');
+    cy.get('[data-testid="chip-scans"]').should('contain.text', '12 scans left today');
+    cy.mount(<AiStatusChips aiEnabled={false} autoLocation={false} isOnline={false} />);
+    cy.get('[data-testid="chip-ai-off"]').should('contain.text', 'Co-Driver off');
+    cy.get('[data-testid="chip-city-off"]').should('be.visible');
+    cy.get('[data-testid="chip-offline"]').should('be.visible');
+    cy.get('[data-testid="chip-scans"]').should('not.exist');
   });
 
-  it('DetailRow is one button with the label, the provenance and the value', () => {
-    const onPress = cy.stub().as('press');
-    cy.mount(
-      <DetailRow
-        label="City"
-        value="Leuven"
-        provenance="user"
-        onPress={onPress}
-        accessibilityLabel="City: Leuven"
-        testID="detail"
-      />,
-    );
-    cy.get('[data-testid="detail"]')
-      .should('have.attr', 'role', 'button')
-      .and('have.attr', 'aria-label', 'City: Leuven');
-    cy.get('[data-testid="detail-value"]').should('have.text', 'Leuven');
-    cy.get('[data-testid="provenance-user"]').should('have.text', 'You');
-    cy.get('[data-testid="detail"]').click();
-    cy.get('@press').should('have.been.calledOnce');
-  });
-
-  it('ChallengeRow says which challenge the spot completes and its XP', () => {
-    cy.mount(<ChallengeRow challenge="Spot 1 car in orange" xp={125} />);
-    cy.get('[data-testid="challenge-row"]')
-      .should('contain.text', 'Completes Spot 1 car in orange')
-      .and('contain.text', '+125 XP');
+  it('PlateShield says what happens to the plates', () => {
+    cy.mount(<PlateShield count={2} confirmation="blurred" />);
+    cy.get('[data-testid="plate-shield"]').should('contain.text', '2 plates blurred on your phone');
+    cy.mount(<PlateShield count={0} />);
+    cy.get('[data-testid="plate-shield"]').should('contain.text', 'Plates not checked yet');
   });
 });

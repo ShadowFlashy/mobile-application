@@ -1,11 +1,11 @@
 {
-  "learner": "Beginner",
-  "kerbside_scout": "Novice",
-  "car_park_hunter": "Spotter",
-  "meet_regular": "Regular spotter",
-  "track_day_spotter": "Keen spotter",
-  "paddock_pass": "Seasoned spotter",
-  "pit_lane_pro": "Expert",
-  "works_spotter": "Master",
-  "redline_legend": "Legend"
+  "learner": "Learner",
+  "kerbside_scout": "Kerbside Scout",
+  "car_park_hunter": "Car-park Hunter",
+  "meet_regular": "Meet Regular",
+  "track_day_spotter": "Track-day Spotter",
+  "paddock_pass": "Paddock Pass",
+  "pit_lane_pro": "Pit-lane Pro",
+  "works_spotter": "Works Spotter",
+  "redline_legend": "Redline Legend"
 }

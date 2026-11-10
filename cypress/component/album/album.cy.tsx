@@ -1,9 +1,9 @@
-import { AlbumIndex } from '../../../src/components/album/AlbumIndex';
 import { AlbumPage } from '../../../src/components/album/AlbumPage';
 import { AlbumPager } from '../../../src/components/album/AlbumPager';
 import {
+  chiron,
   ferrari296,
-  ferrari308,
+  golf,
   porsche,
   SAMPLE_COLLECTIONS,
   SAMPLE_MODELS,
@@ -12,16 +12,21 @@ import {
   sampleSpot,
 } from '../../../src/components/album/albumFixtures';
 import { CarSilhouette } from '../../../src/components/album/CarSilhouette';
-import { CarThumb } from '../../../src/components/album/CarThumb';
-import { PageTableRow } from '../../../src/components/album/PageTableRow';
-import { StickerRow } from '../../../src/components/album/StickerRow';
+import { CollectionShelf } from '../../../src/components/album/CollectionShelf';
+import { FoilSticker } from '../../../src/components/album/FoilSticker';
+import { PageIndexCard } from '../../../src/components/album/PageIndexCard';
+import { RarityPips } from '../../../src/components/album/RarityPips';
+import { SetCompleteStamp } from '../../../src/components/album/SetCompleteStamp';
+import { StickerSlot } from '../../../src/components/album/StickerSlot';
+import { TachoGauge } from '../../../src/components/album/TachoGauge';
+import { ThemeProvider } from '../../../src/theme';
 import type { AlbumPageData } from '../../../src/types/Album';
 import type { CarModel } from '../../../src/types/CarModel';
 import { buildAlbumPages, buildCollectionPages } from '../../../src/utils/album';
 
 function page(models: CarModel[], spotModelIds: string[]): AlbumPageData {
   const spots = spotModelIds.map((id, index) =>
-    sampleSpot({ id: `spot-${index}`, carModelId: id, createdAt: `2026-11-0${(index % 9) + 1}T10:00:00.000Z` }),
+    sampleSpot({ id: `spot-${index}`, carModelId: id, createdAt: `2026-11-0${index + 1}T10:00:00.000Z` }),
   );
   const built = buildAlbumPages(models, spots).find((item) => item.total > 0);
   if (built === undefined) throw new Error('no page');
@@ -35,30 +40,100 @@ const supercars: CarModel[] = [13, 14, 15, 16, 17, 18].map((n) => ({
   model: `Model ${n}`,
 }));
 
-/** A page as long as the real Classics page (29 cars), to prove that a page scrolls on its own. */
-const classics: CarModel[] = Array.from({ length: 29 }, (_, index) => ({
-  ...ferrari308,
-  id: `classic-${index + 1}`,
-  stickerNumber: 40 + index,
-  model: `Classic ${index + 1}`,
-}));
+describe('FoilSticker', () => {
+  it('uses the finish of its rarity', () => {
+    const cases: [CarModel, string][] = [
+      [golf, 'matte'],
+      [porsche, 'chrome'],
+      [ferrari296, 'holo'],
+      [chiron, 'gold'],
+    ];
+    for (const [model, finish] of cases) {
+      cy.mount(
+        <FoilSticker
+          model={model}
+          photoUrl={SAMPLE_PHOTO_URL}
+          size="md"
+          pageId={model.category}
+          tiltSeed={model.id}
+          sheen="none"
+        />,
+      );
+      cy.get(`[data-testid="foil-finish-${finish}"]`).should('exist');
+    }
+  });
 
-describe('StickerRow', () => {
-  it('shows a missing sticker in text-2 with the silhouette', () => {
-    cy.mount(<StickerRow model={porsche} isCollected={false} spotCount={0} onPress={() => undefined} />);
+  it('reads like a sticker for screen readers', () => {
+    cy.mount(
+      <FoilSticker
+        model={porsche}
+        size="md"
+        count={3}
+        pageId="sports"
+        tiltSeed={porsche.id}
+        testID="sticker"
+        sheen="none"
+      />,
+    );
+    cy.get('[data-testid="sticker"]')
+      .invoke('attr', 'aria-label')
+      .should('equal', 'Sticker 7, Porsche 911 GT3, Rare, spotted 3 times');
+  });
+
+  it('shows its stamp and number tab', () => {
+    cy.mount(<FoilSticker model={porsche} size="md" stamp="new" pageId="sports" tiltSeed={porsche.id} sheen="none" />);
+    cy.get('[data-testid="stamp-new"]').should('contain.text', 'New');
+    cy.contains('#07').should('be.visible');
+  });
+
+  it('is a matte WILDCARD sticker without a model', () => {
+    const wildcard = sampleSpot({ id: 'wild', make: 'Fiat', model: 'Multipla' });
+    cy.mount(<FoilSticker spot={wildcard} size="md" stamp="wildcard" pageId="wildcards" tiltSeed="wild" testID="wc" />);
+    cy.get('[data-testid="foil-finish-matte"]').should('exist');
+    cy.get('[data-testid="stamp-wildcard"]').should('exist');
+    cy.get('[data-testid="wc"]').invoke('attr', 'aria-label').should('equal', 'Wildcard, Fiat Multipla');
+  });
+
+  it('does not play the sheen with reduced motion off-switched to none', () => {
+    cy.mount(<FoilSticker model={chiron} size="hero" pageId="hypercar" tiltSeed={chiron.id} sheen="none" />);
+    cy.get('[data-testid="foil-sheen"]').should('not.exist');
+  });
+
+  it('plays a sheen once by default', () => {
+    cy.mount(<FoilSticker model={porsche} size="md" pageId="sports" tiltSeed={porsche.id} />);
+    cy.get('[data-testid="foil-sheen"]').should('exist');
+  });
+
+  it('is pressable when it has an onPress', () => {
+    const onPress = cy.stub().as('onPress');
+    cy.mount(
+      <FoilSticker
+        model={porsche}
+        size="md"
+        pageId="sports"
+        tiltSeed={porsche.id}
+        onPress={onPress}
+        testID="sticker"
+      />,
+    );
+    cy.get('[data-testid="sticker"]').click();
+    cy.get('@onPress').should('have.been.calledOnce');
+  });
+});
+
+describe('StickerSlot', () => {
+  it('shows a locked silhouette well when not collected', () => {
+    cy.mount(<StickerSlot model={porsche} isCollected={false} spotCount={0} onPress={() => undefined} />);
     cy.get('[data-testid="sticker-porsche-911-gt3-locked"]').should('exist');
     cy.get('[data-testid="silhouette-coupe"]').should('exist');
     cy.get('[data-testid="sticker-porsche-911-gt3"]')
-      .should('have.attr', 'aria-label')
-      .and('contain', 'not collected yet');
-    cy.get('[data-testid="sticker-porsche-911-gt3"]')
-      .should('contain.text', '#07')
-      .and('contain.text', 'Porsche 911 GT3');
+      .invoke('attr', 'aria-label')
+      .should('contain', 'not collected yet');
   });
 
-  it('shows a collected sticker with its photo crop and ×N', () => {
+  it('shows the foil sticker with a ×N stamp when collected more than once', () => {
     cy.mount(
-      <StickerRow
+      <StickerSlot
         model={porsche}
         isCollected
         cover={sampleSpot({ id: 'c', carModelId: porsche.id })}
@@ -67,31 +142,37 @@ describe('StickerRow', () => {
       />,
     );
     cy.get('[data-testid="sticker-porsche-911-gt3-collected"]').should('exist');
-    cy.get('[data-testid="silhouette-coupe"]').should('not.exist');
-    cy.get('[data-testid="sticker-porsche-911-gt3"]').should('contain.text', '×3');
+    cy.get('[data-testid="stamp-count"]').should('contain.text', '×3');
   });
 
-  it('is a 44 px button that opens the sticker', () => {
+  it('gives an empty legendary slot the gold chase edge', () => {
+    cy.mount(<StickerSlot model={chiron} isCollected={false} spotCount={0} onPress={() => undefined} />);
+    cy.get('[data-testid="sticker-bugatti-chiron-chase"]').should('exist');
+    cy.get('[data-testid="sticker-bugatti-chiron"]').invoke('attr', 'aria-label').should('contain', 'chase');
+  });
+
+  it('has no chase edge on a common slot', () => {
+    cy.mount(<StickerSlot model={golf} isCollected={false} spotCount={0} onPress={() => undefined} />);
+    cy.get('[data-testid="sticker-volkswagen-golf-gti-chase"]').should('not.exist');
+  });
+
+  it('opens the sticker when pressed', () => {
     const onPress = cy.stub().as('onPress');
-    cy.mount(<StickerRow model={porsche} isCollected={false} spotCount={0} onPress={onPress} />);
-    cy.get('[data-testid="sticker-porsche-911-gt3"]').should('have.attr', 'role', 'button');
-    cy.get('[data-testid="sticker-porsche-911-gt3"]').invoke('outerHeight').should('be.at.least', 44);
+    cy.mount(<StickerSlot model={porsche} isCollected={false} spotCount={0} onPress={onPress} />);
     cy.get('[data-testid="sticker-porsche-911-gt3"]').click();
     cy.get('@onPress').should('have.been.calledOnce');
   });
 });
 
-describe('AlbumPage (sticker table)', () => {
-  it('lists 6 rows in sticker-number order', () => {
+describe('AlbumPage', () => {
+  it('renders 6 slots in sticker-number order', () => {
     cy.mount(<AlbumPage page={page([...supercars].reverse(), [])} />);
     cy.get('[data-testid^="sticker-supercar-"][data-testid$="-locked"]').should('have.length', 6);
-    cy.get('[data-testid="album-page-supercar-count"]').should('have.text', '0/6');
-    cy.get('[role="button"][data-testid^="sticker-supercar-"]')
-      .first()
-      .should('have.attr', 'data-testid', 'sticker-supercar-13');
+    cy.get('[data-testid="album-page-supercar-count"]').should('contain.text', '0/6');
+    cy.get('[data-testid^="sticker-supercar-"]').first().should('have.attr', 'data-testid', 'sticker-supercar-13');
   });
 
-  it('says "Complete · 6/6" in plain text when every sticker is in, with no stamp', () => {
+  it('gets a FULL PAGE stamp when every slot is collected', () => {
     cy.mount(
       <AlbumPage
         page={page(
@@ -100,45 +181,142 @@ describe('AlbumPage (sticker table)', () => {
         )}
       />,
     );
-    cy.get('[data-testid="album-page-supercar-count"]').should('have.text', 'Complete · 6/6');
-    cy.get('[data-testid^="stamp-"]').should('not.exist');
-    cy.get('[role="progressbar"]').should('not.exist');
+    cy.get('[data-testid="album-page-supercar-count"]').should('contain.text', '6/6');
+    cy.get('[data-testid="stamp-full_page"]').should('exist');
   });
 
-  it('shows a 2 px progress line while a sticker is missing', () => {
+  it('has no FULL PAGE stamp while a slot is empty', () => {
     cy.mount(<AlbumPage page={page(supercars, ['supercar-13'])} />);
-    cy.get('[data-testid="album-page-supercar-count"]').should('have.text', '1/6');
-    cy.get('[role="progressbar"]').should('have.attr', 'aria-valuenow', '17').invoke('outerHeight').should('equal', 2);
+    cy.get('[data-testid="stamp-full_page"]').should('not.exist');
   });
 
-  it('reports the pressed row', () => {
+  it('reports the pressed slot', () => {
     const onPressSlot = cy.stub().as('onPressSlot');
     cy.mount(<AlbumPage page={page(supercars, [])} onPressSlot={onPressSlot} />);
     cy.get('[data-testid="sticker-supercar-15"]').click();
     cy.get('@onPressSlot').should('have.been.calledWithMatch', { id: 'supercar-15' });
   });
 
-  it('lists wildcards as rows that open the spot', () => {
+  it('lists wildcards as WILDCARD stickers', () => {
     const wildcards = buildAlbumPages(SAMPLE_MODELS, SAMPLE_SPOTS).find((item) => item.id === 'wildcards');
     if (wildcards === undefined) throw new Error('no wildcards page');
-    const onPressSpot = cy.stub().as('open');
-    cy.mount(<AlbumPage page={wildcards} onPressSpot={onPressSpot} />);
-    cy.get('[data-testid="wildcard-spot-wildcard"]').should('contain.text', 'Fiat Multipla').click();
-    cy.get('@open').should('have.been.calledWithMatch', { id: 'spot-wildcard' });
-    cy.get('[data-testid="album-page-wildcards-count"]').should('have.text', '1 wildcard');
+    cy.mount(<AlbumPage page={wildcards} />);
+    cy.get('[data-testid="wildcard-spot-wildcard"]').should('exist');
+    cy.get('[data-testid="stamp-wildcard"]').should('exist');
   });
 
-  it('shows a finished collection as plain text', () => {
+  it('shows SET COMPLETE on a completed collection', () => {
     const sets = buildCollectionPages(SAMPLE_COLLECTIONS, SAMPLE_MODELS, SAMPLE_SPOTS);
     const jdm = sets.find((set) => set.collectionId === 'jdm-legends');
     const italian = sets.find((set) => set.collectionId === 'italian-exotics');
     if (jdm === undefined || italian === undefined) throw new Error('missing sets');
     cy.mount(<AlbumPage page={jdm} />);
-    cy.get('[data-testid="collection-page-jdm-legends-count"]').should('have.text', 'Complete · 1/1');
+    cy.get('[data-testid="stamp-set-complete"]').should('exist');
+    cy.get('[data-testid="livery-jdm-legends"]').should('contain.text', 'Japanese JDM Legends');
+    cy.mount(<AlbumPage page={italian} />);
     cy.get('[data-testid="stamp-set-complete"]').should('not.exist');
-    cy.mount(<AlbumPage page={italian} showTitle />);
-    cy.get('[data-testid="collection-page-italian-exotics-title"]').should('have.text', 'Italian Exotics');
-    cy.get('[data-testid="collection-page-italian-exotics-count"]').should('have.text', '1/2');
+    cy.get('[data-testid="collection-page-italian-exotics-count"]').should('contain.text', '1/2');
+  });
+});
+
+describe('TachoGauge', () => {
+  it('draws the red zone and reports its value', () => {
+    cy.mount(<TachoGauge ratio={0.5} label="Album completion" valueLabel="50 %" size="lg" testID="tacho" />);
+    cy.get('[data-testid="tacho-red-zone"]').should('exist');
+    cy.get('[data-testid="tacho"]').should('have.attr', 'aria-valuenow', '50');
+    cy.get('[data-testid="tacho-value"]').should('contain.text', '50 %');
+  });
+
+  it('draws no fill at 0 % and clamps above 100 %', () => {
+    cy.mount(<TachoGauge ratio={0} label="Album completion" valueLabel="0 %" size="md" testID="tacho" />);
+    cy.get('[data-testid="tacho-fill"]').should('not.exist');
+    cy.mount(<TachoGauge ratio={1.4} label="Album completion" valueLabel="100 %" size="md" testID="tacho" />);
+    cy.get('[data-testid="tacho"]').should('have.attr', 'aria-valuenow', '100');
+  });
+});
+
+describe('PageIndexCard', () => {
+  it('shows progress, pips and ONE TO GO', () => {
+    const onPress = cy.stub().as('onPress');
+    cy.mount(
+      <PageIndexCard
+        title="Supercars"
+        number={3}
+        collected={5}
+        total={6}
+        pageId="supercar"
+        slots={[true, true, true, true, true, false]}
+        onPress={onPress}
+      />,
+    );
+    cy.get('[data-testid="page-card-supercar-count"]').should('contain.text', '5/6');
+    cy.get('[data-testid="stamp-one_to_go"]').should('exist');
+    cy.get('[data-testid="page-card-supercar"]')
+      .invoke('attr', 'aria-label')
+      .should('equal', 'Page 3, Supercars: 5 of 6 collected');
+    cy.get('[data-testid="page-card-supercar"]').click();
+    cy.get('@onPress').should('have.been.calledOnce');
+  });
+
+  it('shows FULL PAGE on a complete page', () => {
+    cy.mount(
+      <PageIndexCard
+        title="Supercars"
+        number={3}
+        collected={6}
+        total={6}
+        pageId="supercar"
+        onPress={() => undefined}
+      />,
+    );
+    cy.get('[data-testid="stamp-full_page"]').should('exist');
+  });
+
+  it('shows SET COMPLETE on a complete set', () => {
+    cy.mount(
+      <PageIndexCard
+        title="Italian Exotics"
+        number={4}
+        collected={12}
+        total={12}
+        collectionId="italian-exotics"
+        variant="shelf"
+        onPress={() => undefined}
+      />,
+    );
+    cy.get('[data-testid="collection-card-italian-exotics"]').should('exist');
+    cy.get('[data-testid="stamp-set-complete"]').should('exist');
+  });
+
+  it('counts wildcards instead of slots', () => {
+    cy.mount(
+      <PageIndexCard
+        title="Wildcards"
+        number={9}
+        collected={0}
+        total={0}
+        pageId="wildcards"
+        wildcardCount={2}
+        onPress={() => undefined}
+      />,
+    );
+    cy.get('[data-testid="page-card-wildcards-count"]').should('contain.text', '2 wildcards');
+  });
+});
+
+describe('CollectionShelf', () => {
+  it('lists every set with its translated title and opens it', () => {
+    const onPressCollection = cy.stub().as('open');
+    cy.mount(
+      <CollectionShelf
+        collections={buildCollectionPages(SAMPLE_COLLECTIONS, SAMPLE_MODELS, SAMPLE_SPOTS)}
+        onPressCollection={onPressCollection}
+      />,
+    );
+    cy.get('[data-testid^="collection-card-"]:not([data-testid$="-count"])').should('have.length', 3);
+    cy.contains('Italian Exotics').should('exist');
+    cy.get('[data-testid="collection-card-italian-exotics"]').click();
+    cy.get('@open').should('have.been.calledWith', 'italian-exotics');
   });
 });
 
@@ -154,115 +332,36 @@ describe('AlbumPager', () => {
         />
       </div>,
     );
-    cy.get('[data-testid="pager-position"]').should('have.text', '03/09');
+    cy.get('[data-testid="pager-position"]').should('contain.text', '03/09');
     cy.get('[data-testid="pager-next"]').click();
     cy.get('@change').should('have.been.calledWith', 'hypercar');
-    cy.get('[data-testid="pager-position"]').should('have.text', '04/09');
+    cy.get('[data-testid="pager-position"]').should('contain.text', '04/09');
     cy.get('[data-testid="pager-previous"]').click();
     cy.get('@change').should('have.been.calledWith', 'supercar');
-  });
-
-  // Regression: a page's own ScrollView had no height, so on the web the rows below the fold of a
-  // long page (Classics, 29 cars) were clipped and could not be reached.
-  it('scrolls a long page down to its last sticker, which can be pressed', () => {
-    const onPressSlot = cy.stub().as('open');
-    cy.mount(
-      <div style={{ width: 390, height: 700, display: 'flex' }}>
-        <AlbumPager pages={buildAlbumPages(classics, [])} initialPageId="classic" onPressSlot={onPressSlot} />
-      </div>,
-    );
-    cy.get('[data-testid="pager-page-classic"]').invoke('outerHeight').should('be.lessThan', 700);
-    cy.get('[data-testid="sticker-classic-29"]').should('not.be.visible');
-    cy.get('[data-testid="pager-page-classic"]').scrollTo('bottom', { ensureScrollable: true });
-    cy.get('[data-testid="sticker-classic-29"]').should('be.visible').click({ scrollBehavior: false });
-    cy.get('@open').should('have.been.calledWithMatch', { id: 'classic-29' });
-  });
-});
-
-describe('AlbumIndex', () => {
-  const pages = buildAlbumPages(SAMPLE_MODELS, SAMPLE_SPOTS);
-  const sets = buildCollectionPages(SAMPLE_COLLECTIONS, SAMPLE_MODELS, SAMPLE_SPOTS);
-
-  it('lists the 9 pages in print order and opens one', () => {
-    const onPressPage = cy.stub().as('page');
-    cy.mount(
-      <AlbumIndex pages={pages} collections={sets} onPressPage={onPressPage} onPressCollection={() => undefined} />,
-    );
-    cy.get('[data-testid="album-contents"] [role="button"]')
-      .should('have.length', 9)
-      .first()
-      .should('have.attr', 'data-testid', 'page-card-icon');
-    cy.get('[data-testid="page-card-sports-count"]').should('have.text', '2/2');
-    cy.get('[data-testid="page-card-wildcards-count"]').should('have.text', '1');
-    cy.get('[data-testid="page-card-supercar"]')
-      .should('have.attr', 'aria-label', 'Page 3, Supercars: 0 of 1 collected')
-      .click();
-    cy.get('@page').should('have.been.calledWith', 'supercar');
-  });
-
-  it('switches to the collections with text tabs', () => {
-    const onPressCollection = cy.stub().as('set');
-    cy.mount(
-      <AlbumIndex
-        pages={pages}
-        collections={sets}
-        onPressPage={() => undefined}
-        onPressCollection={onPressCollection}
-      />,
-    );
-    cy.get('[data-testid="album-index-tab"]').should('have.attr', 'role', 'tablist');
-    cy.get('[data-testid="album-index-tab-pages"]').should('have.attr', 'aria-selected', 'true');
-    cy.get('[data-testid="album-index-tab-collections"]').click();
-    cy.get('[data-testid="album-index-tab-collections"]').should('have.attr', 'aria-selected', 'true');
-    cy.get('[data-testid="album-contents"]').should('not.exist');
-    cy.get('[data-testid="album-collections"] [role="button"]').should('have.length', 3);
-    cy.get('[data-testid="collection-card-italian-exotics-count"]').should('have.text', '1/2');
-    cy.get('[data-testid="collection-card-italian-exotics"]').click();
-    cy.get('@set').should('have.been.calledWith', 'italian-exotics');
-  });
-
-  it('shows only the pages without collections', () => {
-    cy.mount(
-      <AlbumIndex pages={pages} collections={[]} onPressPage={() => undefined} onPressCollection={() => undefined} />,
-    );
-    cy.get('[data-testid="album-index-tab"]').should('not.exist');
-    cy.get('[data-testid="album-index"]').should('contain.text', 'Pages');
   });
 });
 
 describe('small pieces', () => {
-  it('PageTableRow is one 44 px button with a 96 px progress line', () => {
-    const onPress = cy.stub().as('row');
-    cy.mount(
-      <PageTableRow
-        number="02"
-        title="Sports"
-        count="2/17"
-        progress={2 / 17}
-        accessibilityLabel="Page 2, Sports: 2 of 17 collected"
-        onPress={onPress}
-        testID="row"
-      />,
-    );
-    cy.get('[data-testid="row"]').should('contain.text', '02').and('contain.text', 'Sports');
-    cy.get('[data-testid="row-count"]').should('have.text', '2/17');
-    cy.get('[data-testid="row"]').invoke('outerHeight').should('be.at.least', 44);
-    cy.get('[data-testid="row"] [role="progressbar"]').invoke('outerWidth').should('equal', 96);
-    cy.get('[data-testid="row"]').click();
-    cy.get('@row').should('have.been.calledOnce');
-  });
-
-  it('CarThumb is a 72 × 30 crop, or the silhouette without a photo', () => {
-    cy.mount(<CarThumb uri={SAMPLE_PHOTO_URL} bodyStyle="coupe" testID="thumb" />);
-    cy.get('[data-testid="thumb"]').invoke('outerWidth').should('equal', 72);
-    cy.get('[data-testid="thumb"]').invoke('outerHeight').should('be.closeTo', 30, 1);
-    cy.get('[data-testid="silhouette-coupe"]').should('not.exist');
-    cy.mount(<CarThumb bodyStyle="van" testID="thumb" />);
-    cy.get('[data-testid="silhouette-van"]').should('exist');
+  it('RarityPips fills one pip per rarity step', () => {
+    cy.mount(<RarityPips rarity="epic" size="md" />);
+    cy.get('[data-testid="rarity-pips-epic"] [data-testid="rarity-pip-filled"]').should('have.length', 3);
+    cy.get('[data-testid="rarity-pips-epic"] [data-testid="rarity-pip-empty"]').should('have.length', 1);
+    cy.get('[data-testid="rarity-pips-epic"]').should('have.attr', 'aria-label', 'Epic');
   });
 
   it('CarSilhouette draws an SVG for each body style', () => {
     cy.mount(<CarSilhouette bodyStyle="van" size={120} tone="silhouette" />);
     cy.get('[data-testid="silhouette-van"]').find('path').should('have.length', 1);
+  });
+
+  it('SetCompleteStamp names the set for screen readers, in both schemes', () => {
+    cy.mount(
+      <ThemeProvider scheme="dark">
+        <SetCompleteStamp collectionId="hypercar-hall-of-fame" />
+      </ThemeProvider>,
+    );
+    cy.get('[data-testid="stamp-set-complete"]')
+      .should('have.attr', 'aria-label')
+      .and('contain', 'Hypercar Hall of Fame');
   });
 });

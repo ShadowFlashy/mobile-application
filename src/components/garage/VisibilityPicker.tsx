@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { createThemedStyles, spacing } from '../../theme';
+import { borders, createThemedStyles, spacing, touchTarget } from '../../theme';
 import { OWNER_VISIBILITIES, type OwnerVisibility } from '../../types/OwnerCar';
+import { Icon, type IconName } from '../primitives/Icon';
 import { InputField } from '../primitives/InputField';
-import { Radio } from '../primitives/Radio';
+import { PressableScale } from '../primitives/PressableScale';
+import { Stack } from '../primitives/Stack';
 import { Text } from '../primitives/Text';
 
 export interface VisibilityPickerProps {
@@ -20,9 +22,15 @@ export interface VisibilityPickerProps {
   testID?: string;
 }
 
+const ICONS: Record<OwnerVisibility, IconName> = {
+  hidden: 'eye-off-outline',
+  badge: 'shield-checkmark-outline',
+  vanity: 'id-card-outline',
+};
+
 /**
- * What spotters of the car may see: Hidden (default), Badge with the shout-out, or Vanity plate, as
- * radio rows on hairlines. Selected = a filled ring in the text colour, announced as checked.
+ * What spotters of the car may see: Hidden (default), Badge with the shout-out, or Vanity plate.
+ * The selected option is marked by a check icon and bold text, not by colour alone.
  */
 export function VisibilityPicker({
   value,
@@ -37,48 +45,74 @@ export function VisibilityPicker({
   const { t } = useTranslation();
   const styles = useStyles();
   return (
-    <View testID={testID}>
-      <View accessibilityRole="radiogroup" accessibilityLabel={t('garage.visibility_title')}>
-        {OWNER_VISIBILITIES.map((option) => (
-          <Radio
-            key={option}
-            label={t(`garage.visibility_${option}`)}
-            description={t(`garage.visibility_${option}_description`)}
-            value={option}
-            selected={option === value}
-            onSelect={() => onChange(option)}
-            testID={`visibility-option-${option}`}
-          />
-        ))}
+    <Stack gap="sm" testID={testID}>
+      <View accessibilityRole="radiogroup" accessibilityLabel={t('garage.visibility_title')} style={styles.group}>
+        {OWNER_VISIBILITIES.map((option) => {
+          const selected = option === value;
+          const label = t(`garage.visibility_${option}`);
+          const description = t(`garage.visibility_${option}_description`);
+          return (
+            <PressableScale
+              key={option}
+              onPress={() => onChange(option)}
+              accessibilityRole="radio"
+              accessibilityLabel={`${label}. ${description}`}
+              checked={selected}
+              testID={`visibility-option-${option}`}
+            >
+              <View style={[styles.option, selected && styles.optionSelected]}>
+                <Icon name={ICONS[option]} size={22} tone={selected ? 'accent' : 'muted'} />
+                <Stack gap="xxs" flex={1}>
+                  <Text variant={selected ? 'bodyStrong' : 'body'}>{label}</Text>
+                  <Text variant="bodySm" tone="muted">
+                    {description}
+                  </Text>
+                </Stack>
+                <Icon
+                  name={selected ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={22}
+                  tone={selected ? 'accent' : 'subtle'}
+                />
+              </View>
+            </PressableScale>
+          );
+        })}
       </View>
       {isPending && value !== 'hidden' && (
-        <View style={styles.note}>
-          <Text variant="meta" tone="text2" testID="visibility-pending-note">
-            {t('garage.visibility_pending_note')}
-          </Text>
-        </View>
+        <Text variant="bodySm" tone="muted" testID="visibility-pending-note">
+          {t('garage.visibility_pending_note')}
+        </Text>
       )}
       {value === 'vanity' && needsPlate && (
-        <View style={styles.field}>
-          <InputField
-            label={t('garage.confirm_plate_label')}
-            hint={t('garage.confirm_plate_hint')}
-            value={plate}
-            onChangeText={(text) => onPlateChange?.(text)}
-            placeholder={t('garage.plate_placeholder')}
-            autoCapitalize="characters"
-            autoComplete="off"
-            maxLength={20}
-            error={plateError}
-            testID="visibility-plate-input"
-          />
-        </View>
+        <InputField
+          label={t('garage.confirm_plate_label')}
+          hint={t('garage.confirm_plate_hint')}
+          value={plate}
+          onChangeText={(text) => onPlateChange?.(text)}
+          placeholder={t('garage.plate_placeholder')}
+          autoCapitalize="characters"
+          autoComplete="off"
+          maxLength={20}
+          error={plateError}
+          testID="visibility-plate-input"
+        />
       )}
-    </View>
+    </Stack>
   );
 }
 
-const useStyles = createThemedStyles(() => ({
-  note: { paddingTop: spacing.smd },
-  field: { paddingTop: spacing.md },
+const useStyles = createThemedStyles(({ colors, radii }) => ({
+  group: { gap: spacing.sm },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.smd,
+    minHeight: touchTarget,
+    padding: spacing.smd,
+    borderRadius: radii.md,
+    borderWidth: borders.hairline,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  optionSelected: { borderWidth: borders.strong, borderColor: colors.accent, backgroundColor: colors.primarySoft },
 }));

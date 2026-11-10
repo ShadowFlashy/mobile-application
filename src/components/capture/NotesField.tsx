@@ -9,7 +9,7 @@ export interface NotesFieldProps {
   testID?: string;
 }
 
-/** Private notes, collapsed behind the "Add a note" text action so the minimal path stays short. */
+/** Private notes, collapsed behind "Add a note" so the minimal path stays one screen of taps. */
 export function NotesField({ value, onChange, testID = 'notes-field' }: NotesFieldProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(value.length > 0);
@@ -17,8 +17,8 @@ export function NotesField({ value, onChange, testID = 'notes-field' }: NotesFie
     return (
       <StyledButton
         label={t('capture.notes_add')}
-        variant="text"
-        icon="plus"
+        variant="ghost"
+        icon="create-outline"
         onPress={() => setIsOpen(true)}
         testID={`${testID}-open`}
       />

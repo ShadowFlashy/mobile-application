@@ -14,7 +14,7 @@ function isCollectionId(value: string | undefined): value is CollectionId {
   return COLLECTION_IDS.some((id) => id === value);
 }
 
-/** Translated weekly-challenge texts: the challenge description and the slot label. */
+/** Translated pit-board texts: the challenge description and the slot label. */
 export function useChallengeText(): {
   describe: (challenge: WeeklyChallenge) => string;
   slotLabel: (slot: ChallengeSlot) => string;

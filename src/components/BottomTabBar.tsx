@@ -3,7 +3,8 @@ import { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import type { Resources } from '../i18n/resources';
-import type { AIconName } from './primitives/Icon';
+import { IgnitionButton } from './brand/IgnitionButton';
+import type { IconName } from './primitives/Icon';
 import { Nav } from './primitives/Nav';
 import { NavItem } from './primitives/NavItem';
 
@@ -12,18 +13,19 @@ type TabLabelKey = keyof Resources['tabs'];
 
 interface TabConfig {
   label: TabLabelKey;
-  icon: AIconName;
-  /** The Spot tab is the red key: the one primary action of the bar. */
-  key?: boolean;
+  icon: IconName;
+  activeIcon: IconName;
+  /** The centre tab is the raised Ignition button. */
+  ignition?: boolean;
 }
 
 /** Tab per route name, in tab-bar order; routes without an entry get no tab. */
 export const TABS: Partial<Record<string, TabConfig>> = {
-  index: { label: 'album', icon: 'album' },
-  progress: { label: 'stats', icon: 'stats' },
-  spot: { label: 'spot', icon: 'camera', key: true },
-  owners: { label: 'garage', icon: 'garage' },
-  profile: { label: 'profile', icon: 'profile' },
+  index: { label: 'album', icon: 'albums-outline', activeIcon: 'albums' },
+  progress: { label: 'pit_wall', icon: 'speedometer-outline', activeIcon: 'speedometer' },
+  spot: { label: 'spot', icon: 'camera-outline', activeIcon: 'camera', ignition: true },
+  owners: { label: 'garage', icon: 'car-sport-outline', activeIcon: 'car-sport' },
+  profile: { label: 'me', icon: 'person-circle-outline', activeIcon: 'person-circle' },
 };
 
 interface BottomTabBarExtraProps {
@@ -32,14 +34,13 @@ interface BottomTabBarExtraProps {
 }
 
 /**
- * A's tab bar in the thumb zone: Album · Stats · Spot · Garage · Profile. Spot is the red key with
- * the camera; the active tab is the text colour, the others text-2; a hairline on top.
+ * The 5-tab bar in the thumb zone: Album, Pit Wall, the raised SPOT Ignition button, Garage and Me.
  */
 export function BottomTabBar({ state, navigation, badges }: BottomTabBarProps & BottomTabBarExtraProps) {
   const { t } = useTranslation();
   const insets = useContext(SafeAreaInsetsContext);
   return (
-    <Nav bottomInset={insets?.bottom ?? 0} accessibilityLabel={t('a11y.main_tabs')} testID="bottom-tab-bar">
+    <Nav bottomInset={insets?.bottom ?? 0} testID="bottom-tab-bar">
       {state.routes.map((route, index) => {
         const tab = TABS[route.name];
         if (tab === undefined) return null;
@@ -48,12 +49,23 @@ export function BottomTabBar({ state, navigation, badges }: BottomTabBarProps & 
           const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
           if (!isActive && !event.defaultPrevented) navigation.navigate(route.name, route.params);
         };
+        const label = t(`tabs.${tab.label}`);
+        if (tab.ignition === true) {
+          return (
+            <IgnitionButton
+              key={route.key}
+              label={label}
+              onPress={onPress}
+              active={isActive}
+              testID={`tab-${route.name}`}
+            />
+          );
+        }
         return (
           <NavItem
             key={route.key}
-            label={t(`tabs.${tab.label}`)}
-            icon={tab.icon}
-            variant={tab.key === true ? 'key' : 'tab'}
+            label={label}
+            icon={isActive ? tab.activeIcon : tab.icon}
             active={isActive}
             badgeCount={badges?.[route.name] ?? 0}
             onPress={onPress}

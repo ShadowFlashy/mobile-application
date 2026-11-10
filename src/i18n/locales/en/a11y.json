@@ -5,6 +5,6 @@
   "avatar_of": "Avatar of {{name}}",
   "nav_badge_one": "{{label}}, {{count}} new notification",
   "nav_badge_other": "{{label}}, {{count}} new notifications",
-  "main_tabs": "Main",
-  "back": "Back"
+  "remove_tag": "Remove {{label}}",
+  "unread": "Unread"
 }

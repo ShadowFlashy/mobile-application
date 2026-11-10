@@ -6,12 +6,12 @@ import type { CarCategory } from '../types/CarModel';
  * t(`categories.${category}`) and t(`rarity.${rarity}`).
  */
 export const CATEGORY_ICONS: Record<CarCategory, IconName> = {
-  icon: 'star',
-  sports: 'stats',
-  supercar: 'bolt',
-  hypercar: 'flame',
-  classic: 'clock',
-  jdm: 'sun',
-  muscle: 'dumbbell',
-  electric: 'battery',
+  icon: 'star-outline',
+  sports: 'speedometer-outline',
+  supercar: 'flash-outline',
+  hypercar: 'rocket-outline',
+  classic: 'hourglass-outline',
+  jdm: 'sunny-outline',
+  muscle: 'barbell-outline',
+  electric: 'battery-charging-outline',
 };

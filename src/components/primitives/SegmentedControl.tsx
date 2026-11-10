@@ -1,6 +1,6 @@
-import { Pressable, View } from 'react-native';
-import { createThemedStyles, lines, spacing, touchTarget } from '../../theme';
-import { spaceKey } from './keyboard';
+import { View } from 'react-native';
+import { createThemedStyles, spacing, touchTarget } from '../../theme';
+import { PressableScale } from './PressableScale';
 import { Text } from './Text';
 
 export interface SegmentOption<T extends string> {
@@ -13,80 +13,61 @@ interface SegmentedControlProps<T extends string> {
   options: readonly SegmentOption<T>[];
   value: T;
   onChange: (value: T) => void;
-  /**
-   * `radio` (default): a choice of a setting (radiogroup / radio, aria-checked). `tab`: A's text tabs
-   * that switch content, such as "Pages | Collections" (tablist / tab, aria-selected).
-   */
-  role?: 'radio' | 'tab';
-  /** Spoken name of the group. */
-  accessibilityLabel?: string;
   /** Each segment gets `<testID>-<value>`. */
   testID?: string;
 }
 
-/**
- * A's text tabs: labels in a row on a hairline; the active one is text colour with a 2 px underline,
- * the others are text-2. Each tab is a 44 px target.
- */
-export function SegmentedControl<T extends string>({
-  options,
-  value,
-  onChange,
-  role = 'radio',
-  accessibilityLabel,
-  testID,
-}: SegmentedControlProps<T>) {
+/** A row of mutually exclusive options; the selected one is filled and bold (not colour alone). */
+export function SegmentedControl<T extends string>({ options, value, onChange, testID }: SegmentedControlProps<T>) {
   const styles = useStyles();
-  const isTab = role === 'tab';
   return (
-    <View
-      style={styles.track}
-      accessibilityRole={isTab ? 'tablist' : 'radiogroup'}
-      accessibilityLabel={accessibilityLabel}
-      testID={testID}
-    >
+    <View style={styles.track} accessibilityRole="radiogroup" testID={testID}>
       {options.map((option) => {
         const selected = option.value === value;
         return (
-          <Pressable
+          <PressableScale
             key={option.value}
             onPress={() => onChange(option.value)}
-            {...spaceKey(() => onChange(option.value))}
-            accessibilityRole={isTab ? 'tab' : 'radio'}
+            accessibilityRole="radio"
             accessibilityLabel={option.label}
-            accessibilityState={isTab ? { selected } : { checked: selected }}
-            aria-selected={isTab ? selected : undefined}
-            aria-checked={isTab ? undefined : selected}
-            style={({ pressed }) => [styles.segment, selected && styles.selected, pressed && styles.pressed]}
+            checked={selected}
+            selected={selected}
+            haptic="tap"
+            fill
             testID={testID !== undefined ? `${testID}-${option.value}` : undefined}
           >
-            <Text variant="heading" tone={selected ? 'text' : 'text2'} numberOfLines={1}>
-              {option.label}
-            </Text>
-          </Pressable>
+            <View style={[styles.segment, selected && styles.selected]}>
+              <Text
+                variant={selected ? 'bodyStrong' : 'bodySm'}
+                tone={selected ? 'default' : 'muted'}
+                align="center"
+                numberOfLines={1}
+              >
+                {option.label}
+              </Text>
+            </View>
+          </PressableScale>
         );
       })}
     </View>
   );
 }
 
-const useStyles = createThemedStyles(({ colors }) => ({
+const useStyles = createThemedStyles(({ colors, elevation, radii }) => ({
   track: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: spacing.lg,
-    borderBottomWidth: lines.hairline,
-    borderBottomColor: colors.line,
+    gap: spacing.xxs,
+    padding: spacing.xxs,
+    borderRadius: radii.md,
+    backgroundColor: colors.surfaceSunken,
   },
   segment: {
-    minHeight: touchTarget,
-    justifyContent: 'flex-end',
-    paddingBottom: spacing.sm,
-    // The underline sits on the track's hairline.
-    marginBottom: -lines.hairline,
-    borderBottomWidth: lines.underline,
-    borderBottomColor: 'transparent',
+    flex: 1,
+    minHeight: touchTarget - 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.md - 2,
   },
-  selected: { borderBottomColor: colors.text },
-  pressed: { opacity: 0.6 },
+  selected: { backgroundColor: colors.surface, ...elevation.raised },
 }));

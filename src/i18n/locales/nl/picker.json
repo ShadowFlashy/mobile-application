@@ -1,6 +1,6 @@
 {
   "label": "Welke auto is het?",
-  "placeholder": "Zoek, bv. Golf GTI of eend",
+  "placeholder": "Zoek, bv. vw golf, lambo, eend",
   "hint": "Zoek in het album. Bijnamen werken ook.",
   "hint_other": "Niet in het album? Vul hieronder het merk en model in.",
   "sticker_number": "Sticker nr. {{number}}",

@@ -12,17 +12,12 @@ describe('Login screen', () => {
     cy.get('[data-testid="login-button"]').should('exist');
   });
 
-  it('shows the Redline brand, one red primary button and no lecturer hint', () => {
+  it('shows the REDLINE brand and no lecturer hint', () => {
     cy.visit('/login');
     cy.get('[data-testid="brand-wordmark"]').should('contain.text', 'Redline');
     cy.get('[data-testid="brand-mark"]').should('exist');
     cy.get('[data-testid="login-screen"]').should('not.contain.text', 'Lecturer');
     cy.get('[data-testid="demo-hint"]').should('not.exist');
-    // Red is only the primary action: exactly one red fill on the screen, inside "Log in".
-    cy.get('[data-testid="login-screen"] div')
-      .filter((_, element) => getComputedStyle(element).backgroundColor === 'rgb(225, 6, 0)')
-      .should('have.length', 1)
-      .and(($fill) => expect($fill.closest('[data-testid="login-button"]').length).to.equal(1));
   });
 
   it('hydrates a hard load in Dutch without React errors and stays usable', () => {
@@ -55,12 +50,12 @@ describe('Login screen', () => {
     cy.location('pathname').should('eq', '/privacy');
   });
 
-  it('loads the direction A fonts', () => {
+  it('loads the LIVERY fonts', () => {
     cy.visit('/login');
     cy.get('[data-testid="login-screen"]').should('be.visible');
     cy.document().then((doc) =>
-      doc.fonts.load('16px BarlowCondensed_600SemiBold').then(() => {
-        expect(doc.fonts.check('16px BarlowCondensed_600SemiBold')).to.equal(true);
+      doc.fonts.load('16px BarlowCondensed_800ExtraBold_Italic').then(() => {
+        expect(doc.fonts.check('16px BarlowCondensed_800ExtraBold_Italic')).to.equal(true);
       }),
     );
   });

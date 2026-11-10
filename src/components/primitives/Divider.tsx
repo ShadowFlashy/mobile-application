@@ -1,14 +1,13 @@
 import { View, StyleSheet } from 'react-native';
-import { createThemedStyles, lines, spacing } from '../../theme';
+import { borders, createThemedStyles, spacing } from '../../theme';
 
 interface DividerProps {
   orientation?: 'horizontal' | 'vertical';
   spacing?: 'none' | 'sm' | 'md' | 'lg';
-  testID?: string;
 }
 
-/** A 1 px hairline in the `line` token, between rows or blocks of content. Decorative. */
-export function Divider({ orientation = 'horizontal', spacing: space = 'none', testID }: DividerProps) {
+/** A hairline between blocks of content. */
+export function Divider({ orientation = 'horizontal', spacing: space = 'none' }: DividerProps) {
   const styles = useStyles();
   const isHorizontal = orientation === 'horizontal';
   return (
@@ -18,17 +17,14 @@ export function Divider({ orientation = 'horizontal', spacing: space = 'none', t
         isHorizontal ? styles.horizontal : styles.vertical,
         isHorizontal ? verticalMargins[space] : horizontalMargins[space],
       ]}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      testID={testID}
     />
   );
 }
 
 const useStyles = createThemedStyles(({ colors }) => ({
-  base: { backgroundColor: colors.line },
-  horizontal: { height: lines.hairline, width: '100%' },
-  vertical: { width: lines.hairline, alignSelf: 'stretch' },
+  base: { backgroundColor: colors.border },
+  horizontal: { height: borders.hairline, width: '100%' },
+  vertical: { width: borders.hairline, height: '100%' },
 }));
 
 const verticalMargins = StyleSheet.create({

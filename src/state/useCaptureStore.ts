@@ -22,7 +22,7 @@ interface CaptureState {
 
 let draftCounter = 0;
 
-/** Client state of the New spot capture flow (SPEC §10.5). Zustand without persistence on purpose. */
+/** Client state of the Pit Stop capture flow (SPEC §10.5). Zustand without persistence on purpose. */
 export const useCaptureStore = create<CaptureState>((set, get) => ({
   draft: undefined,
   start: (photo, source, { shareNameDefault = false, now = new Date() } = {}) => {

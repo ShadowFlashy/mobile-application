@@ -4,19 +4,19 @@ import { hasCar } from './captureForm';
 import { coverage } from './plateRegions';
 
 /**
- * The plate privacy gate (SPEC D-5, P0-04). Add to album is enabled only after an explicit statement by
+ * The plate privacy gate (SPEC D-5, P0-04). COLLECT is enabled only after an explicit statement by
  * the user, made with the redacted preview on screen:
  * - "Every plate is blurred", which needs at least one region, or
- * - "No licence plate is visible", which needs a second tap when Auto-fill saw a plate that no
+ * - "No licence plate is visible", which needs a second tap when Co-Driver saw a plate that no
  *   region covers.
- * Auto-fill's boxes are only suggestions: they never count as regions until accepted, and nothing
+ * Co-Driver's boxes are only suggestions: they never count as regions until accepted, and nothing
  * is ever confirmed automatically. Every region change clears the statement (captureMachine).
  */
 
 /** A suggestion counts as handled once the regions cover at least half of it. */
 export const SUGGESTION_COVERED = 0.5;
 
-/** Auto-fill's plate suggestions that no region covers (the "Auto-fill thinks it saw a plate" check). */
+/** Co-Driver's plate suggestions that no region covers (the "Co-Driver thinks it saw a plate" check). */
 export function ignoredSuggestions(draft: Pick<CaptureDraft, 'suggestions' | 'regions'>): PlateRegion[] {
   return draft.suggestions.filter((suggestion) => coverage(suggestion, draft.regions) < SUGGESTION_COVERED);
 }
@@ -35,7 +35,7 @@ export interface GateInput {
   isOnline: boolean;
 }
 
-/** Whether Add to album may run, and otherwise the first reason why not (plates before the car). */
+/** Whether COLLECT may run, and otherwise the first reason why not (plates before the car). */
 export function canCollect({ draft, isOnline }: GateInput): PlateGate {
   if (draft.status === 'collecting' || draft.status === 'collected') return { ok: false, reason: 'busy' };
   if (!isOnline) return { ok: false, reason: 'offline' };

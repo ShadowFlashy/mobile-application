@@ -3,7 +3,7 @@ import { XP } from '../constants/xp';
 import type { AlbumCoverData, AlbumPageData, AlbumSlotData } from '../types/Album';
 import type { CarModel, Rarity } from '../types/CarModel';
 import { COLLECTION_IDS, type Collection, type CollectionId } from '../types/Collection';
-import type { AlbumPageId, PageProgress } from '../types/Progress';
+import type { AlbumPageId, PageProgress, StampKind } from '../types/Progress';
 import type { Spot } from '../types/Spot';
 
 /**
@@ -182,6 +182,17 @@ export function pageProgress(page: AlbumPageData): PageProgress {
   return completedAt !== undefined ? { ...progress, completedAt } : progress;
 }
 
+/** The stamp on a page or set card: FULL PAGE when complete, ONE TO GO with one slot left. */
+export function pageStamp(page: {
+  collected: number;
+  total: number;
+}): Extract<StampKind, 'full_page' | 'one_to_go'> | undefined {
+  if (page.total === 0) return undefined;
+  if (page.collected >= page.total) return 'full_page';
+  if (page.total - page.collected === 1) return 'one_to_go';
+  return undefined;
+}
+
 /** Album cover numbers: collected / total over the category pages, and the newest catches. */
 export function buildAlbumCover(
   pages: readonly AlbumPageData[],
@@ -204,9 +215,66 @@ export function stickerXp(rarity: Rarity): number {
   return XP.newSticker[rarity];
 }
 
-/** Sweep of the brand mark's needle in degrees (from 135° to 405°, clockwise on screen). */
+/** Deterministic hand-stuck tilt in degrees, within [-2.5, 2.5], derived from a seed (e.g. the id). */
+export function slotTilt(seed: string): number {
+  let hash = 2166136261;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index);
+    hash = Math.imul(hash, 16777619) >>> 0;
+  }
+  return Math.round(((hash % 1001) / 1000) * 50 - 25) / 10;
+}
+
+/** Gutter between slots as a share of the page width. */
+export const SLOT_GUTTER_RATIO = 0.04;
+
+/** Position of a slot in the page grid (default 2 columns, 3:4 slots, a gutter of 4 % of the width). */
+export function slotRect(
+  index: number,
+  pageWidth: number,
+  columns: number = 2,
+): { x: number; y: number; width: number; height: number } {
+  const safeColumns = Math.max(1, Math.floor(columns));
+  const width = Math.max(0, pageWidth);
+  const gutter = width * SLOT_GUTTER_RATIO;
+  const slotWidth = (width - gutter * (safeColumns - 1)) / safeColumns;
+  const height = (slotWidth * 4) / 3;
+  const column = index % safeColumns;
+  const row = Math.floor(index / safeColumns);
+  return { x: column * (slotWidth + gutter), y: row * (height + gutter), width: slotWidth, height };
+}
+
+/** Sweep of the tacho dial in degrees (from 135° to 405°, clockwise on screen). */
 export const TACHO_START_DEG = 135;
 export const TACHO_SWEEP_DEG = 270;
+/** The red zone covers the last 15 % of the dial. */
+export const TACHO_RED_ZONE = 0.15;
+
+/** A point on a circle; 0° is to the right and angles grow clockwise on screen (y points down). */
+export function polarPoint(cx: number, cy: number, radius: number, degrees: number): { x: number; y: number } {
+  const radians = (degrees * Math.PI) / 180;
+  return { x: cx + radius * Math.cos(radians), y: cy + radius * Math.sin(radians) };
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+/**
+ * An SVG arc path along the tacho dial between two ratios (0–1) of its sweep. Returns an empty
+ * string for an empty range, so nothing is drawn at 0 %.
+ */
+export function gaugeArcPath(cx: number, cy: number, radius: number, fromRatio: number, toRatio: number): string {
+  const from = Math.min(1, Math.max(0, fromRatio));
+  const to = Math.min(1, Math.max(0, toRatio));
+  if (to - from <= 0) return '';
+  const startDeg = TACHO_START_DEG + TACHO_SWEEP_DEG * from;
+  const endDeg = TACHO_START_DEG + TACHO_SWEEP_DEG * to;
+  const start = polarPoint(cx, cy, radius, startDeg);
+  const end = polarPoint(cx, cy, radius, endDeg);
+  const largeArc = endDeg - startDeg > 180 ? 1 : 0;
+  return `M ${round2(start.x)} ${round2(start.y)} A ${radius} ${radius} 0 ${largeArc} 1 ${round2(end.x)} ${round2(end.y)}`;
+}
 
 /** The needle angle in degrees for a completion ratio. */
 export function needleAngle(ratio: number): number {

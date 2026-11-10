@@ -33,7 +33,7 @@
   "load_pings": "Your pings could not be loaded.",
   "update_pings": "Your pings could not be updated.",
   "delete_account": "Your account could not be deleted. Please try again.",
-  "rate_limited_spots": "You added a lot of spots in the last hour. Wait a while and try again.",
+  "rate_limited_spots": "You added a lot of spots in the last hour. Take a short pit stop and try again later.",
   "too_many_cars": "You can register at most 3 cars.",
   "plate_locked": "The licence plate of a registered car cannot be changed. Remove the car and add it again.",
   "demo_protected": "The shared demo account is protected: this cannot be deleted or changed. Make your own account to try it.",

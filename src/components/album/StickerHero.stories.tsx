@@ -14,7 +14,7 @@ export const Collected: Story = {
     spotCount: 3,
   },
 };
-export const CollectedWithAutoFill: Story = {
+export const CollectedByCoDriver: Story = {
   args: {
     model: ferrari308,
     isCollected: true,

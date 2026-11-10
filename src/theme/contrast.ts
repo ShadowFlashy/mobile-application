@@ -1,6 +1,6 @@
 /**
  * WCAG 2.x contrast helpers (pure). Used by the contrast unit test to prove every documented
- * foreground/background pair of direction A reaches its minimum (4.5:1 text, 3:1 non-text).
+ * text/background pair of LIVERY reaches 4.5:1.
  */
 function channel(value: number): number {
   const srgb = value / 255;

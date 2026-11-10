@@ -15,7 +15,6 @@ describe('Privacy policy', () => {
       .and('contain.text', 'Vercel')
       .and('contain.text', 'Cloudflare Workers AI')
       .and('contain.text', 'Mistral AI');
-    cy.get('[data-testid="privacy-document"]').should('not.contain.text', 'Co-Driver');
     cy.get('[data-testid="privacy-section-rights"]').scrollIntoView().should('be.visible');
     cy.get('[data-testid="privacy-back"]').click();
     cy.location('pathname').should('eq', '/login');
