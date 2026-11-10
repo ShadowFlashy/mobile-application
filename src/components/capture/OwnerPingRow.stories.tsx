@@ -17,5 +17,5 @@ function Interactive({ plate }: { plate: string }) {
   );
 }
 
-export const ReadByCoDriver: Story = { render: () => <Interactive plate="1ABC234" /> };
+export const ReadByAutoFill: Story = { render: () => <Interactive plate="1ABC234" /> };
 export const Manual: Story = { render: () => <Interactive plate="" /> };

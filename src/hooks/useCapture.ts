@@ -43,7 +43,7 @@ export interface UseCapture {
   models: CarModel[];
   gate: PlateGate;
   isOnline: boolean;
-  /** Co-Driver may still fill in fields (shows the analysing chip and shimmers). */
+  /** Auto-fill may still fill in fields (shows the analysing chip and shimmers). */
   isAnalysing: boolean;
   tier?: ConfidenceTier;
   /** "Is it one of these?" chips in the guess tier. */
@@ -59,11 +59,11 @@ export interface UseCapture {
   /** Opens the camera or gallery and starts a draft. Resolves true when a photo was picked. */
   pick: (source: PhotoSource) => Promise<boolean>;
   dispatch: (event: CaptureEvent) => void;
-  /** First-use consent: "Use Co-Driver". */
+  /** First-use consent: "Use Auto-fill". */
   acceptConsent: () => void;
-  /** First-use consent: "Fill in myself" (switches Co-Driver off). */
+  /** First-use consent: "Fill in myself" (switches Auto-fill off). */
   declineConsent: () => void;
-  /** Ignores any later Co-Driver answer for this photo. */
+  /** Ignores any later Auto-fill answer for this photo. */
   fillManually: () => void;
   /** Redacts, uploads and saves the spot. Resolves the new spot id, or undefined on failure. */
   collect: () => Promise<string | undefined>;
@@ -101,9 +101,9 @@ function useRedactedPreview(photo: PickedPhoto | undefined, regions: PlateRegion
 }
 
 /**
- * The Pit Stop view-model (SPEC §6.1, W4 task 5). It orchestrates the background work after a photo
+ * The New spot view-model (SPEC §6.1, W4 task 5). It orchestrates the background work after a photo
  * is picked (EXIF date and GPS on the device, the 768 px AI image, the city from the gazetteer, the
- * first-use consent and Co-Driver), the plate gate, and COLLECT: redact at 1600 px, upload, insert.
+ * first-use consent and Auto-fill), the plate gate, and Add to album: redact at 1600 px, upload, insert.
  * The screens only render what this returns and navigate.
  */
 export function useCapture({ withPreview = false }: UseCaptureOptions = {}): UseCapture {
@@ -168,7 +168,7 @@ export function useCapture({ withPreview = false }: UseCaptureOptions = {}): Use
           if (place !== undefined) send({ type: 'place_found', place });
         });
 
-      // b. The EXIF-free ≤768 px image for Co-Driver, and its dHash for the duplicate guard.
+      // b. The EXIF-free ≤768 px image for Auto-fill, and its dHash for the duplicate guard.
       const aiImage = await prepareAiImage(photo);
       if (aiImage !== undefined) {
         send({ type: 'ai_image_ready', aiImage });
@@ -177,7 +177,7 @@ export function useCapture({ withPreview = false }: UseCaptureOptions = {}): Use
         if (duplicate !== undefined) send({ type: 'duplicate_found', spotId: duplicate.id });
       }
 
-      // d. Co-Driver: off → no call at all; first use → ask for consent first.
+      // d. Auto-fill: off → no call at all; first use → ask for consent first.
       const settings = useSettingsStore.getState();
       await settings.load();
       const { aiEnabled, aiConsentVersion } = useSettingsStore.getState();

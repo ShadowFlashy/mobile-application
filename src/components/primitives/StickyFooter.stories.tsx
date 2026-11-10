@@ -6,6 +6,19 @@ const meta: Meta<typeof StickyFooter> = { title: 'Primitives/StickyFooter', comp
 export default meta;
 type Story = StoryObj<typeof StickyFooter>;
 
-export const Default: Story = {
-  args: { children: <StyledButton label="Collect" variant="ignition" onPress={() => undefined} /> },
+export const CompactDisabled: Story = {
+  args: {
+    reason: 'Check the plates first',
+    action: <StyledButton label="Add to album" disabled onPress={() => undefined} />,
+  },
+};
+export const CompactReady: Story = {
+  args: {
+    reason: '#31 · +125 XP',
+    reasonTone: 'text',
+    action: <StyledButton label="Add to album" onPress={() => undefined} />,
+  },
+};
+export const FullWidth: Story = {
+  args: { children: <StyledButton label="Add a car" onPress={() => undefined} /> },
 };

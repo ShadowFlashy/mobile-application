@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, PanResponder, Pressable, View, type LayoutChangeEvent } from 'react-native';
-import { borders, createThemedStyles, radii, spacing } from '../../theme';
+import { createThemedStyles, lines, radii, spacing, touchTarget } from '../../theme';
 import type { PickedPhoto, PlateRegion } from '../../types/Spot';
 import {
   defaultRegion,
@@ -12,17 +12,18 @@ import {
   type Point,
   type Size,
 } from '../../utils/redactionMath';
+import { IconButton } from '../primitives/IconButton';
 import { Row } from '../primitives/Row';
 import { Stack } from '../primitives/Stack';
-import { Tag } from '../primitives/Tag';
 import { Text } from '../primitives/Text';
+import { StyledButton } from '../StyledButton';
 
 export interface PlateEditorProps {
   photo: PickedPhoto;
   /** The redacted preview (same redactPhoto as the upload, ≤960 px). Until it exists the photo shows. */
   previewUri?: string;
   regions: PlateRegion[];
-  /** Co-Driver's padded plate boxes: dashed until accepted, never blurred on their own. */
+  /** Auto-fill's padded plate boxes: dashed until accepted, never blurred on their own. */
   suggestions: PlateRegion[];
   acceptedSuggestions: number[];
   onAddRegion: (region: PlateRegion) => void;
@@ -114,20 +115,23 @@ function RegionBox({ region, index, size, disabled, onChange }: RegionBoxProps) 
       testID={`plate-region-${index}`}
       {...responders.move.panHandlers}
     >
+      {/* Two-tone outline: a light line with a dark line inside reads on white cars and on night shots. */}
+      <View pointerEvents="none" style={styles.innerRing} />
       <View
         style={styles.handle}
-        hitSlop={spacing.smd}
         accessibilityLabel={t('redactor.resize_handle', { number: index + 1 })}
         testID={`plate-region-${index}-handle`}
         {...responders.resize.panHandlers}
-      />
+      >
+        <View style={styles.handleMark} />
+      </View>
     </View>
   );
 }
 
 /**
  * The plate step (SPEC P0-04, D-5): the redacted preview with every blur box on top.
- * - Co-Driver's plate boxes are dashed suggestions (`plate-suggestion-<n>`): a tap turns one into a
+ * - Auto-fill's plate boxes are dashed suggestions (`plate-suggestion-<n>`): a tap turns one into a
  *   real region, which can then be dragged and resized like any other box.
  * - Drag over the photo to draw a box, or use the accessible "Add box" button. Each box has a chip
  *   with a remove action.
@@ -228,8 +232,13 @@ export function PlateEditor({
               disabled={disabled}
               accessibilityRole="button"
               accessibilityLabel={t('redactor.suggestion_label', { number: index + 1 })}
+              hitSlop={spacing.smd}
               testID={`plate-suggestion-${index}`}
-            />
+            >
+              <View pointerEvents="none" style={styles.innerRing} />
+              {/* A 44 × 44 target centred on a small box (clicks on it bubble to the Pressable on the web). */}
+              <View style={styles.suggestionHit} />
+            </Pressable>
           ),
         )}
         {regions.map((region, index) => (
@@ -242,29 +251,36 @@ export function PlateEditor({
             onChange={onUpdateRegion}
           />
         ))}
-        {draftRegion !== undefined && <View pointerEvents="none" style={[styles.draft, toBoxStyle(draftRegion)]} />}
+        {draftRegion !== undefined && (
+          <View pointerEvents="none" style={[styles.draft, toBoxStyle(draftRegion)]}>
+            <View style={styles.innerRing} />
+          </View>
+        )}
         {overlay !== undefined && (
           <View pointerEvents="none" style={styles.overlay}>
             {overlay}
           </View>
         )}
       </View>
-      <Text variant="caption" tone="muted">
-        {t('redactor.hint')}
-      </Text>
-      <Row gap="xs" wrap align="center" testID={`${testID}-chips`}>
+      <Row gap="md" wrap align="center" testID={`${testID}-chips`}>
         {regions.map((_region, index) => (
-          <Tag
-            key={`chip-${index}`}
-            label={t('redactor.region_chip', { number: index + 1 })}
-            icon="eye-off"
-            onRemove={disabled ? undefined : () => onRemoveRegion(index)}
-            testID={`plate-region-chip-${index}`}
-          />
+          <View key={`chip-${index}`} style={styles.regionItem} testID={`plate-region-chip-${index}`}>
+            <Text variant="body">{t('redactor.region_chip', { number: index + 1 })}</Text>
+            {!disabled && (
+              <IconButton
+                icon="close"
+                label={t('redactor.remove_box', { number: index + 1 })}
+                onPress={() => onRemoveRegion(index)}
+                testID={`remove-plate-region-${index}`}
+              />
+            )}
+          </View>
         ))}
-        <Tag
+        <StyledButton
           label={t('redactor.add_box')}
-          icon="add"
+          variant="text"
+          icon="plus"
+          disabled={disabled}
           onPress={() => {
             if (!disabled) onAddRegion(defaultRegion(regions.length));
           }}
@@ -275,12 +291,16 @@ export function PlateEditor({
   );
 }
 
+/** The resize handle's hit area is a full touch target, centred on the box corner. */
+const HANDLE_HIT = touchTarget;
+const HANDLE_MARK = 10;
+
 const useStyles = createThemedStyles(({ colors }) => ({
   frame: {
     width: '100%',
     borderRadius: radii.md,
     overflow: 'hidden',
-    backgroundColor: colors.photoBackdrop,
+    backgroundColor: colors.raise,
     // Photo coordinates are never mirrored, also not in right-to-left languages (see toBoxStyle).
     direction: 'ltr',
     // Web only: stop the page from scrolling while drawing a box with a finger.
@@ -288,38 +308,60 @@ const useStyles = createThemedStyles(({ colors }) => ({
     userSelect: 'none',
   },
   image: { width: '100%', height: '100%' },
+  // A's plate boxes: a light stage line with a dark stage line inside it (the photo does not follow
+  // the scheme, so the box must not either), on a 12 % fill, square corners (radius 2), no glow.
   region: {
     position: 'absolute',
-    borderWidth: borders.strong,
-    borderColor: colors.redactionBorder,
-    backgroundColor: colors.redactionBox,
-    borderRadius: radii.sm,
+    borderWidth: lines.ring,
+    borderColor: colors.onStage,
+    backgroundColor: colors.plateFill,
+    borderRadius: radii.xs,
   },
   handle: {
     position: 'absolute',
-    right: -8,
-    bottom: -8,
-    width: 20,
-    height: 20,
-    borderRadius: radii.pill,
-    borderWidth: borders.strong,
-    borderColor: colors.onPrimary,
-    backgroundColor: colors.redactionBorder,
+    right: -HANDLE_HIT / 2,
+    bottom: -HANDLE_HIT / 2,
+    width: HANDLE_HIT,
+    height: HANDLE_HIT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  handleMark: {
+    width: HANDLE_MARK,
+    height: HANDLE_MARK,
+    borderRadius: radii.xs,
+    borderWidth: lines.hairline,
+    borderColor: colors.stage,
+    backgroundColor: colors.onStage,
+  },
+  innerRing: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderWidth: lines.hairline,
+    borderColor: colors.stage,
   },
   suggestion: {
     position: 'absolute',
-    borderWidth: borders.strong,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: lines.ring,
     borderStyle: 'dashed',
-    borderColor: colors.signal,
-    borderRadius: radii.sm,
+    borderColor: colors.onStage,
+    backgroundColor: colors.plateFill,
+    borderRadius: radii.xs,
   },
+  suggestionHit: { width: touchTarget, height: touchTarget, minWidth: '100%', minHeight: '100%' },
   draft: {
     position: 'absolute',
-    borderWidth: borders.strong,
+    borderWidth: lines.ring,
     borderStyle: 'dashed',
-    borderColor: colors.redactionBorder,
-    backgroundColor: colors.redactionBox,
-    borderRadius: radii.sm,
+    borderColor: colors.onStage,
+    backgroundColor: colors.plateFill,
+    borderRadius: radii.xs,
   },
   overlay: { position: 'absolute', top: spacing.sm, left: spacing.sm, right: spacing.sm },
+  regionItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
 }));

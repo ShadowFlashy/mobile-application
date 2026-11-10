@@ -33,7 +33,7 @@ export const verifiedCar: OwnerCar = {
   plateHint: '23',
   visibility: 'vanity',
   plateDisplay: 'DEMO-123',
-  shoutout: 'Thanks for the spot! Say hi at Spa.',
+  shoutout: 'Thanks for the spot. Say hi at Spa.',
   pingsPaused: false,
   verification: 'verified',
   verifiedAt: '2026-11-01T10:00:00Z',

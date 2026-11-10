@@ -15,7 +15,7 @@ import type { CarModel } from '../../../../src/types/CarModel';
 import { COLLECTION_IDS } from '../../../../src/types/Collection';
 import { isCollectionId } from '../../../../src/utils/album';
 
-/** A themed collection (Appendix E): its cars as an album page, with SET COMPLETE when it is full. */
+/** A themed collection (Appendix E): its cars as a sticker table, "Complete · n/n" once it is full. */
 export default function CollectionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
@@ -34,7 +34,7 @@ export default function CollectionScreen() {
           <AlbumSkeleton variant="page" />
         ) : (
           <EmptyState
-            icon="albums-outline"
+            icon="album"
             title={t('album.collection_not_found_title')}
             description={t('album.collection_not_found_description')}
             action={<StyledButton label={t('album.back_to_album')} onPress={() => router.replace(routes.home)} />}
@@ -47,16 +47,18 @@ export default function CollectionScreen() {
 
   const toGo = page.total - page.collected;
   return (
-    <Screen testID="collection-screen" refreshing={isRefreshing} onRefresh={refresh}>
-      <Stack.Screen options={{ title }} />
-      <VStack gap="md">
+    <Screen
+      title={title}
+      meta={t('album.set_number', { number: String(page.number).padStart(2, '0') })}
+      testID="collection-screen"
+      refreshing={isRefreshing}
+      onRefresh={refresh}
+    >
+      {/* The big title is on the screen, so the bar keeps only the back button. */}
+      <Stack.Screen options={{ title, headerTitle: '' }} />
+      <VStack gap="lg">
         <AlbumPage page={page} onPressSlot={openSticker} />
-        <Text
-          variant="bodyStrong"
-          tone={page.isComplete ? 'success' : 'muted'}
-          align="center"
-          testID="collection-status"
-        >
+        <Text variant="value" tone="text2" testID="collection-status">
           {page.isComplete ? t('album.set_complete_message') : t('album.set_to_go', { count: toGo })}
         </Text>
       </VStack>

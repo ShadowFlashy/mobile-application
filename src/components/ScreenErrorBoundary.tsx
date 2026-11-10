@@ -15,7 +15,7 @@ export function ScreenErrorBoundary({ retry }: ErrorBoundaryProps) {
   return (
     <Screen testID="error-screen">
       <EmptyState
-        icon="warning-outline"
+        icon="warning"
         title={t('shell.error_title')}
         description={t('shell.error_description')}
         action={<StyledButton label={t('common.try_again')} onPress={() => void retry()} testID="error-retry" />}

@@ -2,5 +2,9 @@
   "common": "Gewoon",
   "rare": "Zeldzaam",
   "epic": "Episch",
-  "legendary": "Legendarisch"
+  "legendary": "Legendarisch",
+  "letter_common": "C",
+  "letter_rare": "R",
+  "letter_epic": "E",
+  "letter_legendary": "L"
 }

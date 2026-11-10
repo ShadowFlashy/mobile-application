@@ -19,7 +19,7 @@ interface AppProvidersProps {
 }
 
 /**
- * The Co-Driver quota counter stays in memory only (SPEC P0-01). Filtered by key, not by `meta`:
+ * The Auto-fill quota counter stays in memory only (SPEC P0-01). Filtered by key, not by `meta`:
  * useIdentifyCar's setQueryData can create that query without its meta.
  */
 function shouldDehydrateQuery(query: Query): boolean {
@@ -44,7 +44,7 @@ const persistOptions = {
 
 /**
  * Everything the app needs around its navigator, shared by the native and the web root layout:
- * the LIVERY fonts (loaded without blocking render), safe areas, the TanStack Query cache, the
+ * the direction A fonts (loaded without blocking render), safe areas, the TanStack Query cache, the
  * status bar for the active colour scheme, the offline banner and the global toast. It also restores
  * the session and applies the user's language once on start.
  */
@@ -64,7 +64,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <SafeAreaProvider>
       <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
-        {/* Dark status bar text on Paddock Paper, light text on Night Session. */}
+        {/* Dark status bar text on the light scheme, light text on the dark scheme. */}
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
         <SafeAreaView style={styles.root} edges={['top']}>
           <ConnectivityBanner />
@@ -77,5 +77,5 @@ export function AppProviders({ children }: AppProvidersProps) {
 }
 
 const useStyles = createThemedStyles(({ colors }) => ({
-  root: { flex: 1, backgroundColor: colors.background },
+  root: { flex: 1, backgroundColor: colors.bg },
 }));

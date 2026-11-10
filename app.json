@@ -2,7 +2,7 @@
   "expo": {
     "name": "Redline",
     "slug": "redline",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "redline",
@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0D0E11"
+      "backgroundColor": "#0B0B0C"
     },
     "ios": {
       "supportsTablet": true,
@@ -23,7 +23,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundImage": "./assets/adaptive-icon-background.png",
-        "backgroundColor": "#0D0E11"
+        "backgroundColor": "#0B0B0C"
       }
     },
     "web": {
@@ -32,8 +32,8 @@
       "favicon": "./assets/favicon.png",
       "name": "Redline",
       "shortName": "Redline",
-      "themeColor": "#0D0E11",
-      "backgroundColor": "#0D0E11"
+      "themeColor": "#0B0B0C",
+      "backgroundColor": "#0B0B0C"
     },
     "plugins": [
       "expo-router",

@@ -1,17 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { CATEGORY_ICONS } from '../../constants/carCategories';
-import { borders, createThemedStyles, useTheme } from '../../theme';
+import { aspect, createThemedStyles, spacing } from '../../theme';
 import type { CarModel } from '../../types/CarModel';
 import type { Spot } from '../../types/Spot';
-import { pageIdOfModel } from '../../utils/album';
-import { RarityBadge } from '../RarityBadge';
-import { Tag } from '../primitives/Tag';
+import { PhotoFrame } from '../primitives/PhotoFrame';
+import { RarityRoundel } from '../primitives/RarityRoundel';
 import { Text } from '../primitives/Text';
 import { CarSilhouette } from './CarSilhouette';
-import { FoilSticker } from './FoilSticker';
-import { RarityPips } from './RarityPips';
-import { useAlbumTitles } from './albumLabels';
+import { stickerNo, useAlbumTitles } from './albumLabels';
 
 export interface StickerHeroProps {
   model: CarModel;
@@ -23,84 +19,81 @@ export interface StickerHeroProps {
 }
 
 /**
- * The top of the sticker detail: the hero foil sticker (or the empty silhouette slot when locked),
- * "#07 · PORSCHE 911 GT3", and category, rarity, country and production-year chips.
+ * The top of the sticker detail: the album photo at radius 8 on `raise` (or the body-style
+ * silhouette while the sticker is missing), the number and car in big condensed type, and one
+ * text-2 line with the tier, page, country and years.
  */
-export function StickerHero({ model, isCollected, cover, spotCount, testID = 'sticker-hero' }: StickerHeroProps) {
+export function StickerHero({ model, isCollected, cover, testID = 'sticker-hero' }: StickerHeroProps) {
   const { t } = useTranslation();
-  const { finishes } = useTheme();
-  const { countryLabel } = useAlbumTitles();
+  const { countryLabel, pageTitle } = useAlbumTitles();
   const styles = useStyles();
   const car = `${model.make} ${model.model}`;
-  const number = String(model.stickerNumber).padStart(2, '0');
-  const isChase = !isCollected && model.rarity === 'legendary';
+  const number = stickerNo(model.stickerNumber);
   const years =
     model.yearFrom === undefined
       ? undefined
       : model.yearTo !== undefined
         ? t('sticker_detail.years_range', { from: model.yearFrom, to: model.yearTo })
         : t('sticker_detail.years_since', { from: model.yearFrom });
-  const stamp = spotCount > 1 ? 'count' : cover?.identifiedBy === 'ai' ? 'co_driver' : undefined;
+  const facts = [pageTitle(model.category), countryLabel(model.country), years].filter(Boolean).join(' · ');
 
   return (
     <View style={styles.hero} testID={testID}>
-      <View style={styles.art}>
-        {isCollected ? (
-          <FoilSticker
-            model={model}
-            spot={cover}
-            size="hero"
-            stamp={stamp}
-            count={spotCount}
-            pageId={pageIdOfModel(model)}
-            tiltSeed={model.id}
-            testID="sticker-hero-foil"
-          />
-        ) : (
-          <View
-            style={[styles.well, isChase && { borderColor: finishes.legendary.edge[1], borderStyle: 'solid' }]}
-            accessible
-            accessibilityRole="image"
-            accessibilityLabel={t('album.sticker_label_locked', {
-              number: model.stickerNumber,
-              car,
-              rarity: t(`rarity.${model.rarity}`),
-            })}
-            testID="sticker-hero-locked"
-          >
-            <CarSilhouette bodyStyle={model.bodyStyle} size={220} tone="silhouette" />
-            <RarityPips rarity={model.rarity} size="md" />
-          </View>
-        )}
-      </View>
-      <Text variant="display" heading testID="sticker-title">
-        {t('sticker_detail.title_line', { number, car })}
-      </Text>
-      <View style={styles.chips}>
-        <Tag label={t(`categories.${model.category}`)} icon={CATEGORY_ICONS[model.category]} />
-        <RarityBadge rarity={model.rarity} />
-        <Tag label={countryLabel(model.country)} icon="flag-outline" />
-        {years !== undefined && <Tag label={years} icon="calendar-outline" />}
+      {isCollected ? (
+        <PhotoFrame
+          uri={cover?.photoUrl}
+          cacheKey={cover?.photoPath}
+          accessibilityLabel={t('sticker_detail.photo_label', { car })}
+          testID="sticker-hero-photo"
+        />
+      ) : (
+        <View
+          style={styles.locked}
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={t('album.sticker_label_locked', {
+            number: model.stickerNumber,
+            car,
+            rarity: t(`rarity.${model.rarity}`),
+          })}
+          testID="sticker-hero-locked"
+        >
+          <CarSilhouette bodyStyle={model.bodyStyle} size={220} tone="silhouette" />
+        </View>
+      )}
+      <View style={styles.text}>
+        <Text
+          variant="title"
+          heading
+          accessibilityLabel={t('sticker_detail.title_label', { number: model.stickerNumber, car })}
+          testID="sticker-title"
+        >
+          <Text variant="title" tone="text2">
+            {'#'}
+          </Text>
+          {`${number} ${car}`}
+        </Text>
+        <View style={styles.facts}>
+          <RarityRoundel rarity={model.rarity} showLabel />
+          <Text variant="meta" tone="text2">
+            {facts}
+          </Text>
+        </View>
       </View>
     </View>
   );
 }
 
-const useStyles = createThemedStyles(({ colors, spacing, radii }) => ({
+const useStyles = createThemedStyles(({ colors, radii }) => ({
   hero: { gap: spacing.md },
-  art: { alignItems: 'center', paddingVertical: spacing.sm },
-  well: {
+  locked: {
     width: '100%',
-    maxWidth: 300,
-    aspectRatio: 4 / 3,
+    aspectRatio: aspect.photo,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.md,
-    borderRadius: radii.sticker,
-    borderWidth: borders.strong,
-    borderStyle: 'dashed',
-    borderColor: colors.slotOutline,
-    backgroundColor: colors.surfaceSunken,
+    borderRadius: radii.md,
+    backgroundColor: colors.raise,
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
+  text: { gap: spacing.sm },
+  facts: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: spacing.smd, rowGap: spacing.xs },
 }));

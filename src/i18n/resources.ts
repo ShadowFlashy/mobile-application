@@ -27,7 +27,6 @@ import enPicker from './locales/en/picker.json';
 import enAlbum from './locales/en/album.json';
 import enStickerDetail from './locales/en/sticker_detail.json';
 import enSpotDetail from './locales/en/spot_detail.json';
-import enStamps from './locales/en/stamps.json';
 import enCollections from './locales/en/collections.json';
 import enProgress from './locales/en/progress.json';
 import enLevels from './locales/en/levels.json';
@@ -66,7 +65,6 @@ import nlPicker from './locales/nl/picker.json';
 import nlAlbum from './locales/nl/album.json';
 import nlStickerDetail from './locales/nl/sticker_detail.json';
 import nlSpotDetail from './locales/nl/spot_detail.json';
-import nlStamps from './locales/nl/stamps.json';
 import nlCollections from './locales/nl/collections.json';
 import nlProgress from './locales/nl/progress.json';
 import nlLevels from './locales/nl/levels.json';
@@ -107,7 +105,6 @@ export const en = {
   album: enAlbum,
   sticker_detail: enStickerDetail,
   spot_detail: enSpotDetail,
-  stamps: enStamps,
   collections: enCollections,
   progress: enProgress,
   levels: enLevels,
@@ -151,7 +148,6 @@ export const nl: Resources = {
   album: nlAlbum,
   sticker_detail: nlStickerDetail,
   spot_detail: nlSpotDetail,
-  stamps: nlStamps,
   collections: nlCollections,
   progress: nlProgress,
   levels: nlLevels,

@@ -1,13 +1,10 @@
-import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, View } from 'react-native';
-import { contrastRatio, createThemedStyles, springs, useMotion, useTheme, type Livery } from '../../theme';
+import { View } from 'react-native';
+import { columns, createThemedStyles, lines, rowHeights, spacing } from '../../theme';
 import type { CollectionId } from '../../types/Collection';
 import type { AlbumPageId } from '../../types/Progress';
-import { SetCompleteStamp } from '../album/SetCompleteStamp';
-import { StampBadge } from '../album/StampBadge';
-import { Row } from '../primitives/Row';
-import { Stack } from '../primitives/Stack';
+import { Icon } from '../primitives/Icon';
+import { ProgressBar } from '../primitives/ProgressBar';
 import { Text } from '../primitives/Text';
 
 export type RevealProgressTarget = { kind: 'page'; pageId: AlbumPageId } | { kind: 'set'; collectionId: CollectionId };
@@ -18,125 +15,90 @@ export interface RevealProgressRowProps {
   collected: number;
   /** Slots on the page or cars in the set (0 for Wildcards). */
   total: number;
-  /** This spot completed the page (FULL PAGE) or the set (SET COMPLETE). */
+  /** The album page number ("05"), shown in front of a page's name. */
+  number?: number;
+  /** This spot completed the page or the set: a check and "Complete" (`<testID>-complete`). */
   justCompleted?: boolean;
+  /** The bottom hairline. Default true. */
+  divider?: boolean;
   testID?: string;
 }
 
-/** The livery colour that stands out most on the stage backdrop (base or stripe). */
-function visibleOn(livery: Livery, background: string): string {
-  const base = contrastRatio(livery.base, background) ?? 0;
-  const stripe = contrastRatio(livery.stripe, background) ?? 0;
-  return base >= stripe ? livery.base : livery.stripe;
-}
-
-/** A stamp slammed down with the stamp spring (FULL PAGE / SET COMPLETE). */
-function Slam({ children, testID }: { children: ReactNode; testID?: string }) {
-  const { reduced, nativeDriver } = useMotion();
-  const slam = useRef(new Animated.Value(reduced ? 1 : 0)).current;
-
-  useEffect(() => {
-    if (reduced) {
-      slam.setValue(1);
-      return undefined;
-    }
-    const animation = Animated.spring(slam, { toValue: 1, ...springs.stamp, useNativeDriver: nativeDriver });
-    animation.start();
-    return () => animation.stop();
-  }, [reduced, nativeDriver, slam]);
-
-  const slamStyle = {
-    opacity: slam.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0, 1, 1] }),
-    transform: [{ scale: slam.interpolate({ inputRange: [0, 1], outputRange: [2.2, 1] }) }],
-  };
-
-  return (
-    <Animated.View style={slamStyle} testID={testID}>
-      {children}
-    </Animated.View>
-  );
-}
-
-/** A progress bar for the always-dark stage (the shared ProgressBar's track is made for paper). */
-function StageBar({ progress, label, color }: { progress: number; label: string; color: string }) {
+/**
+ * One progress row of the reveal, like a row of the album's page table: "05  Classics  ——  3/4" for
+ * the page, "Italian Exotics  ——  3/12" for a set and "Wildcards  ×2" for the Wildcards page. A
+ * just-completed page or set says "Complete" with a check instead of the line.
+ */
+export function RevealProgressRow({
+  target,
+  collected,
+  total,
+  number,
+  justCompleted = false,
+  divider = true,
+  testID,
+}: RevealProgressRowProps) {
+  const { t } = useTranslation();
   const styles = useStyles();
-  const percentage = Math.round(Math.min(1, Math.max(0, Number.isFinite(progress) ? progress : 0)) * 100);
+  const isWildcards = target.kind === 'page' && target.pageId === 'wildcards';
+  let title: string;
+  if (target.kind === 'set') title = t(`collections.${target.collectionId}.title`);
+  else if (target.pageId === 'wildcards') title = t('reveal.wildcards');
+  else title = t(`categories.${target.pageId}`);
+  const label = isWildcards
+    ? t('reveal.wildcards_label', { times: collected })
+    : t('reveal.progress_label', { title, collected, total });
+
   return (
     <View
-      style={styles.track}
-      accessibilityRole="progressbar"
-      accessibilityLabel={label}
-      accessibilityValue={{ min: 0, max: 100, now: percentage }}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={percentage}
+      style={[styles.row, divider && styles.divider]}
+      accessible
+      accessibilityLabel={justCompleted ? `${label}. ${t('reveal.complete')}` : label}
+      testID={testID}
     >
-      <View style={[styles.fill, { width: `${percentage}%`, backgroundColor: color }]} />
+      {!isWildcards && (
+        <View style={styles.number}>
+          {target.kind === 'page' && number !== undefined && (
+            <Text variant="numS" tone="text2">
+              {String(number).padStart(2, '0')}
+            </Text>
+          )}
+        </View>
+      )}
+      <View style={styles.title}>
+        {/* Two lines: a long set name ("German Autobahn Heroes") wraps instead of truncating. */}
+        <Text variant="body" numberOfLines={2}>
+          {title}
+        </Text>
+      </View>
+      {justCompleted ? (
+        <View style={styles.complete} testID={testID !== undefined ? `${testID}-complete` : undefined}>
+          <Icon name="check" size={16} />
+          <Text variant="meta">{t('reveal.complete')}</Text>
+        </View>
+      ) : (
+        !isWildcards && <ProgressBar progress={total > 0 ? collected / total : 0} label={label} width={columns.bar} />
+      )}
+      <View style={styles.count}>
+        <Text variant="num" align="right">
+          {isWildcards ? t('reveal.times', { times: collected }) : t('reveal.count', { collected, total })}
+        </Text>
+      </View>
     </View>
   );
 }
 
-/**
- * One progress line of the reveal (SPEC P0-15 step 6 and Appendix E): "SUPERCARS 4/6" for the
- * album page or "ITALIAN EXOTICS 3/10" for a themed set, with a bar in the page or set livery and a
- * FULL PAGE or SET COMPLETE stamp when this spot completed it. The Wildcards page has no slots, so
- * it reads "WILDCARDS ×3".
- */
-export function RevealProgressRow({ target, collected, total, justCompleted = false, testID }: RevealProgressRowProps) {
-  const { t } = useTranslation();
-  const { colors, liveries, collectionLiveries } = useTheme();
-
-  const livery = target.kind === 'page' ? liveries[target.pageId] : collectionLiveries[target.collectionId];
-  const title =
-    target.kind === 'set'
-      ? t(`collections.${target.collectionId}.title`)
-      : target.pageId === 'wildcards'
-        ? t('reveal.wildcards')
-        : t(`categories.${target.pageId}`);
-
-  if (target.kind === 'page' && target.pageId === 'wildcards') {
-    return (
-      <Row gap="sm" testID={testID}>
-        <Text variant="label" tone="onStage">
-          {t('reveal.wildcards_count', { times: collected })}
-        </Text>
-      </Row>
-    );
-  }
-
-  return (
-    <Stack gap="xs" testID={testID}>
-      <Row justify="space-between" gap="sm">
-        <Text variant="label" tone="onStage" numberOfLines={1}>
-          {t('reveal.progress', { title, collected, total })}
-        </Text>
-        {justCompleted && (
-          <Slam testID={testID !== undefined ? `${testID}-complete` : undefined}>
-            {target.kind === 'page' ? (
-              <StampBadge kind="full_page" />
-            ) : (
-              <SetCompleteStamp collectionId={target.collectionId} size="sm" />
-            )}
-          </Slam>
-        )}
-      </Row>
-      <StageBar
-        progress={total > 0 ? collected / total : 0}
-        label={t('reveal.progress_label', { title, collected, total })}
-        color={visibleOn(livery, colors.stage)}
-      />
-    </Stack>
-  );
-}
-
-const useStyles = createThemedStyles(({ instruments, radii, colors }) => ({
-  track: {
-    height: 8,
-    borderRadius: radii.pill,
-    overflow: 'hidden',
-    backgroundColor: instruments.pitBoard,
-    borderWidth: 1,
-    borderColor: colors.onStageMuted,
+const useStyles = createThemedStyles(({ colors }) => ({
+  row: {
+    minHeight: rowHeights.default,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.smd,
+    paddingVertical: spacing.xs,
   },
-  fill: { height: '100%', borderRadius: radii.pill },
+  divider: { borderBottomWidth: lines.hairline, borderBottomColor: colors.line },
+  number: { minWidth: columns.page },
+  title: { flex: 1, minWidth: 0 },
+  complete: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  count: { minWidth: columns.count, alignItems: 'flex-end' },
 }));

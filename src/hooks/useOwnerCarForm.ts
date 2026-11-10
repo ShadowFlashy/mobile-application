@@ -26,7 +26,7 @@ function shoutoutTooLong(value: string): boolean {
   return value.trim().length > SHOUTOUT_MAX_LENGTH;
 }
 
-/** The "Add my car" form (/garage/new). */
+/** The "Add a car" form (/garage/new). */
 export interface RegisterCarForm {
   values: OwnerCarInput;
   /** The catalogue model the car is matched to, if any. */
@@ -53,7 +53,7 @@ export interface RegisterCarForm {
 
 /**
  * Business logic of /garage/new (course ch. 15: custom hooks): pick the model from the catalogue or
- * type it, the plate, a nickname and the visibility. The car always starts as Pending verification.
+ * type it, the plate, a nickname and the visibility. The car always starts as Waiting for verification.
  */
 export function useOwnerCarForm(options: { onRegistered: (car: OwnerCar) => void }): RegisterCarForm {
   const { t } = useTranslation();

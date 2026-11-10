@@ -9,18 +9,13 @@ import {
   collectionsOfModel,
   compareByCreatedAt,
   coverSpotOf,
-  gaugeArcPath,
   isCollectionId,
   isCollectionPage,
   isWildcardSpot,
   needleAngle,
   pageIdOfModel,
   pageProgress,
-  pageStamp,
-  slotRect,
-  slotTilt,
   stickerXp,
-  TACHO_RED_ZONE,
 } from '../../../src/utils/album';
 
 function model(
@@ -172,16 +167,6 @@ describe('pageProgress', () => {
   });
 });
 
-describe('pageStamp', () => {
-  it('stamps FULL PAGE, ONE TO GO or nothing', () => {
-    expect(pageStamp({ collected: 6, total: 6 })).to.equal('full_page');
-    expect(pageStamp({ collected: 5, total: 6 })).to.equal('one_to_go');
-    expect(pageStamp({ collected: 2, total: 6 })).to.equal(undefined);
-    expect(pageStamp({ collected: 0, total: 0 })).to.equal(undefined);
-    expect(pageStamp({ collected: 0, total: 1 })).to.equal('one_to_go');
-  });
-});
-
 describe('buildAlbumCover', () => {
   it('sums the category pages and shows the newest 6 catches', () => {
     const many = Array.from({ length: 8 }, (_, index) => spot(`n${index}`, `2026-11-0${index + 1}T10:00:00.000Z`));
@@ -258,73 +243,12 @@ describe('buildCollectionPages (Appendix E)', () => {
   });
 });
 
-describe('slotTilt', () => {
-  it('is deterministic per seed', () => {
-    expect(slotTilt('porsche-911-gt3')).to.equal(slotTilt('porsche-911-gt3'));
-  });
-
-  it('stays within ±2.5° for many seeds', () => {
-    for (let index = 0; index < 500; index += 1) {
-      const tilt = slotTilt(`seed-${index}`);
-      expect(tilt).to.be.within(-2.5, 2.5);
-    }
-  });
-
-  it('varies between seeds', () => {
-    const tilts = new Set(Array.from({ length: 50 }, (_, index) => slotTilt(`model-${index}`)));
-    expect(tilts.size).to.be.greaterThan(10);
-  });
-});
-
-describe('slotRect', () => {
-  it('lays out 2 columns with a 4 % gutter and 3:4 slots', () => {
-    const first = slotRect(0, 100);
-    const second = slotRect(1, 100);
-    const third = slotRect(2, 100);
-    expect(first).to.deep.equal({ x: 0, y: 0, width: 48, height: 64 });
-    expect(second.x).to.equal(52);
-    expect(second.y).to.equal(0);
-    expect(third.x).to.equal(0);
-    expect(third.y).to.equal(68);
-  });
-
-  it('supports 3 columns and any slot count', () => {
-    const rect = slotRect(10, 300, 3);
-    expect(rect.width).to.be.closeTo((300 - 24) / 3, 1e-9);
-    expect(rect.x).to.be.closeTo(rect.width + 12, 1e-9);
-    expect(rect.y).to.be.closeTo(3 * (rect.height + 12), 1e-9);
-  });
-
-  it('never returns negative sizes', () => {
-    expect(slotRect(0, -10).width).to.equal(0);
-  });
-});
-
-describe('tacho geometry', () => {
-  it('draws nothing for an empty range', () => {
-    expect(gaugeArcPath(50, 50, 40, 0, 0)).to.equal('');
-    expect(gaugeArcPath(50, 50, 40, 0.5, 0.2)).to.equal('');
-  });
-
+describe('needleAngle', () => {
   it('starts the dial at 135° and ends it at 405°', () => {
     expect(needleAngle(0)).to.equal(135);
     expect(needleAngle(1)).to.equal(405);
     expect(needleAngle(2)).to.equal(405);
     expect(needleAngle(Number.NaN)).to.equal(135);
-  });
-
-  it('uses the large-arc flag only for sweeps over 180°', () => {
-    expect(gaugeArcPath(50, 50, 40, 0, 1)).to.contain(' 0 1 1 ');
-    expect(gaugeArcPath(50, 50, 40, 1 - TACHO_RED_ZONE, 1)).to.contain(' 0 0 1 ');
-  });
-
-  it('places the red zone on the last 15 % of the sweep', () => {
-    expect(TACHO_RED_ZONE).to.equal(0.15);
-    // The red zone ends at the end of the dial: 405° = 45°, lower right of the centre.
-    const path = gaugeArcPath(50, 50, 40, 0.85, 1);
-    const end = path.split(' ').slice(-2).map(Number);
-    expect(end[0]).to.be.closeTo(50 + 40 * Math.cos(Math.PI / 4), 0.01);
-    expect(end[1]).to.be.closeTo(50 + 40 * Math.sin(Math.PI / 4), 0.01);
   });
 });
 

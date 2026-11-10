@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
-import { createThemedStyles, radii } from '../theme';
-import { Row } from './primitives/Row';
+import { ProgressBar } from './primitives/ProgressBar';
 import { Stack } from './primitives/Stack';
 import { Text } from './primitives/Text';
 
@@ -11,39 +9,21 @@ interface StepIndicatorProps {
   currentIndex: number;
 }
 
-/** Shows where the user is in a multi-step flow, like a row of shift lights. */
+/** Where the user is in a multi-step flow: A's 2 px progress line and a "Step 2 of 3" meta line. */
 export function StepIndicator({ steps, currentIndex }: StepIndicatorProps) {
   const { t } = useTranslation();
-  const styles = useStyles();
+  const total = Math.max(steps.length, 1);
+  const label = t('ui.step_progress', {
+    current: currentIndex + 1,
+    total: steps.length,
+    step: steps[currentIndex] ?? '',
+  });
   return (
-    <Stack gap="xs" testID="step-indicator">
-      <Row gap="xs">
-        {steps.map((step, index) => (
-          <View
-            key={step}
-            style={[
-              styles.segment,
-              index < currentIndex && styles.done,
-              index === currentIndex && styles.current,
-              index > currentIndex && styles.todo,
-            ]}
-          />
-        ))}
-      </Row>
-      <Text variant="label" tone="muted" testID="step-indicator-label">
-        {t('ui.step_progress', {
-          current: currentIndex + 1,
-          total: steps.length,
-          step: steps[currentIndex] ?? '',
-        })}
+    <Stack gap="sm" testID="step-indicator">
+      <ProgressBar progress={(currentIndex + 1) / total} label={label} />
+      <Text variant="meta" tone="text2" testID="step-indicator-label">
+        {label}
       </Text>
     </Stack>
   );
 }
-
-const useStyles = createThemedStyles(({ colors }) => ({
-  segment: { flex: 1, height: 6, borderRadius: radii.pill },
-  done: { backgroundColor: colors.successFill },
-  current: { backgroundColor: colors.primary },
-  todo: { backgroundColor: colors.surfaceSunken },
-}));

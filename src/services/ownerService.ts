@@ -133,7 +133,7 @@ export async function getMyOwnerCars(): Promise<OwnerCar[]> {
 }
 
 /**
- * Registers a car. It starts as "Pending verification" (the database forces verified_at = null) and
+ * Registers a car. It starts as "Waiting for verification" (the database forces verified_at = null) and
  * gets no pings until the Redline team verifies it. A plate claimed by someone else is not revealed:
  * the registration succeeds and simply stays pending.
  */

@@ -17,7 +17,7 @@ describe('UI dependencies', () => {
   it('renders a linear gradient through expo-linear-gradient', () => {
     cy.mount(
       <LinearGradient
-        colors={[lightColors.primary, lightColors.primaryPressed]}
+        colors={[lightColors.red, lightColors.redPressed]}
         style={{ width: 48, height: 48 }}
         testID="deps-gradient"
       />,

@@ -58,10 +58,10 @@ describe('brand assets on disk', () => {
     });
   });
 
-  it('lists PNG icons (any and maskable), Night Session colours and the three shortcuts', () => {
+  it('lists PNG icons (any and maskable), the dark A background colour and the three shortcuts', () => {
     cy.readFile('public/manifest.json').then((manifest: ManifestFixture) => {
-      expect(manifest.background_color).to.equal('#0D0E11');
-      expect(manifest.theme_color).to.equal('#0D0E11');
+      expect(manifest.background_color).to.equal('#0B0B0C');
+      expect(manifest.theme_color).to.equal('#0B0B0C');
       expect(manifest.icons.map((icon) => icon.purpose)).to.include.members(['any', 'maskable']);
       manifest.icons.forEach((icon) => expect(icon.type).to.equal('image/png'));
       expect(manifest.shortcuts.map((shortcut) => shortcut.url)).to.deep.equal(['/spot', '/', '/owners']);

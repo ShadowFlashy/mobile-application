@@ -1,45 +1,44 @@
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
-import { Row } from '../primitives/Row';
-import { Tag } from '../primitives/Tag';
+import { Text } from '../primitives/Text';
 
 export interface AiStatusChipsProps {
   aiEnabled: boolean;
   autoLocation: boolean;
-  /** Co-Driver scans left today, when known. */
+  /** Auto-fills left today, when known. */
   remaining?: number;
   isOnline: boolean;
   testID?: string;
 }
 
-/** The Spot launcher's status line: Co-Driver on/off, auto-city on/off, scans left, offline. */
+/**
+ * The Spot tab's status as one plain meta line (never chips): "12 auto-fills left today", or
+ * "Auto-fill off", plus "City from location off" and "Offline" only when they apply.
+ */
 export function AiStatusChips({
   aiEnabled,
   autoLocation,
   remaining,
   isOnline,
-  testID = 'ai-status-chips',
+  testID = 'ai-status-line',
 }: AiStatusChipsProps) {
   const { t } = useTranslation();
+  const parts = [
+    aiEnabled
+      ? remaining !== undefined
+        ? t('spot.autofills_left', { count: remaining })
+        : t('spot.chip_ai_on')
+      : t('spot.chip_ai_off'),
+    autoLocation ? undefined : t('spot.chip_city_off'),
+    isOnline ? undefined : t('spot.chip_offline'),
+  ].filter((part): part is string => part !== undefined);
   return (
-    <View accessibilityRole="summary" accessibilityLabel={t('spot.status_label')}>
-      <Row gap="xs" wrap justify="center" testID={testID}>
-        <Tag
-          label={aiEnabled ? t('spot.chip_ai_on') : t('spot.chip_ai_off')}
-          icon={aiEnabled ? 'sparkles' : 'power-outline'}
-          tone={aiEnabled ? 'accent' : 'default'}
-          testID={aiEnabled ? 'chip-ai-on' : 'chip-ai-off'}
-        />
-        <Tag
-          label={autoLocation ? t('spot.chip_city_on') : t('spot.chip_city_off')}
-          icon={autoLocation ? 'locate' : 'location-outline'}
-          testID={autoLocation ? 'chip-city-on' : 'chip-city-off'}
-        />
-        {aiEnabled && remaining !== undefined && (
-          <Tag label={t('spot.chip_scans', { count: remaining })} icon="speedometer-outline" testID="chip-scans" />
-        )}
-        {!isOnline && <Tag label={t('spot.chip_offline')} icon="cloud-offline-outline" testID="chip-offline" />}
-      </Row>
-    </View>
+    <Text
+      variant="meta"
+      tone="text2"
+      accessibilityLabel={`${t('spot.status_label')}: ${parts.join(', ')}`}
+      testID={testID}
+    >
+      {parts.join(' · ')}
+    </Text>
   );
 }

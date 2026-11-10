@@ -55,26 +55,27 @@ export default function LoginScreen() {
         <>
           <StyledButton
             label={t('auth.go_to_register')}
-            variant="ghost"
+            variant="text"
             onPress={() => router.push(routes.register)}
             testID="go-to-register"
           />
           <StyledButton
             label={t('auth.privacy_link')}
-            variant="ghost"
-            icon="shield-checkmark-outline"
+            variant="text"
             onPress={() => router.push(routes.privacy)}
             testID="go-to-privacy"
           />
         </>
       }
     >
-      <BrandHeader subtitle={t('auth.tagline')} />
-      <Stack gap="xxs">
+      <BrandHeader subtitle={t('auth.tagline')} size="md" />
+      <Stack gap="xs">
         <Text variant="title" heading>
           {t('auth.login_title')}
         </Text>
-        <Text tone="muted">{t('auth.login_subtitle')}</Text>
+        <Text variant="value" tone="text2">
+          {t('auth.login_subtitle')}
+        </Text>
       </Stack>
       <InputField
         label={t('auth.email_label')}

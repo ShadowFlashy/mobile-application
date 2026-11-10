@@ -1,29 +1,29 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { AlbumSkeleton } from '../../../src/components/album/AlbumSkeleton';
-import { useAlbumTitles } from '../../../src/components/album/albumLabels';
+import { stickerNo, useAlbumTitles } from '../../../src/components/album/albumLabels';
 import { DuplicatesStrip } from '../../../src/components/album/DuplicatesStrip';
+import { PaintValue } from '../../../src/components/album/PaintValue';
+import { SectionText } from '../../../src/components/album/SectionText';
 import { StickerHero } from '../../../src/components/album/StickerHero';
 import { EmptyState } from '../../../src/components/primitives/EmptyState';
-import { Row } from '../../../src/components/primitives/Row';
+import { ListRow } from '../../../src/components/primitives/ListRow';
 import { Screen } from '../../../src/components/primitives/Screen';
 import { Section } from '../../../src/components/primitives/Section';
 import { Stack } from '../../../src/components/primitives/Stack';
-import { Surface } from '../../../src/components/primitives/Surface';
-import { Tag } from '../../../src/components/primitives/Tag';
 import { Text } from '../../../src/components/primitives/Text';
 import { StyledButton } from '../../../src/components/StyledButton';
 import { routes } from '../../../src/constants/routes';
 import { useAlbum } from '../../../src/hooks/useAlbum';
-import { collectionsOfModel, stickerXp } from '../../../src/utils/album';
+import { collectionsOfModel, pageIdOfModel, stickerXp } from '../../../src/utils/album';
 import { formatDate } from '../../../src/utils/formatDate';
 
-/** One sticker: collected (hero foil, spots, duplicates) or locked (silhouette, worth, Spot it). */
+/** One sticker: collected (photo, detail rows, every spot, its sets) or missing (silhouette, worth, Spot it). */
 export default function StickerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
-  const { collectionTitle, funFact } = useAlbumTitles();
-  const { slotByModelId, collections, isLoading, isError } = useAlbum();
+  const { collectionTitle, pageTitle, funFact } = useAlbumTitles();
+  const { slotByModelId, pageById, collections, isLoading, isError } = useAlbum();
   const slot = id !== undefined ? slotByModelId(id) : undefined;
 
   if (slot === undefined && isLoading) {
@@ -38,7 +38,7 @@ export default function StickerDetailScreen() {
     return (
       <Screen>
         <EmptyState
-          icon="albums-outline"
+          icon="album"
           title={t('sticker_detail.not_found')}
           description={isError ? t('errors.load_collection') : t('sticker_detail.not_found_description')}
           action={<StyledButton label={t('album.back_to_album')} onPress={() => router.replace(routes.home)} />}
@@ -50,9 +50,10 @@ export default function StickerDetailScreen() {
 
   const { model, spots, isCollected, cover } = slot;
   const car = `${model.make} ${model.model}`;
-  const rarity = t(`rarity.${model.rarity}`);
   const sets = collectionsOfModel(collections, model.id);
   const fact = funFact(model.id);
+  const pageId = pageIdOfModel(model);
+  const page = pageById(pageId);
 
   return (
     <Screen
@@ -62,7 +63,7 @@ export default function StickerDetailScreen() {
           <StyledButton
             label={t('sticker_detail.spot_it')}
             icon="camera"
-            variant="ignition"
+            variant="primary"
             onPress={() => router.push(routes.spot)}
             testID="sticker-spot-it"
           />
@@ -73,63 +74,92 @@ export default function StickerDetailScreen() {
         <StickerHero model={model} isCollected={isCollected} cover={cover} spotCount={spots.length} />
 
         {isCollected ? (
-          <Stack gap="md">
-            <Text variant="bodyStrong" testID="sticker-status">
-              {t('sticker_detail.spotted_status', {
-                count: spots.length,
-                date: cover !== undefined ? formatDate(cover.spottedAt, i18n.language) : '',
-              })}
-            </Text>
-            <Section title={t('sticker_detail.your_spots')}>
-              <DuplicatesStrip spots={spots} onPressSpot={(spot) => router.push(routes.spotDetail(spot.id))} />
-            </Section>
-          </Stack>
+          <Section title={t('sticker_detail.details')} testID="sticker-details">
+            <ListRow
+              kind="detail"
+              title={t('sticker_detail.spotted')}
+              value={t('sticker_detail.spotted_count', { count: spots.length })}
+              testID="sticker-status"
+            />
+            {cover !== undefined && (
+              <ListRow
+                kind="detail"
+                title={t('sticker_detail.first_date')}
+                value={formatDate(cover.spottedAt, i18n.language)}
+              />
+            )}
+            {cover?.city !== undefined && <ListRow kind="detail" title={t('sticker_detail.city')} value={cover.city} />}
+            {cover !== undefined && (
+              <ListRow kind="detail" title={t('sticker_detail.paint')} trailing={<PaintValue paint={cover.paint} />} />
+            )}
+            <ListRow
+              kind="detail"
+              title={t('sticker_detail.page')}
+              value={`${stickerNo(page?.number ?? 0)} ${pageTitle(pageId)}`}
+              chevron
+              onPress={() => router.push(routes.albumPage(pageId))}
+              testID="sticker-page-link"
+            />
+          </Section>
         ) : (
-          <Stack gap="md" testID="sticker-locked">
-            <Text variant="title" tone="accent" testID="sticker-worth">
-              {t('sticker_detail.worth', { xp: stickerXp(model.rarity) })}
-            </Text>
-            <Stack gap="xs">
-              <Text variant="headline" heading>
-                {t('sticker_detail.locked_title')}
+          <Section title={t('sticker_detail.locked_title')} testID="sticker-locked">
+            <ListRow
+              kind="detail"
+              title={t('sticker_detail.worth_label')}
+              value={t('sticker_detail.worth', { xp: stickerXp(model.rarity) })}
+              testID="sticker-worth"
+            />
+            <ListRow
+              kind="detail"
+              title={t('sticker_detail.page')}
+              value={`${stickerNo(page?.number ?? 0)} ${pageTitle(pageId)}`}
+              chevron
+              onPress={() => router.push(routes.albumPage(pageId))}
+              testID="sticker-page-link"
+            />
+            <SectionText>
+              <Text variant="value" tone="text2">
+                {t('sticker_detail.locked_description', { car })}
               </Text>
-              <Text tone="muted">{t('sticker_detail.locked_description', { car })}</Text>
-            </Stack>
-            <Surface variant="flat" padding="md" testID="sticker-rarity-explainer">
-              <Stack gap="xs">
-                <Text variant="label" tone="muted">
-                  {t('sticker_detail.rarity_title', { rarity })}
-                </Text>
-                <Text variant="bodySm">{t(`sticker_detail.rarity_explainer.${model.rarity}`)}</Text>
-              </Stack>
-            </Surface>
-          </Stack>
-        )}
-
-        {fact !== undefined && (
-          <Surface variant="sunken" padding="md" testID="sticker-fun-fact">
-            <Stack gap="xs">
-              <Text variant="label" tone="muted">
-                {t('sticker_detail.fun_fact_title')}
+              <Text variant="value" tone="text2" testID="sticker-rarity-explainer">
+                {t(`sticker_detail.rarity_explainer.${model.rarity}`)}
               </Text>
-              <Text>{fact}</Text>
-            </Stack>
-          </Surface>
+            </SectionText>
+          </Section>
         )}
 
         {sets.length > 0 && (
           <Section title={t('sticker_detail.in_sets')} testID="sticker-sets">
-            <Row gap="sm" wrap>
-              {sets.map((set) => (
-                <Tag
-                  key={set.collectionId}
-                  label={`${collectionTitle(set.collectionId)} · ${t('album.progress_count', { collected: set.collected, total: set.total })}`}
-                  icon="albums-outline"
-                  onPress={() => router.push(routes.albumCollection(set.collectionId))}
-                  testID={`sticker-set-${set.collectionId}`}
-                />
-              ))}
-            </Row>
+            {sets.map((set) => (
+              <ListRow
+                key={set.collectionId}
+                title={collectionTitle(set.collectionId)}
+                value={t('album.progress_count', { collected: set.collected, total: set.total })}
+                chevron
+                onPress={() => router.push(routes.albumCollection(set.collectionId))}
+                accessibilityLabel={t('album.set_card_label', {
+                  number: set.number,
+                  title: collectionTitle(set.collectionId),
+                  collected: set.collected,
+                  total: set.total,
+                })}
+                testID={`sticker-set-${set.collectionId}`}
+              />
+            ))}
+          </Section>
+        )}
+
+        {isCollected && (
+          <Section title={t('sticker_detail.your_spots')}>
+            <DuplicatesStrip spots={spots} onPressSpot={(spot) => router.push(routes.spotDetail(spot.id))} />
+          </Section>
+        )}
+
+        {fact !== undefined && (
+          <Section title={t('sticker_detail.fun_fact_title')} testID="sticker-fun-fact">
+            <SectionText>
+              <Text variant="value">{fact}</Text>
+            </SectionText>
           </Section>
         )}
       </Stack>

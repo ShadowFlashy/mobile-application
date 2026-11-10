@@ -8,8 +8,8 @@ export interface UseTrustLedger extends TrustLedgerData {
 }
 
 /**
- * The Trust Center ledger "What Redline stores" (SPEC §10.4): blurred photos and cities counted
- * from the user's own spots, 0 plates and 0 GPS points, and the Co-Driver scans left today.
+ * The Privacy and auto-fill ledger "What Redline stores" (SPEC §10.4): blurred photos and cities counted
+ * from the user's own spots, 0 plates and 0 GPS points, and the Auto-fill scans left today.
  */
 export function useTrustLedger(): UseTrustLedger {
   const spots = useMySpots();

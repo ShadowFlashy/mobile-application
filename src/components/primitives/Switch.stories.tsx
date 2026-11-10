@@ -7,19 +7,20 @@ export default meta;
 type Story = StoryObj<typeof Switch>;
 
 function Interactive() {
-  const [value, setValue] = useState(true);
+  const [value, setValue] = useState(false);
   return (
     <Switch
-      label="Co-Driver"
-      description="Identify cars automatically. Plates are blurred on your phone first."
+      label="Notify the owner"
+      description="Ping the owner if registered"
       value={value}
       onChange={setValue}
+      divider
     />
   );
 }
 
 export const Default: Story = { render: () => <Interactive /> };
-export const Off: Story = { args: { label: 'Haptics', value: false, onChange: () => undefined } };
+export const On: Story = { args: { label: 'Auto-fill', value: true, onChange: () => undefined } };
 export const Disabled: Story = {
   args: { label: 'Auto location', value: true, disabled: true, onChange: () => undefined },
 };

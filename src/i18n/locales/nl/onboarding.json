@@ -1,1 +1,15 @@
-{}
+{
+  "step_spot": "Spotten",
+  "step_blur": "Vervagen",
+  "step_collect": "Verzamelen",
+  "spot_title": "Fotografeer een auto",
+  "spot_body": "Open Spot en neem een foto van een auto die je ziet, of kies er een uit je foto's. Automatisch invullen vult de auto, de stad en de lakkleur voor je in.",
+  "blur_title": "Nummerplaten blijven privé",
+  "blur_body": "Redline vervaagt nummerplaten op je telefoon voor er iets geüpload wordt. Je controleert elke nummerplaat zelf, en de tekst van een nummerplaat wordt nooit bewaard.",
+  "collect_title": "Vul je album",
+  "collect_body": "Elke nieuwe auto wordt een sticker op zijn albumpagina. Maak pagina's en sets vol, en verdien XP met de wekelijkse uitdagingen.",
+  "next": "Volgende",
+  "back": "Vorige",
+  "skip": "Overslaan",
+  "done": "Open het album"
+}

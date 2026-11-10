@@ -1,10 +1,10 @@
 import { Component, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { useTheme } from '../../theme';
 
 interface BrandMarkProps {
-  /** Width and height in dp. Default 44. */
+  /** Width and height in dp. Default 32. */
   size?: number;
   /** Decorative next to the wordmark (default); pass false when the mark stands alone. */
   decorative?: boolean;
@@ -12,18 +12,19 @@ interface BrandMarkProps {
 }
 
 /**
- * Geometry of the mark on a 64 × 64 grid, shared with W9's `assets/brand/icon-master.svg`:
- * a die-cut white sticker (rx 14), a dark dial (r 22), five ticks, the red zone from 15° to −45°
- * and the needle at −12°, deep in the red zone.
+ * Geometry of the mark on a 64 × 64 grid: a ¾ dial arc (from 225° round to −45°, gap at the bottom),
+ * a short red zone at the end of the scale, and the needle pointing into it. Angles are degrees
+ * counter-clockwise from 3 o'clock.
  */
 export const BRAND_MARK_GEOMETRY = {
   viewBox: 64,
   center: 32,
-  dialRadius: 22,
-  tickAngles: [225, 180, 135, 90, 45],
-  redZone: { from: 15, to: -45, radius: 17 },
-  needleAngle: -12,
-  needleLength: 17,
+  dialRadius: 24,
+  dial: { from: 225, to: -45 },
+  redZone: { from: 10, to: -45 },
+  needleAngle: -20,
+  needleLength: 19,
+  stroke: 4,
 } as const;
 
 /** A point on the dial: degrees counter-clockwise from 3 o'clock, SVG y pointing down. */
@@ -33,71 +34,55 @@ function polar(angle: number, radius: number): { x: number; y: number } {
   return { x: center + radius * Math.cos(radians), y: center - radius * Math.sin(radians) };
 }
 
-function BrandMarkSvg({ size = 44, decorative = true, testID }: BrandMarkProps) {
+/** An SVG arc path clockwise on screen from one dial angle to a lower one. */
+function arc(from: number, to: number, radius: number): string {
+  const start = polar(from, radius);
+  const end = polar(to, radius);
+  const largeArc = from - to > 180 ? 1 : 0;
+  return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y}`;
+}
+
+function BrandMarkSvg({ size = 32, decorative = true, testID }: BrandMarkProps) {
   const { t } = useTranslation();
-  const { colors, instruments } = useTheme();
+  const { colors } = useTheme();
   const g = BRAND_MARK_GEOMETRY;
-  const zoneStart = polar(g.redZone.from, g.redZone.radius);
-  const zoneEnd = polar(g.redZone.to, g.redZone.radius);
   const needle = polar(g.needleAngle, g.needleLength);
   return (
     <Svg
       width={size}
       height={size}
       viewBox={`0 0 ${g.viewBox} ${g.viewBox}`}
+      fill="none"
       accessibilityElementsHidden={decorative}
       importantForAccessibility={decorative ? 'no-hide-descendants' : 'yes'}
       accessibilityLabel={decorative ? undefined : t('brand.mark_a11y')}
       testID={testID}
     >
-      {/* Die-cut sticker with its cut line. */}
-      <Rect
-        x={2}
-        y={2}
-        width={60}
-        height={60}
-        rx={14}
-        fill={instruments.roundel}
-        stroke={colors.borderStrong}
-        strokeWidth={1}
-      />
-      {/* The dial. */}
-      <Circle cx={g.center} cy={g.center} r={g.dialRadius} fill={instruments.pitBoard} />
-      {g.tickAngles.map((angle) => {
-        const outer = polar(angle, 18);
-        const inner = polar(angle, 13);
-        return (
-          <Line
-            key={angle}
-            x1={inner.x}
-            y1={inner.y}
-            x2={outer.x}
-            y2={outer.y}
-            stroke={instruments.pitBoardText}
-            strokeWidth={2.5}
-            strokeLinecap="round"
-          />
-        );
-      })}
-      {/* The red zone. */}
+      {/* The ¾ dial in the text colour, up to where the red zone starts. */}
       <Path
-        d={`M ${zoneStart.x} ${zoneStart.y} A ${g.redZone.radius} ${g.redZone.radius} 0 0 1 ${zoneEnd.x} ${zoneEnd.y}`}
-        stroke={colors.primary}
-        strokeWidth={5}
+        d={arc(g.dial.from, g.redZone.from, g.dialRadius)}
+        stroke={colors.text}
+        strokeWidth={g.stroke}
         strokeLinecap="round"
-        fill="none"
       />
-      {/* The needle, deep in the red zone. */}
+      {/* The single red zone at the end of the scale. */}
+      <Path
+        d={arc(g.redZone.from, g.redZone.to, g.dialRadius)}
+        stroke={colors.red}
+        strokeWidth={g.stroke}
+        strokeLinecap="round"
+      />
+      {/* The needle, pointing into the red zone. */}
       <Line
         x1={g.center}
         y1={g.center}
         x2={needle.x}
         y2={needle.y}
-        stroke={instruments.pitBoardText}
-        strokeWidth={3}
+        stroke={colors.text}
+        strokeWidth={g.stroke}
         strokeLinecap="round"
       />
-      <Circle cx={g.center} cy={g.center} r={4} fill={colors.primary} />
+      <Circle cx={g.center} cy={g.center} r={3} fill={colors.text} />
     </Svg>
   );
 }
@@ -119,7 +104,7 @@ class SvgBoundary extends Component<{ children: ReactNode }, BoundaryState> {
   }
 }
 
-/** The Redline mark: a tachometer needle in the red zone, on a die-cut sticker. */
+/** The Redline mark: a monochrome rev counter whose needle points into its one red zone. */
 export function BrandMark(props: BrandMarkProps) {
   return (
     <SvgBoundary>

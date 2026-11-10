@@ -1,24 +1,23 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
+import { createThemedStyles, lines, spacing, touchTarget } from '../../theme';
 import type { CaptureForm } from '../../types/Capture';
 import type { Provenance } from '../../types/Identification';
 import { maskPlate } from '../../utils/captureForm';
 import { normalizePlate } from '../../utils/plate';
 import { InputField } from '../primitives/InputField';
-import { Row } from '../primitives/Row';
 import { Section } from '../primitives/Section';
-import { Stack } from '../primitives/Stack';
 import { Switch } from '../primitives/Switch';
-import { Tag } from '../primitives/Tag';
 import { Text } from '../primitives/Text';
-import { ProvenanceTag } from './ProvenanceTag';
+import { StyledButton } from '../StyledButton';
 
 type OwnerPingFields = Pick<CaptureForm, 'plate' | 'notifyOwner' | 'shareNameWithOwner'>;
 
 export interface OwnerPingRowProps {
   value: OwnerPingFields;
   onChange: (patch: Partial<OwnerPingFields>) => void;
-  /** CO-DRIVER when the plate was read by the AI, YOU once typed. */
+  /** Auto-fill when the plate was read by the AI, You once typed. */
   provenance?: Provenance;
   testID?: string;
 }
@@ -30,12 +29,14 @@ export interface OwnerPingRowProps {
  */
 export function OwnerPingRow({ value, onChange, provenance, testID = 'owner-ping' }: OwnerPingRowProps) {
   const { t } = useTranslation();
+  const styles = useStyles();
   const [isEditing, setIsEditing] = useState(false);
   const masked = maskPlate(value.plate);
   const showInput = isEditing || masked.length === 0;
+  const plateEntered = normalizePlate(value.plate).length > 0;
 
   const changePlate = (plate: string) => {
-    // Keep the field open while typing: the masked view is only for a plate Co-Driver read.
+    // Keep the field open while typing: the masked view is only for a plate auto-fill read.
     setIsEditing(true);
     const hadPlate = normalizePlate(value.plate).length > 0;
     const hasPlate = normalizePlate(plate).length > 0;
@@ -45,11 +46,11 @@ export function OwnerPingRow({ value, onChange, provenance, testID = 'owner-ping
   return (
     <Section
       title={t('capture.owner_label')}
-      action={provenance !== undefined ? <ProvenanceTag provenance={provenance} /> : undefined}
+      meta={provenance !== undefined ? t(`capture.provenance_${provenance}`) : undefined}
       testID={testID}
     >
-      <Stack gap="sm">
-        {showInput ? (
+      {showInput ? (
+        <View style={styles.input}>
           <InputField
             label={t('capture.plate_label')}
             value={value.plate}
@@ -60,37 +61,60 @@ export function OwnerPingRow({ value, onChange, provenance, testID = 'owner-ping
             maxLength={20}
             testID="plate-input"
           />
-        ) : (
-          <Row gap="sm" align="center" wrap>
-            <Text variant="bodyStrong" testID="masked-plate">
+        </View>
+      ) : (
+        <View style={styles.plateRow}>
+          <View style={styles.flex}>
+            <Text variant="body" testID="masked-plate">
               {t('capture.plate_masked', { plate: masked })}
             </Text>
-            <Tag
-              label={t('capture.plate_edit')}
-              icon="create-outline"
-              onPress={() => setIsEditing(true)}
-              testID="edit-plate"
-            />
-          </Row>
-        )}
-        <Switch
-          label={t('capture.ping_label')}
-          description={t('capture.ping_description')}
-          value={value.notifyOwner}
-          onChange={(notifyOwner) => onChange({ notifyOwner })}
-          disabled={normalizePlate(value.plate).length === 0}
-          testID="ping-toggle"
-        />
-        {value.notifyOwner && (
-          <Switch
-            label={t('capture.share_name_label')}
-            description={t('capture.share_name_description')}
-            value={value.shareNameWithOwner}
-            onChange={(shareNameWithOwner) => onChange({ shareNameWithOwner })}
-            testID="share-name-toggle"
+          </View>
+          <StyledButton
+            label={t('capture.plate_edit')}
+            variant="text"
+            onPress={() => setIsEditing(true)}
+            testID="edit-plate"
           />
-        )}
-      </Stack>
+        </View>
+      )}
+      <Switch
+        label={t('capture.ping_label')}
+        // Disabled says why: without a plate there is no owner to notify.
+        description={plateEntered ? t('capture.ping_sub') : t('capture.ping_needs_plate')}
+        value={value.notifyOwner}
+        onChange={(notifyOwner) => onChange({ notifyOwner })}
+        disabled={!plateEntered}
+        divider={value.notifyOwner}
+        testID="ping-toggle"
+      />
+      {value.notifyOwner && (
+        <Switch
+          label={t('capture.share_name_label')}
+          description={t('capture.share_name_description')}
+          value={value.shareNameWithOwner}
+          onChange={(shareNameWithOwner) => onChange({ shareNameWithOwner })}
+          testID="share-name-toggle"
+        />
+      )}
+      <View style={styles.help}>
+        <Text variant="meta" tone="text2">
+          {t('capture.ping_description')}
+        </Text>
+      </View>
     </Section>
   );
 }
+
+const useStyles = createThemedStyles(({ colors }) => ({
+  input: { paddingTop: spacing.smd, paddingBottom: spacing.sm },
+  plateRow: {
+    minHeight: touchTarget,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.smd,
+    borderBottomWidth: lines.hairline,
+    borderBottomColor: colors.line,
+  },
+  flex: { flex: 1, minWidth: 0 },
+  help: { paddingTop: spacing.sm },
+}));

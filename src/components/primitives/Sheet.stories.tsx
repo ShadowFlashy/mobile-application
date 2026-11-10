@@ -9,8 +9,12 @@ type Story = StoryObj<typeof Sheet>;
 export const Open: Story = {
   args: {
     visible: true,
-    title: 'Co-Driver',
+    title: 'Auto-fill',
     onClose: () => undefined,
-    children: <Text>Co-Driver sends a blurred, downscaled photo to the AI. Nothing is stored there.</Text>,
+    children: (
+      <Text variant="value" tone="text2">
+        Auto-fill sends a blurred, downscaled photo to the AI. Nothing is stored there.
+      </Text>
+    ),
   },
 };

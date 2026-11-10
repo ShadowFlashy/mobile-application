@@ -9,7 +9,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { createThemedStyles } from '../../theme';
+import { createThemedStyles, lines, spacing } from '../../theme';
 import type { AlbumPageData } from '../../types/Album';
 import type { CarModel } from '../../types/CarModel';
 import type { AlbumPageId } from '../../types/Progress';
@@ -30,11 +30,20 @@ export interface AlbumPagerProps {
   testID?: string;
 }
 
+interface Size {
+  width: number;
+  height: number;
+}
+
 const keyExtractor = (page: AlbumPageData): string => page.id;
 
 /**
- * Swipeable album pages: a horizontal paging list opened at the URL page. Previous/next buttons
- * and a "03/09" position make it usable without swiping (keyboard, screen readers, desktop).
+ * Swipeable album pages: a horizontal paging list opened at the URL page, with a plain footer of
+ * previous / "03/09" / next (usable without swiping: keyboard, screen readers, desktop).
+ *
+ * Each page gets the measured width AND height of the list area, so its own vertical ScrollView
+ * is the scroller. Without the height, a page grew to its full content height and the horizontal
+ * list clipped the rows below the fold on the web.
  */
 export function AlbumPager({
   pages,
@@ -51,11 +60,15 @@ export function AlbumPager({
     0,
     pages.findIndex((page) => page.id === initialPageId),
   );
-  const [width, setWidth] = useState(0);
+  const [size, setSize] = useState<Size>({ width: 0, height: 0 });
   const [index, setIndex] = useState(initialIndex);
   const indexRef = useRef(initialIndex);
 
-  const onLayout = (event: LayoutChangeEvent) => setWidth(Math.round(event.nativeEvent.layout.width));
+  const onLayout = (event: LayoutChangeEvent) => {
+    const width = Math.round(event.nativeEvent.layout.width);
+    const height = Math.round(event.nativeEvent.layout.height);
+    setSize((current) => (current.width === width && current.height === height ? current : { width, height }));
+  };
 
   const settle = useCallback(
     (next: number) => {
@@ -70,8 +83,8 @@ export function AlbumPager({
   );
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (width === 0) return;
-    settle(Math.round(event.nativeEvent.contentOffset.x / width));
+    if (size.width === 0) return;
+    settle(Math.round(event.nativeEvent.contentOffset.x / size.width));
   };
 
   // The buttons jump without animation: on the web a smooth scroll inside a snapping list can be
@@ -84,36 +97,43 @@ export function AlbumPager({
   };
 
   const renderPage = ({ item }: ListRenderItemInfo<AlbumPageData>) => (
-    <View style={{ width }}>
-      <ScrollView contentContainerStyle={styles.pageContent} testID={`pager-page-${item.id}`}>
-        <AlbumPage page={item} onPressSlot={onPressSlot} onPressSpot={onPressSpot} />
+    <View style={{ width: size.width, height: size.height }}>
+      <ScrollView style={styles.page} contentContainerStyle={styles.pageContent} testID={`pager-page-${item.id}`}>
+        <AlbumPage page={item} showTitle onPressSlot={onPressSlot} onPressSpot={onPressSpot} />
       </ScrollView>
     </View>
   );
 
   return (
-    <View style={styles.root} onLayout={onLayout} testID={testID}>
-      {width > 0 && (
-        <FlatList
-          ref={listRef}
-          data={pages}
-          keyExtractor={keyExtractor}
-          renderItem={renderPage}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          initialScrollIndex={initialIndex}
-          getItemLayout={(_, itemIndex) => ({ length: width, offset: width * itemIndex, index: itemIndex })}
-          onScroll={onScroll}
-          scrollEventThrottle={32}
-          initialNumToRender={1}
-          windowSize={3}
-          style={styles.list}
-        />
-      )}
+    <View style={styles.root} testID={testID}>
+      <View style={styles.listArea} onLayout={onLayout}>
+        {size.width > 0 && size.height > 0 && (
+          <FlatList
+            ref={listRef}
+            data={pages}
+            keyExtractor={keyExtractor}
+            renderItem={renderPage}
+            extraData={size}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            initialScrollIndex={initialIndex}
+            getItemLayout={(_, itemIndex) => ({
+              length: size.width,
+              offset: size.width * itemIndex,
+              index: itemIndex,
+            })}
+            onScroll={onScroll}
+            scrollEventThrottle={32}
+            initialNumToRender={1}
+            windowSize={3}
+            style={styles.list}
+          />
+        )}
+      </View>
       <View style={styles.footer}>
         <IconButton
-          icon="chevron-back"
+          icon="chevron-left"
           label={t('album.previous_page')}
           onPress={() => goTo(index - 1)}
           disabled={index === 0}
@@ -124,15 +144,15 @@ export function AlbumPager({
           accessibilityLabel={t('album.pager_label', { current: index + 1, total: pages.length })}
           accessibilityLiveRegion="polite"
         >
-          <Text variant="numberSm" testID="pager-position">
-            {t('album.pager_position', {
-              current: String(index + 1).padStart(2, '0'),
-              total: String(pages.length).padStart(2, '0'),
-            })}
+          <Text variant="num" testID="pager-position">
+            {String(index + 1).padStart(2, '0')}
+            <Text variant="num" tone="text2">
+              {t('album.pager_total', { total: String(pages.length).padStart(2, '0') })}
+            </Text>
           </Text>
         </View>
         <IconButton
-          icon="chevron-forward"
+          icon="chevron-right"
           label={t('album.next_page')}
           onPress={() => goTo(index + 1)}
           disabled={index >= pages.length - 1}
@@ -143,18 +163,19 @@ export function AlbumPager({
   );
 }
 
-const useStyles = createThemedStyles(({ colors, spacing }) => ({
-  root: { flex: 1, backgroundColor: colors.background },
+const useStyles = createThemedStyles(({ colors }) => ({
+  root: { flex: 1, backgroundColor: colors.bg },
+  listArea: { flex: 1, minHeight: 0 },
   list: { flex: 1 },
-  pageContent: { padding: spacing.md, paddingBottom: spacing.xl },
+  page: { flex: 1 },
+  pageContent: { paddingHorizontal: spacing.gutter, paddingTop: spacing.sm, paddingBottom: spacing.xl },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.sm,
+    borderTopWidth: lines.hairline,
+    borderTopColor: colors.line,
+    backgroundColor: colors.bg,
   },
 }));

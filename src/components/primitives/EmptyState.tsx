@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
-import { borders, createThemedStyles, spacing } from '../../theme';
+import { createThemedStyles, iconSizes, spacing } from '../../theme';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
@@ -9,27 +9,30 @@ interface EmptyStateProps {
   description?: string;
   action?: ReactNode;
   icon?: IconName;
-  /** `onStage` for the always-dark capture and reveal backdrop. Default `default`. */
+  /** `onStage` for the always-dark photo stage. Default `default`. */
   tone?: 'default' | 'onStage';
   testID?: string;
 }
 
-/** An empty or error state that sells the goal: an icon in a dashed slot, a title and an action. */
+/**
+ * An empty or error state on the 20 px left edge: a heading (with an optional quiet icon before it),
+ * a plain description and a stretched action. Left-aligned like every other block; no boxes.
+ */
 export function EmptyState({ title, description, action, icon, tone = 'default', testID }: EmptyStateProps) {
   const styles = useStyles();
   const onStage = tone === 'onStage';
   return (
     <View style={styles.base} testID={testID}>
-      {icon !== undefined && (
-        <View style={styles.slot}>
-          <Icon name={icon} size={36} tone={onStage ? 'onStageMuted' : 'subtle'} />
+      <View style={styles.heading}>
+        {icon !== undefined && <Icon name={icon} size={iconSizes.md} tone={onStage ? 'onStageMuted' : 'text2'} />}
+        <View style={styles.title}>
+          <Text variant="heading" tone={onStage ? 'onStage' : 'text'} heading>
+            {title}
+          </Text>
         </View>
-      )}
-      <Text variant="title" align="center" tone={onStage ? 'onStage' : 'default'} heading>
-        {title}
-      </Text>
+      </View>
       {description !== undefined && (
-        <Text align="center" tone={onStage ? 'onStageMuted' : 'muted'}>
+        <Text variant="value" tone={onStage ? 'onStageMuted' : 'text2'}>
           {description}
         </Text>
       )}
@@ -38,24 +41,13 @@ export function EmptyState({ title, description, action, icon, tone = 'default',
   );
 }
 
-const useStyles = createThemedStyles(({ colors, radii }) => ({
+const useStyles = createThemedStyles(() => ({
   base: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'stretch',
     gap: spacing.sm,
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.lg,
   },
-  slot: {
-    width: 72,
-    height: 72,
-    marginBottom: spacing.sm,
-    borderRadius: radii.sticker,
-    borderWidth: borders.strong,
-    borderStyle: 'dashed',
-    borderColor: colors.slotOutline,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  action: { marginTop: spacing.sm, alignSelf: 'stretch' },
+  heading: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  title: { flex: 1, minWidth: 0 },
+  action: { marginTop: spacing.md, alignSelf: 'stretch' },
 }));

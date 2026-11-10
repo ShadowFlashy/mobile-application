@@ -1,11 +1,13 @@
 import { View, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { createThemedStyles, spacing, touchTarget } from '../../theme';
+import { createThemedStyles, lines, spacing, touchTarget } from '../../theme';
+import { Icon } from './Icon';
 import { Text } from './Text';
 
 interface MenuItem {
   label: string;
   onPress: () => void;
+  /** A destructive item gets a trash icon (never red text). */
   destructive?: boolean;
 }
 
@@ -15,6 +17,7 @@ interface MenuProps {
   onClose: () => void;
 }
 
+/** A flat `raise` menu with a hairline border (radius 8) and hairline-separated 44 px items. */
 export function Menu({ items, visible, onClose }: MenuProps) {
   const { t } = useTranslation();
   const styles = useStyles();
@@ -30,7 +33,7 @@ export function Menu({ items, visible, onClose }: MenuProps) {
         accessibilityLabel={t('a11y.close_menu')}
       />
       <View style={styles.menu} accessibilityRole="menu">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <Pressable
             key={item.label}
             onPress={() => {
@@ -38,11 +41,10 @@ export function Menu({ items, visible, onClose }: MenuProps) {
               onClose();
             }}
             accessibilityRole="menuitem"
-            style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}
+            style={({ pressed }) => [styles.menuItem, index > 0 && styles.separator, pressed && styles.pressed]}
           >
-            <Text variant="bodyStrong" tone={item.destructive === true ? 'danger' : 'default'}>
-              {item.label}
-            </Text>
+            <Text variant="body">{item.label}</Text>
+            {item.destructive === true && <Icon name="trash" size={20} tone="text2" />}
           </Pressable>
         ))}
       </View>
@@ -50,24 +52,27 @@ export function Menu({ items, visible, onClose }: MenuProps) {
   );
 }
 
-const useStyles = createThemedStyles(({ colors, elevation, radii }) => ({
+const useStyles = createThemedStyles(({ colors, radii }) => ({
   overlay: { position: 'absolute', top: 0, bottom: 0, start: 0, end: 0 },
   menu: {
     position: 'absolute',
     top: spacing.xl,
-    end: spacing.md,
+    end: spacing.gutter,
     minWidth: 200,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.raise,
     borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingVertical: spacing.xs,
-    ...elevation.lifted,
+    borderWidth: lines.hairline,
+    borderColor: colors.line,
+    overflow: 'hidden',
   },
   menuItem: {
     minHeight: touchTarget,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.smd,
     paddingHorizontal: spacing.md,
   },
-  pressed: { backgroundColor: colors.surfaceMuted },
+  separator: { borderTopWidth: lines.hairline, borderTopColor: colors.line },
+  pressed: { backgroundColor: colors.line },
 }));

@@ -1,10 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { UnavailableReason } from '../../types/Identification';
-import { Icon, type IconName } from '../primitives/Icon';
-import { Row } from '../primitives/Row';
-import { Stack } from '../primitives/Stack';
-import { Surface } from '../primitives/Surface';
-import { Text } from '../primitives/Text';
+import type { IconName } from '../primitives/Icon';
+import { StatusRow } from './StatusRow';
 
 export interface AiStatusBannerProps {
   reason: UnavailableReason;
@@ -12,35 +9,29 @@ export interface AiStatusBannerProps {
 }
 
 const ICONS: Record<UnavailableReason, IconName> = {
-  offline: 'cloud-offline-outline',
-  disabled: 'power-outline',
-  timeout: 'timer-outline',
-  quota: 'speedometer-outline',
-  busy: 'hourglass-outline',
-  not_configured: 'construct-outline',
-  error: 'warning-outline',
-  unsupported: 'phone-portrait-outline',
+  offline: 'offline',
+  disabled: 'power',
+  timeout: 'clock',
+  quota: 'battery',
+  busy: 'pause',
+  not_configured: 'tools',
+  error: 'warning',
+  unsupported: 'phone',
 };
 
 /**
- * Why Co-Driver did not fill anything in (SPEC P0-06). The review simply stays in manual mode with
- * the same COLLECT path: a specific reason, never a dead end.
+ * Why auto-fill did not fill anything in (SPEC P0-06), as a plain status row. The review simply
+ * stays in manual mode with the same "Add to album" path: a specific reason, never a dead end.
  */
 export function AiStatusBanner({ reason, testID = 'ai-status-banner' }: AiStatusBannerProps) {
   const { t } = useTranslation();
   return (
-    <Surface variant="sunken" padding="smd" testID={testID}>
-      <Row gap="smd" align="flex-start">
-        <Icon name={ICONS[reason]} tone="muted" />
-        <Stack gap="xxs" flex={1}>
-          <Text variant="bodyStrong" testID={`${testID}-${reason}`}>
-            {t(`co_driver.banner_${reason}_title`)}
-          </Text>
-          <Text variant="bodySm" tone="muted">
-            {t(`co_driver.banner_${reason}_body`)}
-          </Text>
-        </Stack>
-      </Row>
-    </Surface>
+    <StatusRow
+      icon={ICONS[reason]}
+      title={t(`co_driver.banner_${reason}_title`)}
+      body={t(`co_driver.banner_${reason}_body`)}
+      titleTestID={`${testID}-${reason}`}
+      testID={testID}
+    />
   );
 }

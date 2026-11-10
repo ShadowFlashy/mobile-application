@@ -1,56 +1,53 @@
 import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { createContext, createElement, useContext, useMemo, useSyncExternalStore, type ReactNode } from 'react';
-import { Appearance, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { Appearance, StyleSheet, type TextStyle } from 'react-native';
 import type { Rarity } from '../types/CarModel';
 import type { PaintColor } from '../types/CarModel';
-import type { CollectionId } from '../types/Collection';
-import type { AlbumPageId } from '../types/Progress';
-import { darkColors, darkRarity, lightColors, lightRarity, type RarityPalette, type ThemeColors } from './colors';
-import { elevation, type ElevationToken } from './elevation';
-import { finishes, type Finish } from './finishes';
-import { instruments, type InstrumentColors } from './instruments';
-import { collectionLiveries, liveries, type Livery } from './liveries';
+import { darkColors, lightColors, type ThemeColors } from './colors';
 import { paint } from './paint';
 import { plate, type PlateColors } from './plate';
-import { radii, spacing } from './spacing';
-import { FONT_FAMILIES, fontFamily, textVariants, type TextVariant } from './typography';
+import { roundels, type RoundelStyle } from './rarity';
+import { lines, radii, rowHeights, spacing, touchTarget } from './spacing';
+import { useReducedMotion } from './motion';
+import { textVariants, type TextVariant } from './typography';
 
 export type ColorScheme = 'light' | 'dark';
 
-/** Everything a component may style itself with (SPEC §7.8). */
+/** Everything a component may style itself with (direction A, see A-FOUNDATION.md). */
 export interface Theme {
   scheme: ColorScheme;
   colors: ThemeColors;
-  rarity: RarityPalette;
-  instruments: InstrumentColors;
-  finishes: Record<Rarity, Finish>;
-  liveries: Record<AlbumPageId, Livery>;
-  /** Appendix E: one livery per themed collection. */
-  collectionLiveries: Record<CollectionId, Livery>;
+  /** Rarity roundel styles (token names), resolved against `colors` by RarityRoundel. */
+  roundels: Record<Rarity, RoundelStyle>;
   paint: Record<PaintColor, string>;
   plate: PlateColors;
   text: Record<TextVariant, TextStyle>;
   spacing: typeof spacing;
   radii: typeof radii;
-  elevation: Record<ElevationToken, ViewStyle>;
+  lines: typeof lines;
+  rowHeights: typeof rowHeights;
+  touchTarget: typeof touchTarget;
 }
 
-const shared = {
-  instruments,
-  finishes,
-  liveries,
-  collectionLiveries,
-  paint,
-  plate,
-  text: textVariants,
-  spacing,
-  radii,
-  elevation,
-};
+function buildTheme(scheme: ColorScheme, colors: ThemeColors): Theme {
+  return {
+    scheme,
+    colors,
+    roundels,
+    paint,
+    plate,
+    text: textVariants,
+    spacing,
+    radii,
+    lines,
+    rowHeights,
+    touchTarget,
+  };
+}
 
-export const lightTheme: Theme = { scheme: 'light', colors: lightColors, rarity: lightRarity, ...shared };
-export const darkTheme: Theme = { scheme: 'dark', colors: darkColors, rarity: darkRarity, ...shared };
+export const lightTheme: Theme = buildTheme('light', lightColors);
+export const darkTheme: Theme = buildTheme('dark', darkColors);
 
 const SchemeOverrideContext = createContext<ColorScheme | undefined>(undefined);
 
@@ -121,25 +118,27 @@ export interface NavigatorTheme {
   tabs: BottomTabNavigationOptions;
 }
 
-/** Builds the navigator options from tokens, so layouts never style the navigator inline. */
-export function buildNavigatorTheme(theme: Theme): NavigatorTheme {
+/**
+ * Builds the navigator options from tokens, so layouts never style the navigator inline. With
+ * reduced motion, stack pushes do not slide.
+ */
+export function buildNavigatorTheme(theme: Theme, reduced = false): NavigatorTheme {
   const { colors } = theme;
   return {
     stack: {
-      headerStyle: { backgroundColor: colors.surface },
+      // A flat bar on the screen background, without a title: every screen shows its own large
+      // condensed title in the content, so the bar keeps only the back button. No shadow, no fill.
+      headerStyle: { backgroundColor: colors.bg },
       headerTintColor: colors.text,
-      headerTitleStyle: {
-        fontFamily: fontFamily(FONT_FAMILIES.condensedExtraBoldItalic),
-        fontSize: 22,
-        color: colors.text,
-      },
+      headerTitle: '',
       headerShadowVisible: false,
+      animation: reduced ? 'none' : 'default',
       headerBackButtonDisplayMode: 'minimal',
-      contentStyle: { backgroundColor: colors.background },
+      contentStyle: { backgroundColor: colors.bg },
     },
     tabs: {
       headerShown: false,
-      sceneStyle: { backgroundColor: colors.background },
+      sceneStyle: { backgroundColor: colors.bg },
     },
   };
 }
@@ -147,5 +146,6 @@ export function buildNavigatorTheme(theme: Theme): NavigatorTheme {
 /** Navigator options for the active scheme (`stack` for Stack, `tabs` for Tabs). */
 export function useNavigatorTheme(): NavigatorTheme {
   const theme = useTheme();
-  return useMemo(() => buildNavigatorTheme(theme), [theme]);
+  const reduced = useReducedMotion();
+  return useMemo(() => buildNavigatorTheme(theme, reduced), [theme, reduced]);
 }

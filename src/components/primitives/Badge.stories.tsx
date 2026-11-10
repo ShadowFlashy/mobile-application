@@ -5,9 +5,6 @@ const meta: Meta<typeof Badge> = { title: 'Primitives/Badge', component: Badge }
 export default meta;
 type Story = StoryObj<typeof Badge>;
 
-export const Default: Story = { args: { label: 'Pending' } };
-export const Success: Story = { args: { label: 'Verified', tone: 'success' } };
-export const Warning: Story = { args: { label: 'Paused', tone: 'warning' } };
-export const Danger: Story = { args: { label: 'Failed', tone: 'danger' } };
-export const Signal: Story = { args: { label: 'New', tone: 'signal' } };
-export const LegacyVariant: Story = { args: { label: 'Error', variant: 'error' } };
+export const One: Story = { args: { count: 1 } };
+export const Capped: Story = { args: { count: 12 } };
+export const LegacyLabel: Story = { args: { label: '2 new' } };

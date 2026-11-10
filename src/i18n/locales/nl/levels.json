@@ -1,11 +1,11 @@
 {
-  "learner": "Leerling",
-  "kerbside_scout": "Stoeprandverkenner",
-  "car_park_hunter": "Parkingjager",
-  "meet_regular": "Meetvaste klant",
-  "track_day_spotter": "Circuitdagspotter",
-  "paddock_pass": "Paddockpas",
-  "pit_lane_pro": "Pitstraatprof",
-  "works_spotter": "Fabrieksspotter",
-  "redline_legend": "Redline-legende"
+  "learner": "Beginner",
+  "kerbside_scout": "Nieuwkomer",
+  "car_park_hunter": "Spotter",
+  "meet_regular": "Vaste spotter",
+  "track_day_spotter": "Fervente spotter",
+  "paddock_pass": "Ervaren spotter",
+  "pit_lane_pro": "Expert",
+  "works_spotter": "Meester",
+  "redline_legend": "Legende"
 }

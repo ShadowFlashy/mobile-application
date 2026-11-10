@@ -18,7 +18,9 @@ export const AllBodyStyles: Story = {
       {BODY_STYLES.map((bodyStyle) => (
         <View key={bodyStyle} style={styles.cell}>
           <CarSilhouette bodyStyle={bodyStyle} size={120} tone="silhouette" />
-          <Text variant="caption">{bodyStyle}</Text>
+          <Text variant="meta" tone="text2">
+            {bodyStyle}
+          </Text>
         </View>
       ))}
     </View>

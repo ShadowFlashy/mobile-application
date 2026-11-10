@@ -1,14 +1,13 @@
 import { useTranslation } from 'react-i18next';
-import { aspect } from '../../theme';
+import { View } from 'react-native';
+import { aspect, createThemedStyles, lines, rowHeights, spacing } from '../../theme';
 import type { Sighting } from '../../types/OwnerCar';
 import { formatDate } from '../../utils/formatDate';
 import { hourWindowLabel } from '../../utils/sightings';
-import { Divider } from '../primitives/Divider';
-import { Icon, type IconName } from '../primitives/Icon';
 import { PhotoFrame } from '../primitives/PhotoFrame';
-import { Row } from '../primitives/Row';
+import { ScreenTitle } from '../primitives/ScreenTitle';
+import { Section } from '../primitives/Section';
 import { Stack } from '../primitives/Stack';
-import { Surface } from '../primitives/Surface';
 import { Text } from '../primitives/Text';
 import { PrivacyNotice } from '../PrivacyNotice';
 
@@ -17,31 +16,32 @@ export interface SightingDetailProps {
 }
 
 interface FactRowProps {
-  icon: IconName;
   label: string;
   value: string;
   testID: string;
 }
 
-function FactRow({ icon, label, value, testID }: FactRowProps) {
+/** A detail row: the label in text-2 on the left, the value on the right, a bottom hairline. */
+function FactRow({ label, value, testID }: FactRowProps) {
+  const styles = useStyles();
   return (
-    <Row gap="smd" align="center">
-      <Icon name={icon} size={20} tone="accent" />
-      <Stack gap="xxs" flex={1}>
-        <Text variant="label" tone="muted">
-          {label}
-        </Text>
-        <Text variant="bodyStrong" testID={testID}>
+    <View style={styles.row}>
+      <Text variant="value" tone="text2" numberOfLines={1}>
+        {label}
+      </Text>
+      <View style={styles.value}>
+        <Text variant="body" align="right" testID={testID}>
           {value}
         </Text>
-      </Stack>
-    </Row>
+      </View>
+    </View>
   );
 }
 
 /**
- * A sighting snapshot in full: the blurred photo, the car, the city, the day and the hour window, and
- * the spotter only if they opted in. Nothing else about the spotter or the spot exists here (D-8).
+ * A sighting snapshot in full: the blurred photo (radius 8), then rows for the car, the city and the
+ * time (day and hour window). "Seen by" appears only when the spotter chose to share their name.
+ * Nothing else about the spotter or the spot exists here (D-8).
  */
 export function SightingDetail({ sighting }: SightingDetailProps) {
   const { t, i18n } = useTranslation();
@@ -51,41 +51,46 @@ export function SightingDetail({ sighting }: SightingDetailProps) {
   });
   return (
     <Stack gap="lg" testID="sighting-detail">
+      <ScreenTitle title={t('sightings.detail_title')} meta={sighting.carLabel} testID="sighting-title" />
       <PhotoFrame
         uri={sighting.photoUrl}
         cacheKey={sighting.photoPath}
         aspectRatio={aspect.hero}
-        radius="lg"
+        radius="md"
         accessibilityLabel={t('sightings.photo_a11y', { car: sighting.carLabel })}
         testID="sighting-photo"
       />
-      <Text variant="title" heading testID="sighting-title">
-        {t('sightings.detail_title', { car: sighting.carLabel })}
-      </Text>
-      <Surface variant="raised" radius="lg" padding="md">
-        <Stack gap="smd">
+      <Section divider>
+        <FactRow label={t('sightings.car_label')} value={sighting.carLabel} testID="sighting-car" />
+        <FactRow
+          label={t('sightings.where_label')}
+          value={sighting.city ?? t('sightings.no_city')}
+          testID="sighting-city"
+        />
+        <FactRow label={t('sightings.when_label')} value={when} testID="sighting-hour" />
+        {sighting.spotterName !== undefined && (
           <FactRow
-            icon="location-outline"
-            label={t('sightings.where_label')}
-            value={sighting.city ?? t('sightings.no_city')}
-            testID="sighting-city"
-          />
-          <Divider />
-          <FactRow icon="time-outline" label={t('sightings.when_label')} value={when} testID="sighting-hour" />
-          <Divider />
-          <FactRow
-            icon="person-outline"
             label={t('sightings.who_label')}
-            value={
-              sighting.spotterName !== undefined
-                ? t('sightings.by_spotter', { name: sighting.spotterName })
-                : t('sightings.anonymous')
-            }
+            value={t('sightings.spotter_value', { name: sighting.spotterName })}
             testID="sighting-spotter"
           />
-        </Stack>
-      </Surface>
+        )}
+      </Section>
       <PrivacyNotice title={t('sightings.privacy_title')}>{t('sightings.privacy_body')}</PrivacyNotice>
     </Stack>
   );
 }
+
+const useStyles = createThemedStyles(({ colors }) => ({
+  row: {
+    minHeight: rowHeights.default,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    paddingVertical: spacing.smd,
+    borderBottomWidth: lines.hairline,
+    borderBottomColor: colors.line,
+  },
+  value: { flexShrink: 1, alignItems: 'flex-end' },
+}));

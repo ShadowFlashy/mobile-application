@@ -13,12 +13,12 @@ export interface TrustLedgerData {
   gpsPoints: 0;
   /** Distinct city labels, case-insensitive. */
   cities: number;
-  /** Co-Driver scans left today; undefined while unknown (offline, loading). */
+  /** Auto-fill scans left today; undefined while unknown (offline, loading). */
   aiCallsLeft?: number;
   aiDailyLimit?: number;
 }
 
-/** Builds the ledger from the spots and the Co-Driver quota (both optional while loading). */
+/** Builds the ledger from the spots and the Auto-fill quota (both optional while loading). */
 export function buildTrustLedger(spots: readonly Spot[] | undefined, quota?: IdentifyQuota): TrustLedgerData {
   const list = spots ?? [];
   const cities = new Set<string>();

@@ -72,6 +72,7 @@ function Harness({ photoUri, withSuggestion }: { photoUri: string; withSuggestio
         ignoredCount={ignoredSuggestions(draft).length}
         onConfirm={(confirmation) => dispatch({ type: 'confirm_plates', confirmation })}
         onConfirmIgnored={() => dispatch({ type: 'confirm_ignored_suggestions' })}
+        sectionTestID="plates-section"
       />
       <output data-testid="gate">{gate.ok ? 'ok' : gate.reason}</output>
       <output data-testid="regions">{JSON.stringify(draft.regions)}</output>
@@ -97,9 +98,12 @@ function regions(): Cypress.Chainable<{ x: number; y: number; width: number; hei
 const MOUSE = { eventConstructor: 'MouseEvent', button: 0, buttons: 1 } as const;
 
 describe('PlateEditor', () => {
-  it('shows Co-Driver plates as dashed suggestions that are not regions until accepted', () => {
+  it('shows auto-fill plates as dashed suggestions that are not regions until accepted', () => {
     mountHarness(true);
     cy.get('[data-testid="plate-suggestion-0"]').should('be.visible');
+    // A dashed text-colour box, never a glow.
+    cy.get('[data-testid="plate-suggestion-0"]').should('have.css', 'border-top-style', 'dashed');
+    cy.get('[data-testid="plate-suggestion-0"]').should('have.css', 'box-shadow', 'none');
     cy.get('[data-testid="plate-region-0"]').should('not.exist');
     regions().should('have.length', 0);
     cy.get('[data-testid="plate-suggestion-0"]').click();
@@ -173,9 +177,11 @@ describe('PlateConfirm', () => {
     cy.get('[data-testid="plate-confirm-blurred"]').should('not.have.attr', 'aria-checked', 'true');
     cy.get('[data-testid="plate-confirm-none"]').should('not.have.attr', 'aria-checked', 'true');
     cy.get('[data-testid="gate"]').should('have.text', 'confirm_plates');
+    cy.get('[data-testid="plates-section"]').should('contain.text', 'Not checked');
     cy.get('[data-testid="add-box-button"]').click();
     cy.get('[data-testid="plate-confirm-blurred"]').should('not.have.attr', 'aria-disabled', 'true').click();
     cy.get('[data-testid="plate-confirm-blurred"]').should('have.attr', 'aria-checked', 'true');
+    cy.get('[data-testid="plates-section"]').should('contain.text', '1 plate blurred');
     cy.get('[data-testid="gate"]').should('have.text', 'ok');
   });
 
@@ -199,10 +205,10 @@ describe('PlateConfirm', () => {
     cy.get('[data-testid="gate"]').should('have.text', 'confirm_plates');
   });
 
-  it('asks a second time when Co-Driver suggested a plate that is not blurred', () => {
+  it('asks a second time when auto-fill suggested a plate that is not blurred', () => {
     mountHarness(true);
     cy.get('[data-testid="plate-confirm-none"]').click();
-    cy.get('[data-testid="plate-confirm-warning"]').should('contain.text', 'Co-Driver thinks it saw a plate');
+    cy.get('[data-testid="plate-confirm-warning"]').should('contain.text', 'Auto-fill thinks it saw a plate');
     cy.get('[data-testid="gate"]').should('have.text', 'confirm_ignored_suggestions');
     cy.get('[data-testid="plate-confirm-second-tap"]').click();
     cy.get('[data-testid="plate-confirm-warning"]').should('not.exist');

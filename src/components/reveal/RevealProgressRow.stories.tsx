@@ -4,7 +4,7 @@ import { RevealProgressRow } from './RevealProgressRow';
 const meta: Meta<typeof RevealProgressRow> = {
   title: 'Reveal/RevealProgressRow',
   component: RevealProgressRow,
-  args: { target: { kind: 'page', pageId: 'supercar' }, collected: 4, total: 6 },
+  args: { target: { kind: 'page', pageId: 'supercar' }, number: 3, collected: 4, total: 6 },
 };
 export default meta;
 type Story = StoryObj<typeof RevealProgressRow>;

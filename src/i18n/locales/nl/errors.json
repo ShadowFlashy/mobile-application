@@ -33,7 +33,7 @@
   "load_pings": "Je pings konden niet geladen worden.",
   "update_pings": "Je pings konden niet bijgewerkt worden.",
   "delete_account": "Je account kon niet verwijderd worden. Probeer het opnieuw.",
-  "rate_limited_spots": "Je hebt het afgelopen uur veel spots toegevoegd. Neem een korte pitstop en probeer het later opnieuw.",
+  "rate_limited_spots": "Je hebt het afgelopen uur veel spots toegevoegd. Wacht even en probeer het later opnieuw.",
   "too_many_cars": "Je kunt maximaal 3 auto’s registreren.",
   "plate_locked": "De nummerplaat van een geregistreerde auto kan niet worden gewijzigd. Verwijder de auto en voeg hem opnieuw toe.",
   "demo_protected": "Het gedeelde demo-account is beschermd: dit kan niet verwijderd of gewijzigd worden. Maak je eigen account om het te proberen.",

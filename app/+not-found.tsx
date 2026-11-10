@@ -9,13 +9,14 @@ import { routes } from '../src/constants/routes';
 export default function NotFoundScreen() {
   const { t } = useTranslation();
   return (
-    <Screen testID="not-found-screen">
+    <Screen title={t('not_found.title')} testID="not-found-screen">
       <RouterStack.Screen options={{ title: t('not_found.title') }} />
       <EmptyState
-        icon="compass-outline"
+        icon="compass"
         title={t('not_found.heading')}
         description={t('not_found.description')}
         action={<StyledButton label={t('not_found.go_home')} onPress={() => router.replace(routes.home)} />}
+        testID="not-found"
       />
     </Screen>
   );

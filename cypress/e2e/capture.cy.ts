@@ -2,7 +2,7 @@ import { TEST_USER, type StubOptions } from '../support/commands';
 import { withExif } from '../unit/ai/exifFixture';
 
 /**
- * The Pit Stop capture flow (SPEC §14 W4, P0-02…P0-07) on the production build. Every Supabase and
+ * The New spot capture flow (SPEC §14 W4, P0-02…P0-07) on the production build. Every Supabase and
  * identify-car call is stubbed; nothing touches the hosted database or the AI provider.
  */
 
@@ -36,10 +36,16 @@ function start(options: StubOptions, settings: { aiEnabled?: boolean } = {}, geo
   return recorded;
 }
 
-function takePhoto() {
+/** Pass `withEditor: false` when the photo is not a car: that state hides the plate editor at once. */
+function takePhoto({ withEditor = true }: { withEditor?: boolean } = {}) {
   cy.get('[data-testid="take-photo-button"]').click();
   cy.get('[data-testid="file-input"]').selectFile('cypress/fixtures/car.jpg', { force: true });
-  waitForReview();
+  if (withEditor) {
+    waitForReview();
+  } else {
+    cy.get('[data-testid="capture-screen"]').should('be.visible');
+    cy.location('pathname').should('eq', '/capture');
+  }
 }
 
 function waitForReview() {
@@ -52,16 +58,21 @@ function insertBody(): Cypress.Chainable<Record<string, unknown>> {
   return cy.wait('@createSpot').its('request.body');
 }
 
-describe('Pit Stop capture', () => {
-  it('sure: accept the plate suggestion, confirm, COLLECT (3 taps, no typing) → reveal', () => {
+describe('New spot capture', () => {
+  it('sure: accept the plate suggestion, confirm, Add to album (3 taps, no typing) → reveal', () => {
     const recorded = start({ identify: 'sure' });
     takePhoto();
     cy.wait('@identify');
     cy.get('[data-testid="identity-car-name"]').should('have.text', 'Porsche 911 GT3');
     cy.get('[data-testid="city-field-value"]').should('have.text', 'Leuven');
-    cy.get('[data-testid="city-field"]').find('[data-testid="provenance-auto"]').should('exist');
+    cy.get('[data-testid="city-field"]').find('[data-testid="provenance-auto"]').should('have.text', 'From photo');
+    cy.get('[data-testid="capture-screen"]').should('contain.text', 'New spot');
+    cy.get('[data-testid="identity-card-confidence"]').should('have.text', '94% match');
+    cy.get('[data-testid="plates-section"]').should('contain.text', 'Not checked');
     cy.get('[data-testid="masked-plate"]').should('have.text', 'Plate ••34');
+    cy.get('[data-testid="collect-reason"]').should('have.text', 'Check the plates first');
     cy.get('[data-testid="collect-button"]').should('have.attr', 'aria-disabled', 'true');
+    cy.get('[data-testid="collect-button"]').should('contain.text', 'Add to album');
 
     // The three taps of the minimal path.
     cy.get('[data-testid="plate-suggestion-0"]').click();
@@ -128,7 +139,8 @@ describe('Pit Stop capture', () => {
     takePhoto();
     cy.wait('@identify');
     cy.get('[data-testid="guess-candidates"]').should('contain.text', 'Is it one of these?');
-    cy.get('[data-testid="identity-card-confidence-tier-guess"]').should('be.visible');
+    // The guess tier shows the stub's own 55 % (a sure match would show 94 %).
+    cy.get('[data-testid="identity-card-confidence"]').should('contain.text', '55%').and('contain.text', 'match');
     cy.get('[data-testid="collect-button"]').should('have.attr', 'aria-disabled', 'true');
     cy.get('[data-testid="candidate-porsche-911-gt3"]').click();
     cy.get('[data-testid="identity-car-name"]').should('have.text', 'Porsche 911 GT3');
@@ -144,9 +156,9 @@ describe('Pit Stop capture', () => {
 
   it('not a car: nothing is uploaded; "It is a car" continues by hand', () => {
     start({ identify: 'not_a_car' });
-    takePhoto();
+    takePhoto({ withEditor: false });
     cy.wait('@identify');
-    cy.get('[data-testid="not-a-car-card"]').should('contain.text', "Co-Driver doesn't see a car here");
+    cy.get('[data-testid="not-a-car-card"]').should('contain.text', 'Auto-fill found no car in this photo');
     cy.get('[data-testid="collect-button"]').should('not.exist');
     cy.get('[data-testid="it-is-a-car-button"]').click();
     cy.get('[data-testid="identity-card"]').should('be.visible');
@@ -155,7 +167,7 @@ describe('Pit Stop capture', () => {
     cy.get('@createSpot.all').should('have.length', 0);
   });
 
-  it('not_configured: a banner, then the same COLLECT path by hand (manual)', () => {
+  it('not_configured: a status row, then the same Add to album path by hand (manual)', () => {
     start({ identify: 'not_configured' });
     takePhoto();
     cy.wait('@identify');
@@ -175,7 +187,7 @@ describe('Pit Stop capture', () => {
     });
   });
 
-  it('network error: manual mode with a banner, never a dead end', () => {
+  it('network error: manual mode with a status row, never a dead end', () => {
     start({ identify: 'network_error' });
     takePhoto();
     cy.get('[data-testid="ai-status-banner"]').should('be.visible');
@@ -191,9 +203,9 @@ describe('Pit Stop capture', () => {
     });
   });
 
-  it('Co-Driver off: zero identify-car calls, manual review', () => {
+  it('auto-fill off: zero identify-car calls, manual review', () => {
     start({ identify: 'sure' }, { aiEnabled: false });
-    cy.get('[data-testid="chip-ai-off"]').should('be.visible');
+    cy.get('[data-testid="ai-status-line"]').should('contain.text', 'Auto-fill off');
     takePhoto();
     cy.get('[data-testid="ai-status-banner-disabled"]').should('be.visible');
     cy.get('[data-testid="plate-suggestion-0"]').should('not.exist');
@@ -205,7 +217,7 @@ describe('Pit Stop capture', () => {
     cy.get('@identify.all').should('have.length', 0);
   });
 
-  it('no plate found: COLLECT stays blocked until "No licence plate is visible" is ticked', () => {
+  it('no plate found: Add to album stays blocked until "No plate visible" is ticked', () => {
     cy.stubSupabase({ identify: 'sure' });
     cy.fixture('identify/sure.json').then((sure: { car: Record<string, unknown> }) => {
       cy.intercept('POST', '**/functions/v1/identify-car', {
@@ -232,7 +244,7 @@ describe('Pit Stop capture', () => {
     });
   });
 
-  it('a save failure shows the error above COLLECT and keeps the draft', () => {
+  it('a save failure shows the error above Add to album and keeps the draft', () => {
     start({ identify: 'sure' });
     cy.intercept('POST', '**/rest/v1/spots*', { statusCode: 500, body: { message: 'boom' } }).as('failedInsert');
     takePhoto();
@@ -259,7 +271,7 @@ describe('Pit Stop capture', () => {
     cy.loginThroughUi({ geolocation: LEUVEN, reduceMotion: true, settings: { aiConsentVersion: 1 } });
     cy.get('[data-testid="tab-spot"]').click();
     takePhoto();
-    // Wait until Co-Driver is really asked, then give up on it while the answer is still on its way.
+    // Wait until auto-fill is really asked, then give up on it while the answer is still on its way.
     cy.wrap(started).should('have.length', 1);
     cy.get('[data-testid="fill-myself-button"]').click();
     cy.get('[data-testid="analysing-chip"]').should('not.exist');
@@ -269,12 +281,12 @@ describe('Pit Stop capture', () => {
     cy.get('[data-testid="plate-suggestion-0"]').should('not.exist');
   });
 
-  it('first use asks for Co-Driver consent; "Use Co-Driver" then identifies', () => {
+  it('first use asks for auto-fill consent; "Use auto-fill" then identifies', () => {
     cy.stubSupabase({ identify: 'sure' });
     cy.loginThroughUi({ geolocation: LEUVEN, reduceMotion: true });
     cy.get('[data-testid="tab-spot"]').click();
     takePhoto();
-    cy.get('[data-testid="ai-consent-sheet"]').should('contain.text', 'Use Co-Driver?');
+    cy.get('[data-testid="ai-consent-sheet"]').should('contain.text', 'Use auto-fill?');
     cy.get('[data-testid="analysing-chip"]').should('not.exist');
     cy.get('@identify.all').should('have.length', 0);
     cy.get('[data-testid="consent-accept"]').click();
@@ -283,7 +295,7 @@ describe('Pit Stop capture', () => {
     cy.window().its('localStorage').invoke('getItem', 'redline-settings').should('contain', '"aiConsentVersion":1');
   });
 
-  it('declining the consent switches Co-Driver off and fills in by hand', () => {
+  it('declining the consent switches auto-fill off and fills in by hand', () => {
     cy.stubSupabase({ identify: 'sure' });
     cy.loginThroughUi({ geolocation: LEUVEN, reduceMotion: true });
     cy.get('[data-testid="tab-spot"]').click();

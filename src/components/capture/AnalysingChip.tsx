@@ -1,38 +1,32 @@
 import { useTranslation } from 'react-i18next';
-import { Row } from '../primitives/Row';
-import { Spinner } from '../primitives/Spinner';
-import { Surface } from '../primitives/Surface';
-import { Tag } from '../primitives/Tag';
-import { Text } from '../primitives/Text';
+import { StyledButton } from '../StyledButton';
+import { StatusRow } from './StatusRow';
 
 export interface AnalysingChipProps {
-  /** Ignores any later Co-Driver answer for this photo. */
+  /** Ignores any later auto-fill answer for this photo. */
   onFillManually: () => void;
   testID?: string;
 }
 
 /**
- * The quiet, non-blocking "Co-Driver is analysing…" status (D-15), with **Fill in myself** always
- * visible next to it (SPEC P0-06).
+ * The quiet, non-blocking "Auto-fill is analysing…" status row (D-15), with **Fill in myself**
+ * always next to it (SPEC P0-06).
  */
 export function AnalysingChip({ onFillManually, testID = 'analysing-chip' }: AnalysingChipProps) {
   const { t } = useTranslation();
   return (
-    <Surface variant="inverse" radius="lg" padding="sm" testID={testID}>
-      <Row gap="sm" align="center" justify="space-between" wrap>
-        <Row gap="sm" align="center">
-          <Spinner size="small" tone="inverse" />
-          <Text variant="bodyStrong" tone="inverse" accessibilityLabel={t('co_driver.analysing')}>
-            {t('co_driver.analysing')}
-          </Text>
-        </Row>
-        <Tag
+    <StatusRow
+      busy
+      title={t('co_driver.analysing')}
+      actions={
+        <StyledButton
           label={t('co_driver.fill_myself')}
-          icon="create-outline"
+          variant="text"
           onPress={onFillManually}
           testID="fill-myself-button"
         />
-      </Row>
-    </Surface>
+      }
+      testID={testID}
+    />
   );
 }

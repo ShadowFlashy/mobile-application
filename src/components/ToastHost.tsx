@@ -6,8 +6,8 @@ import { Toast } from './primitives/Toast';
 const VISIBLE_MS = 3500;
 /** Toasts with an action ("Update available · Reload") stay longer, so they can be tapped. */
 const ACTION_VISIBLE_MS = 10000;
-/** Keeps toasts above the bottom tab bar and its raised Ignition button, without the safe-area inset. */
-const TAB_BAR_CLEARANCE = 104;
+/** Keeps toasts above the bottom tab bar (about 64 px plus its hairline), without the safe-area inset. */
+const TAB_BAR_CLEARANCE = 76;
 
 /**
  * Shows the global toast message and hides it automatically. The message is already translated

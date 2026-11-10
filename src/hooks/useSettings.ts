@@ -9,7 +9,7 @@ export interface UseSettings {
   isLoaded: boolean;
 }
 
-/** Device settings (Co-Driver, auto-city, haptics, name sharing, …). Loads them on first use. */
+/** Device settings (Auto-fill, auto-city, haptics, name sharing, …). Loads them on first use. */
 export function useSettings(): UseSettings {
   const settings = useSettingsStore(useShallow(selectSettings));
   const update = useSettingsStore((state) => state.update);

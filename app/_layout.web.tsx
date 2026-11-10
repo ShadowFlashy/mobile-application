@@ -3,6 +3,7 @@ import Head from 'expo-router/head';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppProviders } from '../src/components/AppProviders';
+import { useFocusRing } from '../src/hooks/useFocusRing';
 import { useServiceWorker } from '../src/hooks/useServiceWorker';
 import { darkColors, lightColors } from '../src/theme';
 
@@ -28,6 +29,8 @@ export default function RootLayout() {
  */
 function PwaHead() {
   const { t, i18n } = useTranslation();
+  // One keyboard focus ring in the scheme's text colour, instead of the browser default.
+  useFocusRing();
 
   useEffect(() => {
     // Screen readers pronounce the page in the language the user sees (the static HTML starts in English).
@@ -38,8 +41,8 @@ function PwaHead() {
     <Head>
       <title>Redline</title>
       <link rel="manifest" href="/manifest.json" />
-      <meta name="theme-color" media="(prefers-color-scheme: light)" content={lightColors.background} />
-      <meta name="theme-color" media="(prefers-color-scheme: dark)" content={darkColors.background} />
+      <meta name="theme-color" media="(prefers-color-scheme: light)" content={lightColors.bg} />
+      <meta name="theme-color" media="(prefers-color-scheme: dark)" content={darkColors.bg} />
       <meta name="color-scheme" content="light dark" />
       <meta name="description" content={t('shell.meta_description')} />
       <meta name="mobile-web-app-capable" content="yes" />

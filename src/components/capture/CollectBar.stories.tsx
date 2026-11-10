@@ -5,7 +5,7 @@ const meta: Meta<typeof CollectBar> = { title: 'Capture/CollectBar', component: 
 export default meta;
 type Story = StoryObj<typeof CollectBar>;
 
-export const Ready: Story = { args: { gate: { ok: true }, onCollect: () => undefined } };
+export const Ready: Story = { args: { gate: { ok: true }, result: '#31 · +125 XP', onCollect: () => undefined } };
 export const CheckPlates: Story = {
   args: { gate: { ok: false, reason: 'confirm_plates' }, onCollect: () => undefined },
 };

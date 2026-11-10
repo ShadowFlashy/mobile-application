@@ -1,68 +1,53 @@
 import { View } from 'react-native';
-import { createThemedStyles, spacing, useTheme, type ThemeColors } from '../../theme';
+import { createThemedStyles, lines, spacing } from '../../theme';
 import { Text } from './Text';
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'primary';
-export type BadgeTone = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'accent' | 'signal';
-
 interface BadgeProps {
-  label: string;
-  /** @deprecated v1 name of `tone`; still supported. */
-  variant?: BadgeVariant;
-  /** Colour role (soft background with its strong text). Wins over `variant`. */
-  tone?: BadgeTone;
-  /** For components only (e.g. rarity colours): overrides the tone colours. */
-  backgroundColor?: string;
-  textColor?: string;
+  /** The count to show; above `max` it reads "9+". */
+  count?: number;
+  /** Default 9. */
+  max?: number;
+  /** @deprecated A short text instead of a count (e.g. "2 new"); prefer `count`. */
+  label?: string;
+  /** Spoken text when the badge stands alone; usually the parent announces the count instead. */
+  accessibilityLabel?: string;
   testID?: string;
 }
 
-const VARIANT_TONES: Record<BadgeVariant, BadgeTone> = {
-  default: 'default',
-  success: 'success',
-  warning: 'warning',
-  error: 'danger',
-  info: 'info',
-  primary: 'accent',
-};
-
-/** Text colour per tone: the strong tone that belongs to the soft background. */
-const TEXT_TOKENS: Record<BadgeTone, keyof ThemeColors> = {
-  default: 'textMuted',
-  success: 'success',
-  warning: 'warning',
-  danger: 'danger',
-  info: 'info',
-  accent: 'accent',
-  signal: 'onSignal',
-};
-
-/** A small uppercase status label. */
-export function Badge({ label, variant = 'default', tone, backgroundColor, textColor, testID }: BadgeProps) {
-  const { colors } = useTheme();
+/**
+ * A's count badge: a text-colour disc with a bg-colour digit and a cut-out ring in the background
+ * colour, so it reads on top of an icon (the Garage tab).
+ */
+export function Badge({ count, max = 9, label, accessibilityLabel, testID }: BadgeProps) {
   const styles = useStyles();
-  const resolved = tone ?? VARIANT_TONES[variant];
+  const text = count !== undefined ? (count > max ? `${max}+` : String(count)) : (label ?? '');
   return (
-    <View style={[styles.base, styles[resolved], backgroundColor !== undefined && { backgroundColor }]} testID={testID}>
-      <Text variant="label" color={textColor ?? colors[TEXT_TOKENS[resolved]]}>
-        {label}
+    <View
+      style={styles.badge}
+      accessible={accessibilityLabel !== undefined}
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+    >
+      <Text variant="mark" tone="inverse" numberOfLines={1}>
+        {text}
       </Text>
     </View>
   );
 }
 
+const SIZE = 20;
+
 const useStyles = createThemedStyles(({ colors, radii }) => ({
-  base: {
+  badge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs + 1,
-    borderRadius: radii.sm,
+    minWidth: SIZE,
+    height: SIZE,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radii.pill,
+    borderWidth: lines.underline,
+    borderColor: colors.bg,
+    backgroundColor: colors.inverse,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  default: { backgroundColor: colors.surfaceMuted },
-  success: { backgroundColor: colors.successSoft },
-  warning: { backgroundColor: colors.warningSoft },
-  danger: { backgroundColor: colors.dangerSoft },
-  info: { backgroundColor: colors.infoSoft },
-  accent: { backgroundColor: colors.primarySoft },
-  signal: { backgroundColor: colors.signal },
 }));

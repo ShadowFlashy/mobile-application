@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SECOND } from '../../constants/time';
-import { formatCountdown, remainingMs } from '../../utils/verificationCode';
+import { formatCountdown, remainingMs, VERIFICATION_PREFIX } from '../../utils/verificationCode';
 import { Icon } from '../primitives/Icon';
 import { Row } from '../primitives/Row';
 import { Stack } from '../primitives/Stack';
-import { Surface } from '../primitives/Surface';
 import { Text } from '../primitives/Text';
+import { VerificationSteps } from './VerificationSteps';
 
 export interface VerificationCodeCardProps {
   /** "RL-7K3QX9" */
@@ -17,8 +17,9 @@ export interface VerificationCodeCardProps {
 }
 
 /**
- * P1-14: the one-time verification code on a pit board, with a live countdown. The owner places it
- * behind the windscreen and photographs the car so the plate and the code are both readable.
+ * P1-14: the one-time verification code as a readout (the six symbols in large condensed numerals,
+ * the "RL-" prefix in text-2), a live countdown and the three numbered steps. The owner places the
+ * code behind the windscreen and photographs the car so the plate and the code are both readable.
  */
 export function VerificationCodeCard({
   code,
@@ -36,29 +37,38 @@ export function VerificationCodeCard({
   }, [expiresAt]);
 
   const expired = left === 0;
+  const hasPrefix = code.startsWith(VERIFICATION_PREFIX);
+  const symbols = hasPrefix ? code.slice(VERIFICATION_PREFIX.length) : code;
   return (
-    <Surface variant="inverse" radius="lg" padding="lg" testID={testID}>
-      <Stack gap="sm" align="center">
-        <Text variant="label" tone="inverse">
+    <Stack gap="lg" testID={testID}>
+      <Stack gap="sm">
+        <Text variant="meta" tone="text2">
           {t('verify.code_label')}
         </Text>
-        <Text
-          variant="hero"
-          tone="inverse"
-          accessibilityLabel={t('verify.code_a11y', { code: code.split('').join(' ') })}
-        >
-          {code}
+        <Text variant="hero" accessibilityLabel={t('verify.code_a11y', { code: code.split('').join(' ') })}>
+          {hasPrefix && (
+            <Text variant="heroSub" tone="text2">
+              {VERIFICATION_PREFIX}
+            </Text>
+          )}
+          {symbols}
         </Text>
         <Row gap="xs" align="center">
-          <Icon name={expired ? 'alert-circle-outline' : 'timer-outline'} size={18} tone="inverse" />
-          <Text variant="numberSm" tone="inverse" testID={`${testID}-countdown`}>
+          <Icon name={expired ? 'alert' : 'clock'} size={16} tone={expired ? 'text' : 'text2'} />
+          <Text variant="numS" tone={expired ? 'text' : 'text2'} testID={`${testID}-countdown`}>
             {expired ? t('verify.expired') : t('verify.expires_in', { time: formatCountdown(left) })}
           </Text>
         </Row>
-        <Text variant="bodySm" tone="inverse" align="center">
-          {t('verify.code_instructions')}
-        </Text>
       </Stack>
-    </Surface>
+      <VerificationSteps
+        title={t('verify.code_steps_title')}
+        steps={[
+          { key: 'write', title: t('verify.code_step_write') },
+          { key: 'place', title: t('verify.code_step_place') },
+          { key: 'photo', title: t('verify.code_step_photo') },
+        ]}
+        testID={`${testID}-steps`}
+      />
+    </Stack>
   );
 }

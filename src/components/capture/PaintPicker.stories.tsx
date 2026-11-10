@@ -12,5 +12,5 @@ function Interactive() {
   return <PaintPicker value={paint} onChange={setPaint} provenance="ai" />;
 }
 
-export const FromCoDriver: Story = { render: () => <Interactive /> };
+export const FromAutoFill: Story = { render: () => <Interactive /> };
 export const Analysing: Story = { args: { value: 'other', onChange: () => undefined, isAnalysing: true } };

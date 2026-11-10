@@ -1,5 +1,5 @@
 import { Pressable, View } from 'react-native';
-import { createThemedStyles, spacing, touchTarget, useTheme, type ThemeColors } from '../../theme';
+import { createThemedStyles, lines, spacing, touchTarget } from '../../theme';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
@@ -21,20 +21,14 @@ interface ToastProps {
   testID?: string;
 }
 
-const INK: Record<ToastVariant, keyof ThemeColors> = {
-  default: 'onInverse',
-  success: 'onPrimary',
-  error: 'onPrimary',
-  warning: 'onSignal',
-};
-
-/** An icon per variant, so the meaning never depends on colour alone. */
+/** An icon per variant: the state is text plus an icon, never a colour. */
 const ICONS: Partial<Record<ToastVariant, IconName>> = {
-  success: 'checkmark-circle',
-  error: 'alert-circle',
+  success: 'check-circle',
+  error: 'alert',
   warning: 'warning',
 };
 
+/** A flat `raise` bar with a hairline border (radius 8): the icon, the message and a text action. */
 export function Toast({
   message,
   variant = 'default',
@@ -43,25 +37,21 @@ export function Toast({
   bottomOffset = spacing.lg,
   testID,
 }: ToastProps) {
-  const { colors } = useTheme();
   const styles = useStyles();
 
   if (!visible) return null;
-  const ink = colors[INK[variant]];
   const icon = ICONS[variant];
 
   return (
     <View
-      style={[styles.base, styles[variant], { bottom: bottomOffset }]}
+      style={[styles.base, { bottom: bottomOffset }]}
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
       testID={testID}
     >
-      {icon !== undefined && <Icon name={icon} size={20} color={ink} />}
+      {icon !== undefined && <Icon name={icon} size={20} tone="text" />}
       <View style={styles.message}>
-        <Text variant="bodyStrong" color={ink}>
-          {message}
-        </Text>
+        <Text variant="body">{message}</Text>
       </View>
       {action !== undefined && (
         <Pressable
@@ -71,43 +61,39 @@ export function Toast({
           style={({ pressed }) => [styles.action, pressed && styles.pressed]}
           testID={testID !== undefined ? `${testID}-action` : undefined}
         >
-          <Text variant="label" color={ink}>
-            {action.label}
-          </Text>
+          <Text variant="button">{action.label}</Text>
         </Pressable>
       )}
     </View>
   );
 }
 
-const useStyles = createThemedStyles(({ colors, elevation, radii }) => ({
+const useStyles = createThemedStyles(({ colors, radii }) => ({
   base: {
     position: 'absolute',
-    start: spacing.md,
-    end: spacing.md,
+    start: spacing.gutter,
+    end: spacing.gutter,
     maxWidth: 560,
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.smd,
-    paddingVertical: spacing.smd,
+    minHeight: touchTarget + spacing.smd,
     paddingStart: spacing.md,
     paddingEnd: spacing.sm,
     borderRadius: radii.md,
-    ...elevation.floating,
+    borderWidth: lines.hairline,
+    // `field`: the edge of a panel floating over content must be visible (3:1).
+    borderColor: colors.field,
+    backgroundColor: colors.raise,
   },
-  message: { flex: 1, paddingEnd: spacing.sm },
-  default: { backgroundColor: colors.inverseSurface },
-  success: { backgroundColor: colors.successFill },
-  error: { backgroundColor: colors.dangerFill },
-  warning: { backgroundColor: colors.signal },
+  message: { flex: 1, paddingVertical: spacing.smd },
   action: {
     minHeight: touchTarget,
     minWidth: touchTarget,
-    paddingHorizontal: spacing.smd,
+    paddingHorizontal: spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radii.sm,
   },
-  pressed: { opacity: 0.7 },
+  pressed: { opacity: 0.6 },
 }));

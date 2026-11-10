@@ -9,32 +9,24 @@ interface FormErrorProps {
   testID?: string;
 }
 
-/** A form-level error (e.g. wrong credentials): icon plus text, announced by screen readers. */
+/**
+ * A form-level error (e.g. wrong credentials): an alert icon plus text in the text colour, never red
+ * text or a coloured box, announced by screen readers.
+ */
 export function FormError({ message, testID }: FormErrorProps) {
   const styles = useStyles();
   if (message === undefined) return null;
   return (
-    <View style={styles.box} accessibilityRole="alert" accessibilityLiveRegion="assertive" testID={testID}>
-      <Icon name="alert-circle" size={20} tone="danger" />
+    <View style={styles.row} accessibilityRole="alert" accessibilityLiveRegion="assertive" testID={testID}>
+      <Icon name="alert" size={20} tone="text" />
       <View style={styles.text}>
-        <Text variant="bodyStrong" tone="danger">
-          {message}
-        </Text>
+        <Text variant="body">{message}</Text>
       </View>
     </View>
   );
 }
 
-const useStyles = createThemedStyles(({ colors, radii }) => ({
-  box: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    padding: spacing.smd,
-    borderRadius: radii.md,
-    backgroundColor: colors.dangerSoft,
-    borderStartWidth: 4,
-    borderStartColor: colors.dangerFill,
-  },
+const useStyles = createThemedStyles(() => ({
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   text: { flex: 1 },
 }));

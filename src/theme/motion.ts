@@ -3,7 +3,7 @@ import { AccessibilityInfo, Easing, Platform, type EasingFunction } from 'react-
 import type { HapticPattern } from '../types/Settings';
 
 /**
- * LIVERY motion (SPEC §7.6). Only `transform` and `opacity` are animated, blinks stay at ≤ 3 Hz
+ * Direction A motion (SPEC §7.6). Only `transform` and `opacity` are animated, blinks stay at ≤ 3 Hz
  * (WCAG 2.3.1), and with reduced motion every duration is 0 and loops stop.
  */
 export const durations = {
@@ -52,6 +52,8 @@ export function resolveDuration(token: DurationToken, reduced: boolean): number 
 
 /** True when the OS (or, on the web, `prefers-reduced-motion`) asks for reduced motion. */
 export function useReducedMotion(): boolean {
+  // Starts false on purpose: the web build is pre-rendered, and a first render that differed from
+  // the static HTML would break hydration. The real value follows right after mount.
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
     let active = true;

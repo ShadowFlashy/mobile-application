@@ -1,35 +1,35 @@
 {
   "jdm-legends": {
     "title": "Japanse JDM-legendes",
-    "description": "Wankelmotoren, twin-turbo-zescilinders en rallywapens: van de AE86 die driftend een bergpas afkomt tot de Supra die op duizend posters hing."
+    "description": "Japanse sportwagens, van de AE86 en de RX-7 tot de Supra en de GT-R."
   },
   "american-muscle": {
     "title": "Amerikaanse muscle & klassiekers",
-    "description": "Dikke V8’s, lange motorkappen en burn-outs aan het rode licht. Van de Model T die Amerika op wielen zette tot de Viper die terugbeet."
+    "description": "Amerikaanse V8’s en klassiekers, van de Model T tot de Mustang en de Viper."
   },
   "autobahn-heroes": {
     "title": "Duitse Autobahn-helden",
-    "description": "Gebouwd voor het stuk waar het witte bord met de zwarte strepen ‘plankgas’ betekent. Quattro-grip, M-power en boxers uit Stuttgart."
+    "description": "Duitse sportwagens van Audi, BMW M, Mercedes-AMG en Porsche."
   },
   "italian-exotics": {
     "title": "Italiaanse exoten",
-    "description": "Steigerende paarden, woeste stieren en een drietand: puur drama op wielen. Zoek de 308 GTSi waarmee een zekere privédetective over Hawaï scheurde."
+    "description": "Italiaanse sportwagens van Ferrari, Lamborghini en Maserati, met de 308 GTSi."
   },
   "british-icons": {
     "title": "Britse iconen",
-    "description": "Van de Mini tot de DB5: tweed, koppel en Britse kalmte. Met de hand gebouwde motoren, groene lak en een beetje motregen."
+    "description": "Britse auto’s, van de Mini tot de Aston Martin DB5."
   },
   "hot-hatch-heroes": {
     "title": "Hot-hatch-helden",
-    "description": "Kleine auto’s, grote grijns. De zakraketten die elke binnenweg beheersen, van de 205 GTI tot een Yaris die gebouwd werd om rally’s te winnen."
+    "description": "Kleine, snelle hatchbacks, van de Peugeot 205 GTI tot de GR Yaris."
   },
   "electric-era": {
     "title": "Elektrisch tijdperk",
-    "description": "Stil, direct en serieus snel. De auto’s die de stekker uit benzine trokken, van de kleine i3 tot een Kroatische hypercar met vier motoren."
+    "description": "Elektrische auto’s, van de BMW i3 tot de Rimac Nevera."
   },
   "hypercar-hall-of-fame": {
     "title": "Hypercar Hall of Fame",
-    "description": "De snelste, zeldzaamste en wildste machines die ooit een nummerplaat droegen. Spot er een en de hele parking draait zich om."
+    "description": "De snelste en zeldzaamste auto’s op de weg."
   },
   "fun_facts": {
     "ferrari-308-gtsi": "De targa met injectie waarmee Thomas Magnum rondreed in Magnum, P.I.: de \"i\" in GTSi staat voor injectie."

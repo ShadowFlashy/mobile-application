@@ -2,5 +2,9 @@
   "common": "Common",
   "rare": "Rare",
   "epic": "Epic",
-  "legendary": "Legendary"
+  "legendary": "Legendary",
+  "letter_common": "C",
+  "letter_rare": "R",
+  "letter_epic": "E",
+  "letter_legendary": "L"
 }

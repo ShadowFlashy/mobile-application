@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
-import { borders, createThemedStyles, spacing, touchTarget, useTheme } from '../../theme';
+import { createThemedStyles, lines, spacing, touchTarget } from '../../theme';
 import { Icon } from './Icon';
+import { spaceKey } from './keyboard';
 import { Text } from './Text';
 
 interface CheckboxProps {
@@ -11,21 +12,25 @@ interface CheckboxProps {
   testID?: string;
 }
 
+const BOX = 20;
+
+/** A 20 px box (text-2 ring; checked: a text-colour fill with a bg-colour check) and its label. */
 export function Checkbox({ label, checked, onChange, disabled = false, testID }: CheckboxProps) {
-  const { colors } = useTheme();
   const styles = useStyles();
   return (
     <Pressable
       onPress={() => onChange(!checked)}
+      {...spaceKey(() => onChange(!checked), disabled)}
       disabled={disabled}
       accessibilityRole="checkbox"
       accessibilityState={{ checked, disabled }}
+      aria-checked={checked}
       accessibilityLabel={label}
       style={[styles.container, disabled && styles.disabled]}
       testID={testID}
     >
       <View style={[styles.box, checked && styles.boxChecked]}>
-        {checked && <Icon name="checkmark" size={16} color={colors.onPrimary} />}
+        {checked && <Icon name="check" size={16} tone="inverse" />}
       </View>
       <View style={styles.label}>
         <Text variant="body">{label}</Text>
@@ -42,17 +47,15 @@ const useStyles = createThemedStyles(({ colors, radii }) => ({
     minHeight: touchTarget,
   },
   box: {
-    width: 24,
-    height: 24,
+    width: BOX,
+    height: BOX,
     borderRadius: radii.sm,
-    borderWidth: borders.strong,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
+    borderWidth: lines.ring,
+    borderColor: colors.text2,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // A ticked box is green with a check mark: "done", and not a second red next to the main action.
-  boxChecked: { backgroundColor: colors.successFill, borderColor: colors.successFill },
+  boxChecked: { backgroundColor: colors.inverse, borderColor: colors.inverse },
   label: { flex: 1 },
   disabled: { opacity: 0.5 },
 }));

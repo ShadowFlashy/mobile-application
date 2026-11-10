@@ -1,31 +1,34 @@
 import type { ReactNode } from 'react';
-import { Icon } from './primitives/Icon';
-import { Row } from './primitives/Row';
-import { Stack } from './primitives/Stack';
-import { Surface } from './primitives/Surface';
+import { View } from 'react-native';
+import { createThemedStyles, spacing } from '../theme';
+import { Section } from './primitives/Section';
 import { Text } from './primitives/Text';
 
 interface PrivacyNoticeProps {
-  /** Already translated title. */
+  /** Already translated title, shown as the section heading. */
   title: string;
   /** Already translated explanation. */
   children: ReactNode;
   testID?: string;
 }
 
-/** Explains a privacy rule right where it matters (GDPR transparency). */
+/**
+ * Explains a privacy rule right where it matters (GDPR transparency). Direction A has no callouts: it
+ * is an ordinary section (heading row and hairline) with the explanation as a text-2 paragraph.
+ */
 export function PrivacyNotice({ title, children, testID }: PrivacyNoticeProps) {
+  const styles = useStyles();
   return (
-    <Surface variant="sunken" padding="md" testID={testID}>
-      <Row gap="smd" align="flex-start">
-        <Icon name="shield-checkmark" size={22} tone="success" />
-        <Stack gap="xxs" flex={1}>
-          <Text variant="bodyStrong">{title}</Text>
-          <Text variant="bodySm" tone="muted">
-            {children}
-          </Text>
-        </Stack>
-      </Row>
-    </Surface>
+    <Section title={title} testID={testID}>
+      <View style={styles.body}>
+        <Text variant="value" tone="text2">
+          {children}
+        </Text>
+      </View>
+    </Section>
   );
 }
+
+const useStyles = createThemedStyles(() => ({
+  body: { paddingTop: spacing.smd },
+}));

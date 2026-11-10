@@ -2,7 +2,7 @@ import type { AiImage } from '../types/Identification';
 import type { PickedPhoto } from '../types/Spot';
 
 /**
- * The EXIF-free, ≤768 px JPEG for Co-Driver (native version). Canvas re-encoding only exists on the
+ * The EXIF-free, ≤768 px JPEG for Auto-fill (native version). Canvas re-encoding only exists on the
  * web, so the native build returns undefined until December. F1 stub; W3 owns it.
  */
 export async function readPhotoBytes(_uri: string): Promise<Uint8Array> {

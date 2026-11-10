@@ -6,26 +6,24 @@ import { Screen } from '../../../src/components/primitives/Screen';
 import { Spinner } from '../../../src/components/primitives/Spinner';
 import { Stack } from '../../../src/components/primitives/Stack';
 import { Text } from '../../../src/components/primitives/Text';
-import { RevealStage } from '../../../src/components/reveal/RevealStage';
+import { RevealResult } from '../../../src/components/reveal/RevealResult';
 import { StyledButton } from '../../../src/components/StyledButton';
 import { routes } from '../../../src/constants/routes';
 import { useAlbum } from '../../../src/hooks/useAlbum';
 import { useCarModels, useCollections } from '../../../src/hooks/useCarModels';
-import { useProgress } from '../../../src/hooks/useProgress';
 import { useReveal } from '../../../src/hooks/useReveal';
 import { useMySpots } from '../../../src/hooks/useSpots';
 import { revealPageProgress, revealSetProgress, revealSets } from '../../../src/utils/revealTimeline';
 
 /**
- * /reveal/<spotId> (SPEC P0-15): the sticker reveal, a full-screen modal on the stage. Everything is
- * re-derived from the query cache, so a refresh or a deep link replays the reveal of that spot.
+ * /reveal/<spotId> (SPEC P0-15): the sticker reveal as one calm result screen. Everything is
+ * re-derived from the query cache, so a refresh or a deep link shows the result of that spot again.
  */
 export default function RevealScreen() {
   const { spotId } = useLocalSearchParams<{ spotId: string }>();
   const router = useRouter();
   const { t } = useTranslation();
   const { reveal, isLoading, isMissing } = useReveal(spotId);
-  const { snapshot } = useProgress();
   const { pageById } = useAlbum();
   const { data: spots } = useMySpots();
   const { data: models } = useCarModels();
@@ -51,10 +49,9 @@ export default function RevealScreen() {
 
   if (isMissing) {
     return (
-      <Screen variant="stage" testID="reveal-missing">
+      <Screen testID="reveal-missing">
         <EmptyState
-          tone="onStage"
-          icon="search-outline"
+          icon="search"
           title={t('reveal.not_found_title')}
           description={t('reveal.not_found_description')}
           action={<StyledButton label={t('reveal.go_to_album')} onPress={goToAlbum} testID="reveal-go-album" />}
@@ -65,10 +62,10 @@ export default function RevealScreen() {
 
   if (reveal === undefined || !setsSettled) {
     return (
-      <Screen variant="stage" scrollable={false} testID="reveal-loading">
+      <Screen scrollable={false} testID="reveal-loading">
         <Stack flex={1} gap="md" align="center" justify="center">
-          <Spinner size="large" tone="onStage" />
-          <Text tone="onStageMuted" align="center">
+          <Spinner size="large" />
+          <Text tone="text2" align="center">
             {t('reveal.loading')}
           </Text>
           {!isLoading && reveal === undefined && (
@@ -80,13 +77,12 @@ export default function RevealScreen() {
   }
 
   return (
-    <RevealStage
+    <RevealResult
       reveal={reveal}
       page={pageById(reveal.pageId)}
       pageProgress={pageProgress}
       sets={sets}
-      achievements={snapshot?.achievements}
-      onViewPage={() => router.replace(routes.albumPage(reveal.pageId))}
+      onDone={() => router.replace(routes.albumPage(reveal.pageId))}
       onSpotAnother={() => router.replace(routes.spot)}
       testID="reveal-screen"
     />

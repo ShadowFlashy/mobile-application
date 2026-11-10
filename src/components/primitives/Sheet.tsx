@@ -1,8 +1,8 @@
-import { useContext, useEffect, useRef, type ReactNode } from 'react';
+import { useContext, useEffect, useId, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
-import { createThemedStyles, easings, spacing, useMotion } from '../../theme';
+import { createThemedStyles, easings, lines, spacing, useMotion } from '../../theme';
 import { IconButton } from './IconButton';
 import { Text } from './Text';
 
@@ -17,13 +17,17 @@ interface SheetProps {
 
 const SLIDE_DISTANCE = 480;
 
-/** A bottom sheet in a Modal: slides up, or crossfades when motion is reduced. */
+/**
+ * A bottom sheet in a Modal: a flat `raise` panel (radius 8 on top, a hairline edge) with A's title
+ * row and a close button. Slides up, or crossfades when motion is reduced.
+ */
 export function Sheet({ visible, onClose, title, children, testID }: SheetProps) {
   const { t } = useTranslation();
   const styles = useStyles();
   const { reduced, duration, nativeDriver } = useMotion();
   const insets = useContext(SafeAreaInsetsContext);
   const progress = useRef(new Animated.Value(0)).current;
+  const titleId = useId();
 
   useEffect(() => {
     if (!visible) {
@@ -45,23 +49,27 @@ export function Sheet({ visible, onClose, title, children, testID }: SheetProps)
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.root}>
         <Animated.View style={[StyleSheet.absoluteFill, { opacity: progress }]}>
+          {/* Pointer-only: kept out of the focus order and the accessibility tree, so focus starts in
+              the sheet. The close button is the accessible way out. */}
           <Pressable
             style={styles.backdrop}
             onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel={t('common.close')}
+            accessible={false}
+            focusable={false}
+            aria-hidden
             testID={testID !== undefined ? `${testID}-backdrop` : undefined}
           />
         </Animated.View>
         <Animated.View
           style={[styles.sheet, { paddingBottom: spacing.lg + (insets?.bottom ?? 0) }, sheetMotion]}
           accessibilityViewIsModal
+          aria-modal
+          aria-labelledby={titleId}
           testID={testID}
         >
-          <View style={styles.grabber} />
           <View style={styles.header}>
             <View style={styles.title}>
-              <Text variant="title" heading>
+              <Text variant="title" heading level={2} nativeID={titleId}>
                 {title}
               </Text>
             </View>
@@ -81,7 +89,7 @@ export function Sheet({ visible, onClose, title, children, testID }: SheetProps)
   );
 }
 
-const useStyles = createThemedStyles(({ colors, elevation, radii }) => ({
+const useStyles = createThemedStyles(({ colors, radii }) => ({
   root: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { flex: 1, backgroundColor: colors.overlay },
   sheet: {
@@ -89,22 +97,16 @@ const useStyles = createThemedStyles(({ colors, elevation, radii }) => ({
     maxWidth: 720,
     maxHeight: '88%',
     alignSelf: 'center',
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radii.xl,
-    borderTopRightRadius: radii.xl,
-    paddingHorizontal: spacing.md,
+    backgroundColor: colors.raise,
+    borderTopLeftRadius: radii.md,
+    borderTopRightRadius: radii.md,
+    borderTopWidth: lines.hairline,
+    borderColor: colors.line,
+    paddingStart: spacing.gutter,
+    paddingEnd: spacing.sm,
     paddingTop: spacing.sm,
-    ...elevation.floating,
-  },
-  grabber: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: radii.pill,
-    backgroundColor: colors.borderStrong,
-    marginBottom: spacing.sm,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
   title: { flex: 1 },
-  body: { flexGrow: 0 },
+  body: { flexGrow: 0, paddingEnd: spacing.smd },
 }));

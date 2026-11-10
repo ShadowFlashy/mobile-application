@@ -1,5 +1,5 @@
 /**
- * Web (PWA) preparation of the photo for Co-Driver (SPEC §9.1, D-15).
+ * Web (PWA) preparation of the photo for Auto-fill (SPEC §9.1, D-15).
  *
  * The photo is drawn on a canvas with its long side at most 768 px and re-encoded as JPEG 0.85.
  * Re-encoding strips every byte of EXIF (GPS included), so the AI only ever receives pixels.
@@ -65,7 +65,7 @@ function dHashOf(source: HTMLCanvasElement): string | undefined {
 }
 
 /**
- * The EXIF-free, ≤768 px JPEG for Co-Driver plus its dHash. Undefined when the browser cannot
+ * The EXIF-free, ≤768 px JPEG for Auto-fill plus its dHash. Undefined when the browser cannot
  * decode or encode the photo: the capture flow then simply continues in manual mode.
  */
 export async function prepareAiImage(photo: PickedPhoto): Promise<AiImage | undefined> {

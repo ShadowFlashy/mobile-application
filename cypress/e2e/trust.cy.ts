@@ -23,7 +23,14 @@ describe('Trust Center', () => {
     cy.get('[data-testid="ledger-plates"]').should('contain.text', 'Never stored');
     cy.get('[data-testid="ledger-photos-value"]').should('have.text', '3');
     cy.get('[data-testid="ledger-cities-value"]').should('have.text', '2');
-    cy.get('[data-testid="ledger-ai-value"]').should('have.text', '12 of 15');
+    cy.get('[data-testid="ledger-ai-value"]')
+      .should('have.text', '12/15')
+      .and('have.attr', 'aria-label', 'Auto-fills left today: 12 of 15');
+  });
+
+  it('is titled plainly and opens from the Profile row "Privacy and auto-fill"', () => {
+    cy.get('[data-testid="trust-screen"] [data-testid="screen-title"]').should('have.text', 'Privacy and auto-fill');
+    cy.get('[data-testid="trust-screen"]').should('not.contain.text', 'Co-Driver');
   });
 
   it('shows what owners see, following the name switch', () => {
@@ -43,10 +50,10 @@ describe('Trust Center', () => {
     cy.get('[data-testid="trust-auto-city-switch"]').should('have.attr', 'aria-checked', 'false');
   });
 
-  it('with Co-Driver off, capture opens manually and never calls the AI function', () => {
+  it('with Auto-fill off, capture opens manually and never calls the AI function', () => {
     cy.get('[data-testid="trust-ai-switch"]').should('have.attr', 'aria-checked', 'true').click();
     cy.get('[data-testid="trust-ai-switch"]').should('have.attr', 'aria-checked', 'false');
-    cy.get('[data-testid="ledger-ai-value"]').should('have.text', 'Co-Driver is off');
+    cy.get('[data-testid="ledger-ai-value"]').should('have.text', 'Auto-fill is off');
 
     cy.go('back');
     cy.get('[data-testid="tab-spot"]').click();
@@ -55,7 +62,7 @@ describe('Trust Center', () => {
     cy.get('[data-testid="file-input"]').selectFile('cypress/fixtures/car.jpg', { force: true });
     cy.get('[data-testid="capture-screen"]').should('be.visible');
     cy.get('[data-testid="plates-section"]').should('be.visible');
-    // Only exists once the capture flow has decided about Co-Driver, so the zero-call check below
+    // Only exists once the capture flow has decided about Auto-fill, so the zero-call check below
     // cannot pass before a (wrong) identify call would have been sent.
     cy.get('[data-testid="ai-status-banner-disabled"]').should('be.visible');
     cy.get('@identify.all').should('have.length', 0);

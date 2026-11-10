@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Provenance } from '../../types/Identification';
-import { Icon } from '../primitives/Icon';
+import { localDateTimeParts, parseLocalDateTime } from '../../utils/captureForm';
+import { intlLocale } from '../../utils/intlLocale';
 import { InputField } from '../primitives/InputField';
-import { Row } from '../primitives/Row';
 import { Sheet } from '../primitives/Sheet';
 import { Stack } from '../primitives/Stack';
-import { Surface } from '../primitives/Surface';
-import { Text } from '../primitives/Text';
 import { StyledButton } from '../StyledButton';
-import { localDateTimeParts, parseLocalDateTime } from '../../utils/captureForm';
-import { ProvenanceTag } from './ProvenanceTag';
+import { DetailRow } from './DetailRow';
 
 export interface DateFieldProps {
   /** ISO date-time. */
@@ -21,7 +18,7 @@ export interface DateFieldProps {
   testID?: string;
 }
 
-/** When the car was spotted, with its AUTO tag from EXIF; tapping it opens a small date sheet. */
+/** The date row of the review ("From photo" when EXIF filled it in); tapping it opens a small date sheet. */
 export function DateField({ value, onChange, provenance, testID = 'date-field' }: DateFieldProps) {
   const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +26,14 @@ export function DateField({ value, onChange, provenance, testID = 'date-field' }
   const [isInvalid, setIsInvalid] = useState(false);
   const formatted = Number.isNaN(new Date(value).getTime())
     ? ''
-    : new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+    : new Intl.DateTimeFormat(intlLocale(i18n.language), {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+      }).format(new Date(value));
 
   const open = () => {
     setDraft(localDateTimeParts(value));
@@ -48,27 +52,14 @@ export function DateField({ value, onChange, provenance, testID = 'date-field' }
 
   return (
     <>
-      <Surface
-        variant="flat"
-        padding="smd"
+      <DetailRow
+        label={t('capture.date_label')}
+        value={formatted}
+        provenance={provenance}
         onPress={open}
         accessibilityLabel={`${t('capture.date_label')}: ${formatted}`}
         testID={testID}
-      >
-        <Row gap="smd" align="center">
-          <Icon name="calendar" tone="muted" />
-          <Stack gap="xxs" flex={1}>
-            <Text variant="caption" tone="muted">
-              {t('capture.date_label')}
-            </Text>
-            <Text variant="bodyStrong" testID={`${testID}-value`}>
-              {formatted}
-            </Text>
-          </Stack>
-          {provenance !== undefined && <ProvenanceTag provenance={provenance} />}
-          <Icon name="chevron-forward" tone="subtle" size={18} />
-        </Row>
-      </Surface>
+      />
       <Sheet
         visible={isOpen}
         onClose={() => setIsOpen(false)}
@@ -94,7 +85,7 @@ export function DateField({ value, onChange, provenance, testID = 'date-field' }
           <StyledButton label={t('capture.date_apply')} onPress={apply} testID="date-apply" />
           <StyledButton
             label={t('capture.date_now')}
-            variant="ghost"
+            variant="secondary"
             onPress={() => {
               onChange(new Date().toISOString());
               setIsOpen(false);

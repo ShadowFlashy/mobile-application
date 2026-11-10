@@ -1,12 +1,12 @@
 import { fakeSession, spotRow } from '../support/commands';
 
-// Pit Wall (P0-14) against the production build. Time is frozen at Wednesday 2026-11-11 10:00 UTC
+// Stats tab (P0-14) against the production build. Time is frozen at Wednesday 2026-11-11 10:00 UTC
 // (ISO week 2026-W46); only `Date` is faked, so timers and the network keep running.
 const NOW = Date.UTC(2026, 10, 11, 10);
 
 // Two spots logged in W45 and two in W46 → a 2-week streak. Expected values come from
 // deriveProgress on this fixture with the 6-model car_models.json and the default collections:
-// 2,165 XP → level 7 "Car-park Hunter", 635 XP to level 8.
+// 2,165 XP → level 7, 635 XP to level 8; 3 of the 6 catalogue stickers.
 const SPOTS = [
   spotRow({
     id: 'e2e-1',
@@ -45,7 +45,7 @@ const SPOTS = [
   }),
 ];
 
-describe('Pit Wall', () => {
+describe('Stats', () => {
   beforeEach(() => {
     cy.clock(NOW, ['Date']);
     cy.stubSupabase({ spots: SPOTS });
@@ -58,49 +58,55 @@ describe('Pit Wall', () => {
     cy.get('[data-testid="progress-screen"]').should('be.visible');
   });
 
-  it('shows the level and title that match the fixture XP', () => {
-    cy.get('[data-testid="xp-summary-title"]').should('have.text', 'Car-park Hunter');
-    cy.get('[data-testid="xp-summary-xp"]').should('have.text', '2,165 XP · 635 to level 8');
-    cy.get('[data-testid="xp-summary"] [data-testid="level-roundel"]').should('have.attr', 'aria-label', 'Level 7');
-    cy.get('[data-testid="xp-summary-lights"]')
-      .should('have.attr', 'role', 'progressbar')
-      .and('have.attr', 'aria-valuemax', '15')
-      .and('have.attr', 'aria-valuenow', '1');
+  it('shows the level, stickers and spots readouts that match the fixture', () => {
+    // The Album tab stays mounted, so scope the shared screen-title testID to this screen.
+    cy.get('[data-testid="progress-screen"] [data-testid="screen-title"]').should('have.text', 'Stats');
+    cy.get('[data-testid="progress-screen"]').should('contain.text', '2,165 XP in total');
+    cy.get('[data-testid="level-readout-value"]').should('have.attr', 'aria-label', 'Level 7');
+    cy.get('[data-testid="level-readout"]').should('contain.text', '635 XP to level 8');
+    cy.get('[data-testid="level-readout"] [role="progressbar"]')
+      .should('have.attr', 'aria-valuemax', '100')
+      .and('have.attr', 'aria-label')
+      .and('match', /% of the way to level 8$/);
+    cy.get('[data-testid="stickers-readout-value"]').should('contain.text', '3').and('contain.text', '/6');
+    cy.get('[data-testid="spots-readout-value"]').should('have.text', '4');
   });
 
-  it('shows a 2-week streak on the lap chart', () => {
-    cy.get('[data-testid="streak-counter-value"]').should('have.text', '2');
-    cy.get('[data-testid="streak-counter-week-on"]').should('have.length', 2);
-    cy.get('[data-testid="streak-counter-week-off"]').should('have.length', 6);
-    cy.get('[data-testid="streak-counter-hint"]').should('contain.text', 'This week is in the books');
+  it('shows a 2-week streak with its 8-week history', () => {
+    cy.get('[data-testid="streak-readout-figure-value"]').should('contain.text', '2').and('contain.text', 'weeks');
+    cy.get('[data-testid="streak-readout-week-on"]').should('have.length', 2);
+    cy.get('[data-testid="streak-readout-week-off"]').should('have.length', 6);
+    cy.get('[data-testid="streak-readout"]').should('contain.text', 'This week counts');
   });
 
-  it('shows the deterministic 2026-W46 pit boards with a live countdown', () => {
-    cy.get('[data-testid="pit-board-warmup"]').should('contain.text', 'Write notes on 2 spots');
-    cy.get('[data-testid="pit-board-warmup-progress"]').should('have.text', '0/2');
-    cy.get('[data-testid="pit-board-main"]')
+  it('shows the deterministic 2026-W46 challenges with a live countdown', () => {
+    cy.get('[data-testid="challenge-warmup"]').should('contain.text', 'Write notes on 2 spots');
+    cy.get('[data-testid="challenge-warmup-progress"]').should('have.text', '0/2');
+    cy.get('[data-testid="challenge-main"]')
       .should('contain.text', 'Spot 1 car in orange')
       .and('contain.text', '+125 XP');
-    cy.get('[data-testid="pit-board-stretch"]')
+    cy.get('[data-testid="challenge-stretch"]')
       .should('contain.text', 'Collect 3 new stickers')
       .and('contain.text', '+250 XP');
-    cy.get('[data-testid="pit-board-stretch-progress"]').should('have.text', '1/3');
-    cy.get('[data-testid="pit-board-stretch-countdown"]')
+    cy.get('[data-testid="challenge-stretch-progress"]').should('have.text', '1/3');
+    cy.get('[data-testid="challenges-countdown"]')
       .invoke('text')
       .should('match', /^Ends in \d+d \d+h$/);
   });
 
-  it('shows unlocked plaques with a NEW dot until they are opened', () => {
-    cy.get('[data-testid="plaque-ignition-gold"]').should('exist');
-    cy.get('[data-testid="plaque-set_collector-bronze"]').should('exist');
-    cy.get('[data-testid="plaque-collector-locked"]').should('exist');
+  it('shows earned achievements with a New label until they are opened', () => {
+    cy.get('[data-testid="achievement-ignition-gold"]').should('have.text', 'Gold');
+    cy.get('[data-testid="achievement-set_collector-bronze"]').should('have.text', 'Bronze');
+    cy.get('[data-testid="achievement-collector-locked"]').should('have.text', 'Locked');
     // `redline` stays secret until 8 stickers short of the catalogue; the fixture catalogue has only
     // 6 models (3 collected), so it already shows its progress here (the secret rule is unit-tested).
-    cy.get('[data-testid="plaque-redline"]').should('contain.text', '3/6').and('not.contain.text', '???');
-    cy.get('[data-testid="plaque-ignition-new"]').should('exist');
-    cy.get('[data-testid="plaque-ignition"]').click();
-    cy.get('[data-testid="achievement-cabinet-details"]').should('contain.text', 'Ignition');
-    cy.get('[data-testid="plaque-ignition-new"]').should('not.exist');
-    cy.get('[data-testid="plaque-wildcard-new"]').should('exist');
+    cy.get('[data-testid="achievement-redline-progress"]').should('have.text', '3/6');
+    cy.get('[data-testid="achievement-redline"]').should('not.contain.text', 'Secret achievement');
+    cy.get('[data-testid="achievement-ignition-new"]').should('exist');
+    cy.get('[data-testid="achievement-ignition"]').click();
+    cy.get('[data-testid="achievement-ignition-new"]').should('not.exist');
+    cy.get('[data-testid="achievement-wildcard-new"]').should('exist');
+    cy.get('[data-testid="achievement-collector"]').click();
+    cy.get('[data-testid="achievement-collector-details"]').should('contain.text', 'Next tier at');
   });
 });

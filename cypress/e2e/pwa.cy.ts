@@ -44,20 +44,20 @@ describe('PWA', () => {
     cy.get('head meta[name="theme-color"][media="(prefers-color-scheme: light)"]').should(
       'have.attr',
       'content',
-      '#F4F1EA',
+      '#FFFFFF',
     );
     cy.get('head meta[name="theme-color"][media="(prefers-color-scheme: dark)"]').should(
       'have.attr',
       'content',
-      '#0D0E11',
+      '#0B0B0C',
     );
     cy.get('head link[rel="apple-touch-icon"]').should('have.attr', 'href', '/icons/apple-touch-icon.png');
   });
 
-  it('serves a Night Session manifest whose icons and shortcut icons are real PNGs', () => {
+  it('serves a dark manifest whose icons and shortcut icons are real PNGs', () => {
     cy.request('/manifest.json').then(({ body }: { body: Manifest }) => {
-      expect(body.background_color).to.equal('#0D0E11');
-      expect(body.theme_color).to.equal('#0D0E11');
+      expect(body.background_color).to.equal('#0B0B0C');
+      expect(body.theme_color).to.equal('#0B0B0C');
       expect(body.icons.map((icon) => icon.purpose)).to.include.members(['any', 'maskable']);
       expect(body.shortcuts.map((shortcut) => shortcut.url)).to.deep.equal(['/spot', '/', '/owners']);
       const icons = new Set([
@@ -74,11 +74,11 @@ describe('PWA', () => {
     });
   });
 
-  it('loads the Barlow faces and the Ionicons font', () => {
+  it('loads the Barlow faces (the icons are inline SVG, no icon font)', () => {
     cy.visit('/login');
     cy.get('[data-testid="login-screen"]').should('be.visible');
-    // Ionicons registers its face at runtime, when the first icon renders: retry until it is loaded.
-    ['16px Barlow_400Regular', '16px BarlowCondensed_700Bold', '16px ionicons'].forEach((face) => {
+    // expo-font registers the faces at runtime: retry until they are loaded.
+    ['16px Barlow_400Regular', '16px Barlow_600SemiBold', '16px BarlowCondensed_600SemiBold'].forEach((face) => {
       cy.document().should((doc) => {
         void doc.fonts.load(face);
         expect(doc.fonts.check(face), face).to.equal(true);

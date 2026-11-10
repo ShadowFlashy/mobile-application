@@ -1,5 +1,6 @@
 import { DAY, HOUR } from '../constants/time';
 import type { Sighting } from '../types/OwnerCar';
+import { intlLocale } from './intlLocale';
 
 /**
  * Pure helpers for the owner's sightings feed (SPEC §4 P0-17). A sighting is a privacy-safe
@@ -24,7 +25,9 @@ export function truncateToHour(iso: string): string {
 
 /** "14:00" / "14:00" in a 24-hour clock, in the user's language. */
 function formatHour(date: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date);
+  return new Intl.DateTimeFormat(intlLocale(locale), { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(
+    date,
+  );
 }
 
 /**

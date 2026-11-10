@@ -11,7 +11,7 @@ import { regionsFromDetections } from './plateRegions';
 
 /**
  * The capture form (SPEC P0-02, P0-05): built from the photo's EXIF, the gazetteer place and the
- * Co-Driver answer, with a provenance per field (CO-DRIVER, AUTO or YOU). A field the user edited is
+ * Auto-fill answer, with a provenance per field (CO-DRIVER, AUTO or YOU). A field the user edited is
  * never overwritten by a late answer. Pure functions: every one returns a new draft.
  */
 
@@ -86,7 +86,7 @@ export function applyPlace(draft: CaptureDraft, place: PlaceSuggestion): Capture
   return setMachineValue(draft, 'city', 'auto', { city: cut(place.label, LIMITS.city) });
 }
 
-/** The catalogue model Co-Driver means: its own (validated) catalogue id, else one strong search hit. */
+/** The catalogue model Auto-fill means: its own (validated) catalogue id, else one strong search hit. */
 export function matchCatalogue(
   car: { make: string; model: string; generation?: string; catalogueId?: string },
   models: readonly CarModel[],
@@ -107,7 +107,7 @@ export interface CarCandidate {
   confidence: number;
 }
 
-/** Co-Driver's guess plus its alternatives (max 3), mapped through carSearch and deduplicated. */
+/** Auto-fill's guess plus its alternatives (max 3), mapped through carSearch and deduplicated. */
 export function candidatesFor(car: IdentifiedCar, models: readonly CarModel[]): CarCandidate[] {
   const guesses = [
     {
@@ -137,7 +137,7 @@ export function candidatesFor(car: IdentifiedCar, models: readonly CarModel[]): 
 }
 
 /**
- * Fills every untouched field from a Co-Driver answer and turns its plate boxes into dashed
+ * Fills every untouched field from a Auto-fill answer and turns its plate boxes into dashed
  * suggestions. In the `guess` tier the car itself is left empty: the user picks a candidate.
  */
 export function applyIdentified(draft: CaptureDraft, car: IdentifiedCar, models: readonly CarModel[]): CaptureDraft {
@@ -183,7 +183,7 @@ export function editField(draft: CaptureDraft, field: CaptureField, patch: Parti
   return { ...draft, form: { ...draft.form, ...patch }, provenance: { ...draft.provenance, [field]: 'user' }, touched };
 }
 
-/** Picking a car keeps the AI's generation and years only when it is the car Co-Driver meant. */
+/** Picking a car keeps the AI's generation and years only when it is the car Auto-fill meant. */
 export function chooseCar(draft: CaptureDraft, choice: CarChoice): CaptureDraft {
   const aiCarModelId = draft.provenance.car === 'ai' ? draft.form.carModelId : undefined;
   if (choice.kind === 'model') {
@@ -211,8 +211,8 @@ export function hasCar(form: Pick<CaptureForm, 'carModelId' | 'make' | 'model'>)
 }
 
 /**
- * `identified_by` (SPEC P0-05): `manual` without an applied Co-Driver answer, `ai_edited` once the
- * user changed anything Co-Driver filled in (or picked the car in the guess tier), otherwise `ai`.
+ * `identified_by` (SPEC P0-05): `manual` without an applied Auto-fill answer, `ai_edited` once the
+ * user changed anything Auto-fill filled in (or picked the car in the guess tier), otherwise `ai`.
  */
 export function identifiedBy(draft: CaptureDraft): IdentifiedBy {
   if (draft.outcome?.status !== 'identified') return 'manual';

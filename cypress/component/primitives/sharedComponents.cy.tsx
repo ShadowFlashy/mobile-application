@@ -1,4 +1,5 @@
 import { ConfirmDialog } from '../../../src/components/ConfirmDialog';
+import { HeaderBackButton } from '../../../src/components/HeaderBackButton';
 import { OfflineBanner } from '../../../src/components/OfflineBanner';
 import { StepIndicator } from '../../../src/components/StepIndicator';
 
@@ -53,5 +54,20 @@ describe('StepIndicator', () => {
   it('shows the current step', () => {
     cy.mount(<StepIndicator steps={['Photo', 'Hide plates', 'Details']} currentIndex={1} />);
     cy.get('[data-testid="step-indicator-label"]').should('contain.text', 'Hide plates');
+  });
+});
+
+describe('HeaderBackButton', () => {
+  it('has a translated name and a 44 px target', () => {
+    const onPress = cy.stub().as('onBack');
+    cy.mount(<HeaderBackButton onPress={onPress} />);
+    cy.get('[data-testid="header-back"]')
+      .should('have.attr', 'aria-label', 'Back')
+      .then(($el) => {
+        expect($el[0].getBoundingClientRect().width).to.be.at.least(44);
+        expect($el[0].getBoundingClientRect().height).to.be.at.least(44);
+      })
+      .click();
+    cy.get('@onBack').should('have.been.calledOnce');
   });
 });

@@ -5,7 +5,7 @@ import { getIdentifyQuota } from '../services/aiService';
 import { useAuthStore } from '../state/useAuthStore';
 
 /**
- * Co-Driver scans left today (15/day) for the Trust Center (SPEC P0-01). Each identification also
+ * Auto-fill scans left today (15/day) for the Privacy and auto-fill screen (SPEC P0-01). Each identification also
  * updates this query with its `remainingToday` (see useIdentifyCar). Marked `persist: false`: the
  * counter is kept in memory and is meaningless after a day anyway.
  */

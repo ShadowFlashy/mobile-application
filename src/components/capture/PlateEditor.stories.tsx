@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import type { PlateRegion } from '../../types/Spot';
 import { PlateEditor } from './PlateEditor';
-import { PlateShield } from './PlateShield';
 import { SAMPLE_PHOTO, SAMPLE_SUGGESTION } from './storyData';
 
 const meta: Meta<typeof PlateEditor> = { title: 'Capture/PlateEditor', component: PlateEditor };
@@ -31,10 +30,9 @@ function Interactive({ withSuggestion }: { withSuggestion: boolean }) {
         setAccepted((current) => [...current, index]);
         setRegions((current) => [...current, suggestion]);
       }}
-      overlay={<PlateShield count={regions.length} />}
     />
   );
 }
 
-export const CoDriverSuggestion: Story = { render: () => <Interactive withSuggestion /> };
+export const AutoFillSuggestion: Story = { render: () => <Interactive withSuggestion /> };
 export const DrawYourOwn: Story = { render: () => <Interactive withSuggestion={false} /> };
